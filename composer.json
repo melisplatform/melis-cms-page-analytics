@@ -1,0 +1,32 @@
+{
+  "name": "melisplatform/melis-cms-page-analytics",
+  "description": "Melis Platform CMS Default Page Analytics",
+  "type": "melisplatform-module",
+  "license": "OSL-3.0",
+  "homepage": "https://github.com/melisplatform/melis-cms-page-analytics",
+  "support": {
+    "source": "https://github.com/melisplatform/melis-cms-page-analytics",
+    "issues": "https://github.com/melisplatform/melis-cms-page-analytics/issues"
+  },
+  "keywords": [
+    "cms",
+    "melis",
+    "zf2",
+    "module",
+    "analytics"
+  ],
+  "extra": {
+    "module-name": "MelisCmsPageAnalytics"
+  },
+  "require": {
+    "php": "^5.5 || ^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "MelisCmsPageAnalytics\\": "src/"
+    }
+  }
+}
