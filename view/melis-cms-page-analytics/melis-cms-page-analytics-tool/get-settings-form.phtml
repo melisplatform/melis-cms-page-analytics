@@ -1,0 +1,12 @@
+<?php
+if($this->form) {
+$form = $this->form;
+?>
+
+<?= $this->form()->openTag($form); ?>
+<?= $this->melisFieldCollection($form); ?>
+<?= $this->form()->closeTag(); ?>
+
+<?php
+}
+?>

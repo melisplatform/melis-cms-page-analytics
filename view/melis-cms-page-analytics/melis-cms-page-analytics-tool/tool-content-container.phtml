@@ -1,0 +1,56 @@
+<?php
+$id = '';
+if (!empty($this->zoneconfig['conf']['id']))
+    $id = ' id="' . $this->zoneconfig['conf']['id'] . '"';
+
+$form = $this->form;
+?>
+
+<div <?= $id; ?> data-melisKey="<?= $this->melisKey; ?>">
+    <div class="widget widget-tabs widget-tabs-double-2 widget-tabs-responsive">
+        <div class="widget-head nav">
+            <ul class="tabs-label nav-tabs">
+                <li class="active"> <!--  id="1_id_meliscms_center_page_tabs_edition_title" -->
+                    <a class="glyphicons stats" data-page-id="1" data-toggle="tab" href="#tab-page-analytics-tool">
+                        <i> </i>
+                        <span><?= $this->translate('tr_meliscms_page_analytics_title'); ?></span>
+                    </a>
+                </li>
+                <li> <!--  id="1_id_meliscms_center_page_tabs_properties_title" -->
+                    <a id="cms-page-anlytics-tab-settings-button" class="glyphicons cogwheel" data-page-id="1" data-toggle="tab" href="#tab-page-analytics-tool-settings">
+                        <i> </i>
+                        <span><?= $this->translate('tr_meliscms_page_analytics_settings'); ?></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="spacing-x2 innerAll">
+
+        <div class="tab-content">
+
+            <!-- Tab content -->
+            <div class="tab-pane active" id="tab-page-analytics-tool">
+                <?= $this->display; ?>
+            </div>
+            <!-- // Tab content END -->
+
+            <!-- Tab content -->
+            <div class="tab-pane" id="tab-page-analytics-tool-settings">
+                <?= $this->form()->openTag($form); ?>
+                <?= $this->melisFieldCollection($form); ?>
+                <div id="analytics-settings-form">
+
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> <?= $this->translate('tr_meliscore_tool_gen_save') ?></button>
+                </div>
+                <div class="clearfix"></div>
+
+                <?= $this->form()->closeTag(); ?>
+            </div>
+            <!-- // Tab content END -->
+        </div>
+
+    </div>
+</div>
