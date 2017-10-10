@@ -65,7 +65,7 @@ return array(
                     ),
                     'datas' => array(
                         'universal_analytics_tracking_code' => array(
-                            'script' => "<script>console.log('You are using Melis Cms Page Analytics');</script>"
+                            'script' => "<script>console.log('You are using Melis CMS Page Analytics');</script>"
                         )
                     ),
                 )
