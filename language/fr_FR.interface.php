@@ -2,43 +2,43 @@
 return array(
 
     /*
-     * MelisCms Page Analytics
+     * MelisCms page analytics
      */
-    'tr_meliscms_page_analytics_title' => 'Site Analytics',
-    'tr_meliscms_page_analytics_tool_display_title' => 'Site Analytics',
-    'tr_meliscms_page_analytics_header'  => 'Page Analytics Header',
-    'tr_meliscms_page_analytics_content' => 'Page Analytics Content',
+    'tr_meliscms_page_analytics_title' => 'Site analytics',
+    'tr_meliscms_page_analytics_tool_display_title' => 'Site analytics',
+    'tr_meliscms_page_analytics_header'  => 'Analytics en-tête',
+    'tr_meliscms_page_analytics_content' => 'Analytics contenu',
 
 
     // Table and Forms
     'tr_meliscms_page_analytics_column_id' => 'ID',
-    'tr_meliscms_page_analytics_column_page_id' => 'Page ID',
-    'tr_meliscms_page_analytics_column_page_name' => 'Page Name',
-    'tr_visotrs_count' => 'Visitors Count',
-    'tr_meliscms_page_analytics_column_date_visit' => 'Last Date Visited',
-    'tr_meliscms_page_analytics_column_action_view' => 'View',
+    'tr_meliscms_page_analytics_column_page_id' => 'ID page',
+    'tr_meliscms_page_analytics_column_page_name' => 'Nom page',
+    'tr_visotrs_count' => 'Visiteurs',
+    'tr_meliscms_page_analytics_column_date_visit' => 'Dernière visite',
+    'tr_meliscms_page_analytics_column_action_view' => 'Vue',
     'tr_meliscms_page_analytics_column_action' => 'Action',
 
 
     /*
-     * MelisCms Page Analytics Page Details
+     * MelisCms page analytics page details
      */
-    'tr_meliscms_page_analytics_page_detail_title' => 'Page Analytics Page Details',
-    'tr_page_details_header'        => 'Page Analytics Page Details Header',
-    'tr_meliscms_page_analytics_page_details_user_ip'       => 'User Ip address',
-    'tr_meliscms_page_analytics_page_details_date_visit' => 'Date Visit',
+    'tr_meliscms_page_analytics_page_detail_title' => 'Page analytics details page',
+    'tr_page_details_header'        => 'Page analytics details en-tête page',
+    'tr_meliscms_page_analytics_page_details_user_ip'       => 'Adresse IP de l\'utilisateur',
+    'tr_meliscms_page_analytics_page_details_date_visit' => 'Date de visite',
 
     /*
      * MelisCms Tab Page Analytics
      */
-    'tr_melis_cms_page_analytics' => 'Melis CMS Page Analytics',
-    'tr_melis_cms_page_analytics_title' => 'Page Analytics',
-    'tr_melis_cms_page_select' => 'Page Analytics Tool',
-    'tr_meliscms_page_analytics_settings' =>  'Settings',
-    'tr_meliscms_page_analytics_settings_select' =>  'Select page analytics tool',
-    'tr_meliscms_page_analytics_settings_select_tooltip' =>  'Select what page analytics tool to be used',
-    'tr_meliscms_page_analytics_settings_select_tooltip_ko' =>  'Please select a page analytics tool to be used',
-    'tr_meliscms_page_analytics_settings_select_blank' =>  'Select a page analytics tool...',
-    'tr_meliscms_page_analytics_settings_select_save_ok' =>  'Page analytics tool has been changed successfully',
-    'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Unable to change page analytics tool',
+    'tr_melis_cms_page_analytics' => 'Analytics Melis CMS',
+    'tr_melis_cms_page_analytics_title' => 'Module analytics',
+    'tr_melis_cms_page_select' => 'Module analytics',
+    'tr_meliscms_page_analytics_settings' =>  'Paramètres',
+    'tr_meliscms_page_analytics_settings_select' =>  'Choisissez le module analytics',
+    'tr_meliscms_page_analytics_settings_select_tooltip' =>  'Choisissez le module analytics que vous souhaitez utiliser',
+    'tr_meliscms_page_analytics_settings_select_tooltip_ko' =>  'Veuillez choisir le module analytics à utiliser',
+    'tr_meliscms_page_analytics_settings_select_blank' =>  'Choisissez un module analytics',
+    'tr_meliscms_page_analytics_settings_select_save_ok' =>  'Le module analytics a été changé avec succès',
+    'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Impossible de changer le module analytics',
 );
