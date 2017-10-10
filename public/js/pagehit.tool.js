@@ -83,7 +83,7 @@ $(function() {
         melisHelper.zoneReload(pageId+"_id_meliscms_page_analytics", "meliscms_page_analytics_tab_display", {idPage : pageId}, function() {
             setTimeout(function() {
                 $("#"+pageId+"_id_meliscms_page_analytics").addClass("active");
-            }, 1000);
+            }, 600);
 
         });
 
