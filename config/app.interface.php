@@ -145,7 +145,7 @@ return array(
         ),
         'ressources' => array(
             'css' => array(
-                '',
+                'MelisCmsPageAnalytics/css/site_analytics.css',
             ),
             'js' => array(
                 'MelisCmsPageAnalytics/js/pagehit.tool.js',

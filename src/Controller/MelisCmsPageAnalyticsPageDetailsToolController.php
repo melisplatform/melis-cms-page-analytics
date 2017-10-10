@@ -46,14 +46,14 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                    $display = str_replace(array(
                        'sDom : "<', 'rip>>"', 'return "<div>',
                        '<endaction/></div>";',
-                       '"<a class="btn btn-default melis-refreshTable',
+                       '"<a class="btn btn-default melis-cms-page-analytics-refresh',
                        'fa-refresh"></i></a>"',
                        '(".search input[type="search"]")'
                    ), array(
                        "sDom : '<", "rip>>'",
                        "return '<div>",
                        "<endaction/></div>';",
-                       "'<a class=\"btn btn-default melis-refreshTable",
+                       "'<a class=\"btn btn-default melis-cms-page-analytics-refresh",
                        "fa-refresh\"></i></a>'",
                        "(\".search input[type='search']\")"
                    ), $display);
