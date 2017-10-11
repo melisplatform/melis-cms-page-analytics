@@ -113,7 +113,11 @@ namespace MelisCmsPageAnalytics;
                                 ),
                             ),
                             'right' => array(
-                                
+                                'refresh' => array(
+                                    'module' => 'MelisCmsPageAnalytics',
+                                    'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
+                                    'action' => 'tool-content-table-refresh',
+                                ),
                             ),
 
                         ),

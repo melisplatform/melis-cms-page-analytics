@@ -78,5 +78,16 @@ $(function() {
         $("select#page_analytics_id").trigger("change");
     });
 
+    $("body").on("click", "a.melis-cms-page-analytics-refresh", function() {
+        var pageId = activeTabId.split("_")[0];
+        melisHelper.zoneReload(pageId+"_id_meliscms_page_analytics", "meliscms_page_analytics_tab_display", {idPage : pageId}, function() {
+            setTimeout(function() {
+                $("#"+pageId+"_id_meliscms_page_analytics").addClass("active");
+            }, 600);
+
+        });
+
+    })
+
 
 });
