@@ -78,10 +78,44 @@ return array(
                         'interface' => array(
                             'meliscms_page_analytics_tab' => array(
                                 'conf' => array(
-                                    'id' => 'id_meliscms_page_analytics',
-                                    'type' => '/meliscms_page_analytics_tab/interface/meliscms_page_analytics_tab_display',
-                                    'name' => 'tr_melis_cms_page_analytics_title',
-                                    'icon' => 'stats'
+                                    'conf' => array(
+                                        'id' => 'id_meliscms_page_analytics_tab',
+                                        'name' => 'tr_meliscms_page_analytics_tab',
+                                        'melisKey'  => 'meliscms_page_analytics_tab',
+                                    ),
+                                    'interface' => array(
+                                        'meliscms_page_analytics_tab_display' => array(
+                                            'conf'  => array(
+                                                'id'    => 'id_meliscms_page_analytics',
+                                                'name'  => 'tr_meliscms_page_analytics_tab_display_title',
+                                                'melisKey'  => 'meliscms_page_analytics_tab_display',
+                                                'icon'      => 'fa-bar-chart',
+                                            ),
+                                            'forward' => array(
+                                                'module' => 'MelisCmsPageAnalytics',
+                                                'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
+                                                'action' => 'tool-container',
+                                                'jscallback' => '',
+                                                'jsdatas' => array()
+                                            ),
+                                            'interface' => array(
+                                                'meliscms_page_analytics_tab_header' => array(
+                                                    'conf' => array(
+                                                        'id'    => 'id_meliscms_page_analytics_tab_header',
+                                                        'name'  => 'tr_meliscms_page_analytics_header',
+                                                        'melisKey'  => 'meliscms_page_analytics_tab_header',
+                                                    ),
+                                                    'forward' => array(
+                                                        'module' => 'MelisCmsPageAnalytics',
+                                                        'controller' => 'MelisCmsPageAnalyticsTool',
+                                                        'action' => 'tool-header-container',
+                                                        'jscallback' => '',
+                                                        'jsdatas' => array()
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
                                 ),
                             ),
                         ),
@@ -90,51 +124,7 @@ return array(
             ),
         ), 
     ),
-    'meliscms_page_analytics_tab' => array(
-        'conf' => array(
-            'name' => '',
-        ),
-        'ressources' => array(
-            'css' => array(),
-            'js'  => array(),
-        ),
-        'datas' => array(
-
-        ),
-        'interface' => array(
-            'meliscms_page_analytics_tab_display' => array(
-                'conf'  => array(
-                    'id'    => 'id_meliscms_page_analytics',
-                    'name'  => 'tr_meliscms_page_analytics_tab_display_title',
-                    'melisKey'  => 'meliscms_page_analytics_tab_display',
-                    'icon'      => 'fa-bar-chart',
-                ),
-                'forward' => array(
-                    'module' => 'MelisCmsPageAnalytics',
-                    'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
-                    'action' => 'tool-container',
-                    'jscallback' => '',
-                    'jsdatas' => array()
-                ),
-                'interface' => array(
-                    'meliscms_page_analytics_tab_header' => array(
-                        'conf' => array(
-                            'id'    => 'id_meliscms_page_analytics_tab_header',
-                            'name'  => 'tr_meliscms_page_analytics_header',
-                            'melisKey'  => 'meliscms_page_analytics_tab_header',
-                        ),
-                        'forward' => array(
-                            'module' => 'MelisCmsPageAnalytics',
-                            'controller' => 'MelisCmsPageAnalyticsTool',
-                            'action' => 'tool-header-container',
-                            'jscallback' => '',
-                            'jsdatas' => array()
-                        ),
-                    ),
-                ),
-            ),
-        ),
-    ),
+    
 
     /**
      * this is the configuration of the tool
@@ -142,114 +132,112 @@ return array(
     'meliscms_page_analytics_tool_config' => array(
         'conf' => array(
             'name' => '',
+            'id'    => 'meliscms_page_analytics_tool_config',
+            'name'  => 'tr_meliscms_page_analytics_tool_config',
+            'melisKey'  => 'meliscms_page_analytics_tool_config',
         ),
         'ressources' => array(
             'css' => array(
-                '',
             ),
             'js' => array(
                 'MelisCmsPageAnalytics/js/pagehit.tool.js',
             )
         ),
-        'datas' => array(
-        ),
-     'interface' => array(
-            'meliscms_page_analytics_tool_display' => array(
-                'conf' => array(
-                    'id'   => 'id_meliscms_page_analytics_display',
-                    'name' => 'tr_meliscms_page_analytics_tool_display_title',
-                    'melisKey' => 'meliscms_page_analytics_display',
-                    'icon' => 'fa-bar-chart',
-                    'rights_checkbox_disable' => true
-                ),
-                'forward' => array(
-                    'module' => 'MelisCmsPageAnalytics',
-                    'controller' => 'MelisCmsPageAnalyticsTool',
-                    'action' => 'tool-container',
-                    'jscallback' => '',
-                    'jsdatas' => array()
-                ),
-                'interface' => array(
-                    'meliscms_page_analytics_header' => array(
-                        'conf' => array(
-                            'id'   => 'id_meliscms_page_analytics_header',
-                            'name' => 'tr_meliscms_page_analytics_header',
-                            'melisKey' => 'meliscms_page_analytics_header',
+        'interface' => array(
+                'meliscms_page_analytics_tool_display' => array(
+                    'conf' => array(
+                        'id'   => 'id_meliscms_page_analytics_display',
+                        'name' => 'tr_meliscms_page_analytics_tool_display_title',
+                        'melisKey' => 'meliscms_page_analytics_display',
+                        'icon' => 'fa-bar-chart',
+                    ),
+                    'forward' => array(
+                        'module' => 'MelisCmsPageAnalytics',
+                        'controller' => 'MelisCmsPageAnalyticsTool',
+                        'action' => 'tool-container',
+                        'jscallback' => '',
+                        'jsdatas' => array()
+                    ),
+                    'interface' => array(
+                        'meliscms_page_analytics_header' => array(
+                            'conf' => array(
+                                'id'   => 'id_meliscms_page_analytics_header',
+                                'name' => 'tr_meliscms_page_analytics_header',
+                                'melisKey' => 'meliscms_page_analytics_header',
+                            ),
+                            'forward' => array(
+                                'module' => 'MelisCmsPageAnalytics',
+                                'controller' => 'MelisCmsPageAnalyticsTool',
+                                'action' => 'tool-header-container',
+                                'jscallback' => '',
+                                'jsdatas' => array()
+                            ),
                         ),
-                        'forward' => array(
-                            'module' => 'MelisCmsPageAnalytics',
-                            'controller' => 'MelisCmsPageAnalyticsTool',
-                            'action' => 'tool-header-container',
-                            'jscallback' => '',
-                            'jsdatas' => array()
+                        'meliscms_page_analytics_content' => array(
+                            'conf' => array(
+                                'id'   => 'id_meliscms_page_analytics_content',
+                                'name' => 'tr_meliscms_page_analytics_content',
+                                'melisKey' => 'meliscms_page_analytics_content',
+                            ),
+                            'forward' => array(
+                                'module' => 'MelisCmsPageAnalytics',
+                                'controller' => 'MelisCmsPageAnalyticsTool',
+                                'action' => 'tool-content-container',
+                                'jscallback' => '',
+                                'jsdatas' => array()
+                            ),
+                            'interface' => array()
                         ),
                     ),
-                    'meliscms_page_analytics_content' => array(
-                        'conf' => array(
-                            'id'   => 'id_meliscms_page_analytics_content',
-                            'name' => 'tr_meliscms_page_analytics_content',
-                            'melisKey' => 'meliscms_page_analytics_content',
-                        ),
-                        'forward' => array(
-                            'module' => 'MelisCmsPageAnalytics',
-                            'controller' => 'MelisCmsPageAnalyticsTool',
-                            'action' => 'tool-content-container',
-                            'jscallback' => '',
-                            'jsdatas' => array()
-                        ),
-                        'interface' => array()
+                 ),
+                'meliscms_page_analytics_page_details' => array(
+                    'conf' => array(
+                        'id'   => 'id_meliscms_page_analytics_page_details',
+                        'name' => 'tr_meliscms_page_analytics_page_detail_title',
+                        'melisKey' => 'meliscms_page_analytics_page_details',
                     ),
-                ),
-             ),
-            'meliscms_page_analytics_page_details' => array(
-                'conf' => array(
-                    'id'   => 'id_meliscms_page_analytics_page_details',
-                    'name' => 'tr_meliscms_page_analytics_page_detail_title',
-                    'melisKey' => 'meliscms_page_analytics_page_details',
-                ),
-                'forward' => array(
-                    'module' => 'MelisCmsPageAnalytics',
-                    'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
-                    'action'     => 'tool-container-page-analytics-page-details',
-                    'jscallback' => '',
-                    'jsdatas'    => array()
-                ),
-                'interface'   => array(
-                    'meliscms_page_analytics_page_details_header' => array(
-                        'conf' => array(
-                            'id' => 'id_meliscms_page_analytics_page_details_header',
-                            'name' => 'tr_meliscms_page_analytics_page_details_title',
-                            'melisKey' => 'meliscms_page_analytics_page_details_header',
-                        ),
-                        'forward' => array(
-                            'module' => 'MelisCmsPageAnalytics',
-                            'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
-                            'action' => 'tool-header-container',
-                            'jscallback' => '',
-                            'jsdatas' => array()
-                        ),
+                    'forward' => array(
+                        'module' => 'MelisCmsPageAnalytics',
+                        'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
+                        'action'     => 'tool-container-page-analytics-page-details',
+                        'jscallback' => '',
+                        'jsdatas'    => array()
                     ),
-                    'meliscms_page_analytics_page_details_content' => array(
-                        'conf' => array(
-                            'id' => 'id_meliscms_page_analytics_page_details_content',
-                            'name' => 'tr_meliscms_page_analytics_page_details_content_title',
-                            'melisKey' => 'meliscms_page_analytics_page_details_content',
+                    'interface'   => array(
+                        'meliscms_page_analytics_page_details_header' => array(
+                            'conf' => array(
+                                'id' => 'id_meliscms_page_analytics_page_details_header',
+                                'name' => 'tr_meliscms_page_analytics_page_details_title',
+                                'melisKey' => 'meliscms_page_analytics_page_details_header',
+                            ),
+                            'forward' => array(
+                                'module' => 'MelisCmsPageAnalytics',
+                                'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
+                                'action' => 'tool-header-container',
+                                'jscallback' => '',
+                                'jsdatas' => array()
+                            ),
                         ),
-                        'forward' => array(
-                            'module' => 'MelisCmsPageAnalytics',
-                            'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
-                            'action' => 'tool-content-container',
-                            'jscallback' => '',
-                            'jsdatas' => array()
+                        'meliscms_page_analytics_page_details_content' => array(
+                            'conf' => array(
+                                'id' => 'id_meliscms_page_analytics_page_details_content',
+                                'name' => 'tr_meliscms_page_analytics_page_details_content_title',
+                                'melisKey' => 'meliscms_page_analytics_page_details_content',
+                            ),
+                            'forward' => array(
+                                'module' => 'MelisCmsPageAnalytics',
+                                'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
+                                'action' => 'tool-content-container',
+                                'jscallback' => '',
+                                'jsdatas' => array()
+                            ),
+                            'interface' => array(
+    
+                            ),
                         ),
-                        'interface' => array(
-
-                        ),
-
                     ),
                 ),
             ),
-         ),
-      ),  
+        ),  
     ),
 );

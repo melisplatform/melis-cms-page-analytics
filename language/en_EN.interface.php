@@ -39,4 +39,11 @@ return array(
     'tr_meliscms_page_analytics_settings_select_blank' =>  'Blank page analytics tool',
     'tr_meliscms_page_analytics_settings_select_save_ok' =>  'Page analytics tool has been changed successfully',
     'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Unable to change page analytics tool',
+    
+    // Interface
+    'tr_meliscms_page_analytics_tab' => 'Cms page analytics',
+    'tr_meliscms_page_analytics_tab_display_title' => 'Title',
+    'tr_meliscms_page_analytics_tool_config' => 'Page analytics',
+    'tr_meliscms_page_analytics_page_details_title' => 'Page analytics details title',
+    'tr_meliscms_page_analytics_page_details_content_title' => 'Page analytics details title',
 );
