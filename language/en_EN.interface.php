@@ -41,4 +41,12 @@ return array(
     'tr_meliscms_page_analytics_settings_select_blank' =>  'Select an analytics module',
     'tr_meliscms_page_analytics_settings_select_save_ok' =>  'The analytics module has been changed successfully',
     'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Unable to change analytics module',
+    
+    // Interface
+    'tr_meliscms_page_analytics_tab_display' => 'Cms page analytics',
+    'tr_meliscms_page_analytics_tab_header' => 'Cms page analytics header',
+    'tr_meliscms_page_analytics_tool_config' => 'Page analytics',
+    'tr_meliscms_page_analytics_page_details_title' => 'Page analytics details title',
+    'tr_meliscms_page_analytics_page_details_content_title' => 'Page analytics content details title',
+    
 );
