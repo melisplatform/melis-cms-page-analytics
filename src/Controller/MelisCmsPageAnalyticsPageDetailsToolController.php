@@ -108,7 +108,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
     $melisKey = $this->getMelisKey();
     $pageHitId = (int) $this->params()->fromQuery('idPage', $this->params()->fromQuery('pageHitId'));
     $columns = $this->getTool()->getColumns();
-    $columns['actions'] = array('text' => '');
+    
 
     $view = new ViewModel();
     $view->melisKey = $melisKey;
