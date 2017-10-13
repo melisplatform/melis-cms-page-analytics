@@ -1,9 +1,7 @@
 <?php
 namespace MelisCmsPageAnalytics;
 
- 
 return array(
-
     'plugins' => array(
         'meliscore' => array(
             'interface' => array(
@@ -25,6 +23,11 @@ return array(
                         ),
                     ),
                 ),
+            ),
+        ),
+        'MelisCmsPageAnalytics' => array(
+            'conf' => array(
+                'rightsDisplay' => 'none'
             ),
         ),
         //Add tab Page Analytics in page Preview
@@ -118,7 +121,7 @@ return array(
                         ),
                     ),
                 ),
-            ), 
+            ),
         ),
         /**
          * this is the configuration of the tool
@@ -128,6 +131,7 @@ return array(
                 'id'   => 'id_meliscms_page_analytics_tool_config',
                 'name' => 'tr_meliscms_page_analytics_tool_config',
                 'melisKey' => 'meliscms_page_analytics_tool_config',
+                'rightsDisplay' => 'none'
             ),
             'ressources' => array(
                 'css' => array(
@@ -181,6 +185,68 @@ return array(
                                 'jscallback' => '',
                                 'jsdatas' => array()
                             ),
+                            'interface' => array(
+                                'meliscms_page_analytics_site_analytics_tab' => array(
+                                    'conf' => array(
+                                        'id'   => 'id_meliscms_page_analytics_site_analytics_tab',
+                                        'name' => 'tr_meliscms_page_analytics_tab',
+                                        'melisKey' => 'meliscms_page_analytics_site_analytics_tab',
+                                    ),
+                                    'forward' => array(
+                                        'module' => 'MelisCmsPageAnalytics',
+                                        'controller' => 'MelisCmsPageAnalyticsTool',
+                                        'action' => 'tool-content-container-analytics-tab',
+                                        'jscallback' => '',
+                                        'jsdatas' => array()
+                                    ),
+                                    ''
+                                ),
+                                // tab content
+                                'meliscms_page_analytics_site_analytics_tab_content' => array(
+                                    'conf' => array(
+                                        'id'   => 'id_meliscms_page_analytics_site_analytics_tab_content',
+                                        'name' => 'tr_meliscms_page_analytics_tab_content',
+                                        'melisKey' => 'meliscms_page_analytics_site_analytics_tab_content',
+                                        
+                                    ),
+                                    'forward' => array(
+                                        'module' => 'MelisCmsPageAnalytics',
+                                        'controller' => 'MelisCmsPageAnalyticsTool',
+                                        'action' => 'tool-content-container-analytics-tab-content',
+                                        'jscallback' => '',
+                                        'jsdatas' => array()
+                                    ),
+                                ),
+                                'meliscms_page_analytics_site_analytics_tab_settings' => array(
+                                    'conf' => array(
+                                        'id'   => 'id_meliscms_page_analytics_site_analytics_tab_settings',
+                                        'name' => 'tr_meliscms_page_analytics_settings_tab',
+                                        'melisKey' => 'meliscms_page_analytics_site_analytics_tab_settings',
+                                    ),
+                                    'forward' => array(
+                                        'module' => 'MelisCmsPageAnalytics',
+                                        'controller' => 'MelisCmsPageAnalyticsTool',
+                                        'action' => 'tool-content-container-analytics-settings-tab',
+                                        'jscallback' => '',
+                                        'jsdatas' => array()
+                                    ),
+                                ),
+                                'meliscms_page_analytics_site_analytics_tab_settings_content' => array(
+                                    'conf' => array(
+                                        'id'   => 'id_meliscms_page_analytics_site_analytics_tab_settings_content',
+                                        'name' => 'tr_meliscms_page_analytics_settings_tab_content',
+                                        'melisKey' => 'meliscms_page_analytics_site_analytics_tab_settings_content',
+                                        
+                                    ),
+                                    'forward' => array(
+                                        'module' => 'MelisCmsPageAnalytics',
+                                        'controller' => 'MelisCmsPageAnalyticsTool',
+                                        'action' => 'tool-content-container-analytics-settings-tab-content',
+                                        'jscallback' => '',
+                                        'jsdatas' => array()
+                                    ),
+                                ),
+                            ),
                         ),
                     ),
                 ),
@@ -229,6 +295,6 @@ return array(
                     ),
                 ),
             ),
-        ),  
+        ),
     ),
 );

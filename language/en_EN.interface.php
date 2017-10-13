@@ -4,11 +4,15 @@ return array(
     /*
      * MelisCms Page Analytics
      */
-    'tr_meliscms_page_analytics_title' => 'Site Analytics',
+    'tr_meliscms_page_analytics_title' => 'Site  Analytics',
     'tr_meliscms_page_analytics_tool_display_title' => 'Site Analytics',
-    'tr_meliscms_page_analytics_header'  => 'Page Analytics Header',
-    'tr_meliscms_page_analytics_content' => 'Page Analytics Content',
-
+    'tr_meliscms_page_analytics_header'  => 'Header',
+    'tr_meliscms_page_analytics_content' => 'Content',
+    'tr_meliscms_page_analytics_tab' => 'Analytics tab',
+    'tr_meliscms_page_analytics_tab_content' => 'Analytics tab content',
+    'tr_meliscms_page_analytics_settings_tab' => 'Settings tab',
+    'tr_meliscms_page_analytics_settings_tab_content' => 'Settings tab content',
+    
 
     // Table and Forms
     'tr_meliscms_page_analytics_column_id' => 'ID',

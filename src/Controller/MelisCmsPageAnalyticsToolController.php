@@ -12,7 +12,7 @@ namespace MelisCmsPageAnalytics\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\View\Model\JsonModel;
-
+use MelisCore\Service\MelisCoreRightsService;
 
 class MelisCmsPageAnalyticsToolController extends AbstractActionController
 {
@@ -96,58 +96,20 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     public function toolContentContainerAction()
     {
         $melisKey = $this->getMelisKey();
-
-        $form = $this->getForm();
-        $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-        $curData = (array)$table->getEntryById(1)->current();
-        $display = null;
-
-        if ($curData) {
-            $currentAnalytics = $curData['pad_current_analytics'];
-            $data = array('page_analytics_id' => $currentAnalytics);
-            $form->setData($data);
-
-            $config = $this->getServiceLocator()->get('MelisCoreConfig');
-
-            if ($currentAnalytics) {
-                $pageAnalyticsData = $config->getItem('meliscms/datas/page_analytics');
-                $pageAnalyticsData = $pageAnalyticsData[$currentAnalytics];
-
-                if ($pageAnalyticsData) {
-                    $forward = $pageAnalyticsData['forward'];
-                    $display = $this->getTool()->getViewContent($forward);
-                    $display = str_replace(array(
-                        'sDom : "<', 'rip>>"', 'return "<div>',
-                        '<endaction/></div>";',
-                        '"<a class="btn btn-default melis-refreshTable',
-                        'fa-refresh"></i></a>"',
-                        '(".search input[type="search"]")'
-                    ), array(
-                        "sDom : '<", "rip>>'",
-                        "return '<div>",
-                        "<endaction/></div>';",
-                        "'<a class=\"btn btn-default melis-refreshTable",
-                        "fa-refresh\"></i></a>'",
-                        "(\".search input[type='search']\")"
-                    ), $display);
-                }
-
-            }
-        }
+        $hasAccessAnalytics = $this->hasAccess('meliscms_page_analytics_site_analytics_tab');
+        $hasAccessAnalyticsSettings = $this->hasAccess('meliscms_page_analytics_settings_tab');
 
         $view = new ViewModel();
-
-        $view->display = $display;
-
-        $view->setVariable('form', $form);
-
+        $view->melisKey = $melisKey;
+        $view->hasAccessAnalytics = $hasAccessAnalytics;
+        $view->hasAccessAnalyticsSettings = $hasAccessAnalyticsSettings;
         return $view;
     }
 
     public function toolDefaultPageAnalyticsTableAction()
     {
         $melisKey = $this->getMelisKey();
-
+        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab');
         $columns = $this->getTool()->getColumns();
 
         $view = new ViewModel();
@@ -155,7 +117,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $view->melisKey = $melisKey;
         $view->tableColumns = $columns;
         $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#tableMelisCmsPageAnalytics');
-
+        $view->hasAccess = $hasAccess;
         return $view;
     }
 
@@ -344,6 +306,109 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         }
 
         return $errors;
+    }
+    public function toolContentContainerAnalyticsSettingsTabContentAction()
+    {
+
+       $melisKey = $this->getMelisKey();
+       
+       $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_settings_content');
+       $form = $this->getForm();
+
+       $view = new ViewModel();
+
+       $view->melisKey = $melisKey;
+       $view->setVariable('form', $form);
+       $view->hasAccess = $hasAccess;
+
+       return $view;
+    }
+    public function toolContentContainerAnalyticsTabContentAction()
+    {
+       $melisKey = $this->getMelisKey();
+       $form = $this->getForm();
+       $display = null;
+        $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+
+        $curData = (array)$table->getEntryById(1)->current();
+        $display = null;
+
+        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_content');
+        
+        if ($curData) {
+            $currentAnalytics = $curData['pad_current_analytics'];
+            $data = array('page_analytics_id' => $currentAnalytics);
+            $form->setData($data);
+
+            $config = $this->getServiceLocator()->get('MelisCoreConfig');
+
+            if ($currentAnalytics) {
+                $pageAnalyticsData = $config->getItem('meliscms/datas/page_analytics');
+                $pageAnalyticsData = $pageAnalyticsData[$currentAnalytics];
+
+                if ($pageAnalyticsData) {
+                    $forward = $pageAnalyticsData['forward'];
+                    $display = $this->getTool()->getViewContent($forward);
+                    $display = str_replace(array(
+                        'sDom : "<', 'rip>>"', 'return "<div>',
+                        '<endaction/></div>";',
+                        '"<a class="btn btn-default melis-refreshTable',
+                        'fa-refresh"></i></a>"',
+                        '(".search input[type="search"]")'
+                    ), array(
+                        "sDom : '<", "rip>>'",
+                        "return '<div>",
+                        "<endaction/></div>';",
+                        "'<a class=\"btn btn-default melis-refreshTable",
+                        "fa-refresh\"></i></a>'",
+                        "(\".search input[type='search']\")"
+                    ), $display);
+                }
+
+            }
+        }
+       $view = new ViewModel();
+
+       $view->melisKey = $melisKey;
+       $view->display  = $display;
+       $view->hasAccess = $hasAccess;
+
+       return $view;
+
+    }
+
+    /**
+     * Checks wether the user has access to this tools or not
+     * @return boolean
+     */
+    private function hasAccess($key)
+    {
+        $melisCoreAuth = $this->getServiceLocator()->get('MelisCoreAuth');
+        $melisCoreRights = $this->getServiceLocator()->get('MelisCoreRights');
+        $xmlRights = $melisCoreAuth->getAuthRights();
+
+        $isAccessible = $melisCoreRights->isAccessible($xmlRights, MelisCoreRightsService::MELISCORE_PREFIX_TOOLS, $key);
+
+        return $isAccessible;
+    }
+    public function toolContentContainerAnalyticsSettingsTabAction()
+    {
+        $melisKey = $this->getMelisKey();
+        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_settings');
+        $view = new ViewModel();
+        $view->melisKey = $melisKey;
+        $view->hasAccess = $hasAccess;
+        return $view;
+    }
+    public function toolContentContainerAnalyticsTabAction()
+    {
+        $melisKey = $this->getMelisKey();
+        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab');
+        
+        $view = new ViewModel();
+        $view->melisKey = $melisKey;
+        $view->hasAccess = $hasAccess;
+        return $view;
     }
 
 }

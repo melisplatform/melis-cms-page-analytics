@@ -1,0 +1,21 @@
+<?php
+//Analytics Settings Tab Content
+if($this->hasAccess) { ?>
+            <!-- Tab content -->
+            <div class="tab-pane" id="tab-page-analytics-tool-settings">
+                <?= $this->form()->openTag($form); ?>
+                <?= $this->melisFieldCollection($form); ?>
+                <div id="analytics-settings-form">
+
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> <?= $this->translate('tr_meliscore_tool_gen_save') ?></button>
+                </div>
+                <div class="clearfix"></div>
+
+                <?= $this->form()->closeTag(); ?>
+            </div>
+            <!-- // Tab content END -->
+<?php 
+}
+?>
