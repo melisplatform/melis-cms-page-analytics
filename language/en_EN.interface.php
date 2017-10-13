@@ -8,10 +8,10 @@ return array(
     'tr_meliscms_page_analytics_tool_display_title' => 'Site Analytics',
     'tr_meliscms_page_analytics_header'  => 'Header',
     'tr_meliscms_page_analytics_content' => 'Content',
-    'tr_meliscms_page_analytics_tab' => 'Analytics tab',
-    'tr_meliscms_page_analytics_tab_content' => 'Analytics tab content',
+    'tr_meliscms_page_analytics_tab' => 'Site analytics tab',
+    'tr_meliscms_page_analytics_tab_content' => 'Site analytics',
     'tr_meliscms_page_analytics_settings_tab' => 'Settings tab',
-    'tr_meliscms_page_analytics_settings_tab_content' => 'Settings tab content',
+    'tr_meliscms_page_analytics_settings_tab_content' => 'Settings',
     
 
     // Table and Forms

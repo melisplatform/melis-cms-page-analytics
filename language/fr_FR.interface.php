@@ -8,10 +8,10 @@ return array(
     'tr_meliscms_page_analytics_tool_display_title' => 'Site analytics',
     'tr_meliscms_page_analytics_header'  => 'En-tête',
     'tr_meliscms_page_analytics_content' => 'Contenu',
-    'tr_meliscms_page_analytics_tab' => 'Onglet Analytics',
-    'tr_meliscms_page_analytics_tab_content' => 'Contenu onglet Analytics',
+    'tr_meliscms_page_analytics_tab' => 'Onglet site analytics',
+    'tr_meliscms_page_analytics_tab_content' => 'Site analytics',
     'tr_meliscms_page_analytics_settings_tab' => 'Onglet paramètres',
-    'tr_meliscms_page_analytics_settings_tab_content' => 'Contenu onglet paramètres',
+    'tr_meliscms_page_analytics_settings_tab_content' => 'Paramètres',
 
     // Table and Forms
     'tr_meliscms_page_analytics_column_id' => 'ID',
@@ -35,7 +35,7 @@ return array(
      * MelisCms Tab Page Analytics
      */
     'tr_melis_cms_page_analytics' => 'Analytics Melis CMS',
-    'tr_melis_cms_page_analytics_title' => 'Module analytics',
+    'tr_melis_cms_page_analytics_title' => 'Analytics',
     'tr_melis_cms_page_select' => 'Module analytics',
     'tr_meliscms_page_analytics_settings' =>  'Paramètres',
     'tr_meliscms_page_analytics_settings_select' =>  'Choisissez le module analytics',

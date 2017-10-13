@@ -307,21 +307,17 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
         return $errors;
     }
-    public function toolContentContainerAnalyticsSettingsTabContentAction()
+
+    
+    public function toolContentContainerAnalyticsTabAction()
     {
-
-       $melisKey = $this->getMelisKey();
-       
-       $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_settings_content');
-       $form = $this->getForm();
-
-       $view = new ViewModel();
-
-       $view->melisKey = $melisKey;
-       $view->setVariable('form', $form);
-       $view->hasAccess = $hasAccess;
-
-       return $view;
+        $melisKey = $this->getMelisKey();
+        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab');
+        
+        $view = new ViewModel();
+        $view->melisKey = $melisKey;
+        $view->hasAccess = $hasAccess;
+        return $view;
     }
     public function toolContentContainerAnalyticsTabContentAction()
     {
@@ -377,20 +373,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
     }
 
-    /**
-     * Checks wether the user has access to this tools or not
-     * @return boolean
-     */
-    private function hasAccess($key)
-    {
-        $melisCoreAuth = $this->getServiceLocator()->get('MelisCoreAuth');
-        $melisCoreRights = $this->getServiceLocator()->get('MelisCoreRights');
-        $xmlRights = $melisCoreAuth->getAuthRights();
 
-        $isAccessible = $melisCoreRights->isAccessible($xmlRights, MelisCoreRightsService::MELISCORE_PREFIX_TOOLS, $key);
 
-        return $isAccessible;
-    }
     public function toolContentContainerAnalyticsSettingsTabAction()
     {
         $melisKey = $this->getMelisKey();
@@ -400,15 +384,38 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $view->hasAccess = $hasAccess;
         return $view;
     }
-    public function toolContentContainerAnalyticsTabAction()
+    public function toolContentContainerAnalyticsSettingsTabContentAction()
     {
+        
         $melisKey = $this->getMelisKey();
-        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab');
+        
+        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_settings_content');
+        $form = $this->getForm();
         
         $view = new ViewModel();
+        
         $view->melisKey = $melisKey;
+        $view->setVariable('form', $form);
         $view->hasAccess = $hasAccess;
+        
         return $view;
+    }
+
+    
+    /**
+     * Checks wether the user has access to this tools or not
+     * @return boolean
+     */
+    private function hasAccess($key)
+    {
+        $key = trim($key);
+        $melisCoreAuth = $this->getServiceLocator()->get('MelisCoreAuth');
+        $melisCoreRights = $this->getServiceLocator()->get('MelisCoreRights');
+        $xmlRights = $melisCoreAuth->getAuthRights();
+        
+        $isAccessible = $melisCoreRights->isAccessible($xmlRights, MelisCoreRightsService::MELISCORE_PREFIX_TOOLS, $key);
+        
+        return $isAccessible;
     }
 
 }

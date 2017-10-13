@@ -1,8 +1,13 @@
 <?php
+$id = '';
+if (!empty($this->zoneconfig['conf']['id']))
+    $id = ' id="' . $this->zoneconfig['conf']['id'] . '"';
+
+$form = $this->form;
 //Analytics Settings Tab Content
 if($this->hasAccess) { ?>
             <!-- Tab content -->
-            <div class="tab-pane" id="tab-page-analytics-tool-settings">
+            <div class="tab-pane" <?php echo $id; ?>>
                 <?= $this->form()->openTag($form); ?>
                 <?= $this->melisFieldCollection($form); ?>
                 <div id="analytics-settings-form">

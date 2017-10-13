@@ -1,8 +1,12 @@
 <?php
+$id = '';
+if (!empty($this->zoneconfig['conf']['id']))
+    $id = ' id="' . $this->zoneconfig['conf']['id'] . '"';
+
 //Analytics Tab Content
 if($this->hasAccess) { ?>
         <!-- Tab content -->
-        <div class="tab-pane active" id="tab-page-analytics-tool">
+        <div class="tab-pane active" <?php echo $id; ?>>
             <?= $this->display; ?>
         </div>
         <!-- // Tab content END -->
