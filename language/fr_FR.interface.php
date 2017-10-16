@@ -9,7 +9,7 @@ return array(
     'tr_meliscms_page_analytics_header'  => 'En-tête',
     'tr_meliscms_page_analytics_content' => 'Contenu',
     'tr_meliscms_page_analytics_tab' => 'Onglet site analytics',
-    'tr_meliscms_page_analytics_tab_content' => 'Site analytics',
+    'tr_meliscms_page_analytics_tab_content' => 'Analytics',
     'tr_meliscms_page_analytics_settings_tab' => 'Onglet paramètres',
     'tr_meliscms_page_analytics_settings_tab_content' => 'Paramètres',
 
