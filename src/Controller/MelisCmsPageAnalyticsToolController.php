@@ -340,7 +340,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
             if ($currentAnalytics) {
                 $pageAnalyticsData = $config->getItem('meliscms/datas/page_analytics');
-                $pageAnalyticsData = $pageAnalyticsData[$currentAnalytics];
+                $pageAnalyticsData = isset($pageAnalyticsData[$currentAnalytics]) ?
+                    $pageAnalyticsData[$currentAnalytics] : null;
 
                 if ($pageAnalyticsData) {
                     $forward = $pageAnalyticsData['forward'];
