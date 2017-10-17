@@ -29,4 +29,15 @@ class MelisCmsPageAnalyticsDataTable extends MelisGenericTable
         return $resultSet;
 
     }
+
+    public function getAnalyticsDataBySiteId($siteId)
+    {
+        $select = $this->tableGateway->getSql()->select();
+
+        $select->where->equalTo('pad_site_id', (int) $siteId);
+
+        $resultSet = $this->tableGateway->selectWith($select);
+
+        return $resultSet;
+    }
 }

@@ -3,10 +3,26 @@ $id = '';
 if (!empty($this->zoneconfig['conf']['id']))
     $id = ' id="' . $this->zoneconfig['conf']['id'] . '"';
 
+$form = $this->form;
+$form->setAttributes(array(
+    'id' => 'select_page_analytic_form_analytics_content',
+    'name' => 'select_page_analytic_form_analytics_content'
+));
+if($this->curData) {
+
+}
 //Analytics Tab Content
 if($this->hasAccess) { ?>
         <!-- Tab content -->
-        <div class="tab-pane active" <?php echo $id; ?>>
+        <div class="tab-pane active" <?php echo $id; ?> data-melisKey="<?= $this->melisKey; ?>">
+            <?= $this->form()->openTag($form); ?>
+            <div class="form-group">
+            <?= $this->formRow($form->get('pad_site_id')->setAttributes(array(
+                'id' => 'analytics-content-side-id',
+                'class' => 'form-control',
+            ))->setValue($this->siteId)); ?>
+            </div>
+            <?= $this->form()->closeTag(); ?>
             <?= $this->display; ?>
         </div>
         <!-- // Tab content END -->

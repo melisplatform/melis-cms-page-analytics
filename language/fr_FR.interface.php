@@ -51,4 +51,11 @@ return array(
     'tr_meliscms_page_analytics_tool_config' => 'Page analytics',
     'tr_meliscms_page_analytics_page_details_title' => 'Page analytics details title',
     'tr_meliscms_page_analytics_page_details_content_title' => 'Page analytics content details title',
+
+    'tr_meliscms_page_analytics_site_id_ko' => 'Invalid site ID, it should only be numeric',
+    'tr_meliscms_page_analytics_site_id_empty' => 'Please select a site',
+
+    'tr_meliscms_page_analytics_site_analytics_script' => 'Analytics script',
+    'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'This will be the script or the javascript of your analytics, do not include the <script> &amp; </script> tags'
+
 );

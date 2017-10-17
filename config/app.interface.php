@@ -138,7 +138,10 @@ return array(
                     'MelisCmsPageAnalytics/css/site_analytics.css',
                 ),
                 'js' => array(
+                    'MelisCmsPageAnalytics/plugin/ace-editor/ace.js',
+                    'MelisCmsPageAnalytics/plugin/ace-editor/ext-old_ie.js',
                     'MelisCmsPageAnalytics/js/pagehit.tool.js',
+                    'MelisCmsPageAnalytics/js/page_analytics.tool.js',
                 )
             ),
             'interface' => array(
