@@ -32,7 +32,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
        $displayScript = null;
        $pageUrl       = null;
        if($curData) {
-           $currentAnalytics = $curData['pad_current_analytics'];
+           $currentAnalytics = $curData['pad_current_analytics_id'];
            $config           = $this->getServiceLocator()->get('MelisCoreConfig');
 
            if($currentAnalytics) {

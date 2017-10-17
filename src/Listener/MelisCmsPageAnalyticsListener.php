@@ -61,18 +61,23 @@ class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractL
 
                 if(isset($params['content'])) {
 
-                    $table   = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-                    $curData =  (array) $table->getEntryById(1)->current();
-                    $currentAnalytics = isset($curData['pad_current_analytics']) ? $curData['pad_current_analytics'] : null;
+                    $pageId = isset($params['idPage']) ? (int) $params['idPage'] : null;
 
-                    if($currentAnalytics) {
-                        $config = $this->getServiceLocator()->get('config');
-                        $pageAnalyticsData = $config['plugins']['meliscms']['datas']['page_analytics'];
-                        $pageAnalyticsData = isset($pageAnalyticsData[$currentAnalytics])? $pageAnalyticsData[$currentAnalytics] : null;
+                    // get the site domain of the page
+                    $pageTreeSvc = $this->getServiceLocator()->get('MelisEngineTree');
+                    $siteData    = $pageTreeSvc->getSiteByPageId($pageId);
 
-                        if($pageAnalyticsData) {
-                            $script = isset($pageAnalyticsData['datas']['universal_analytics_tracking_code']['script']) ? $pageAnalyticsData['datas']['universal_analytics_tracking_code']['script'] : null;
+                    if($siteData) {
+
+                        $siteId        = (int) $siteData->sdom_site_id;
+                        $table         = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+                        $analyticsData = $table->getAnalyticsDataBySiteId($siteId)->current();
+
+                        if($analyticsData) {
+
+                            $script = $analyticsData->pad_js_analytics;
                             if($script && !empty($script)) {
+                                $script = '<script>' . $script . '</script>';
                                 $content = str_replace('</head>', $script.'</head>', $params['content']);
 
                                 return $content;
