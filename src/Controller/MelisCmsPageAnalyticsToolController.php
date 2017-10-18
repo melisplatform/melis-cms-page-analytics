@@ -346,6 +346,37 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return new JsonModel($response);
     }
 
+    public function getAnalyticsScriptAction()
+    {
+        $success = 0;
+        $data    = array();
+        $request = $this->getRequest();
+
+        if($request->isPost()) {
+
+            $siteId = (int) $request->getPost('site_id');
+            $analyticsKey = $this->getTool()->sanitize($request->getPost('analytics_key'));
+
+            $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+            $analyticsData = $analyticsTable->getAnalytics($siteId, $analyticsKey)->current();
+
+            if($analyticsData)
+                $data['pads_js_analytics'] = $analyticsData->pads_js_analytics;
+
+            $success = 1;
+
+
+        }
+
+
+        $response = array(
+            'success'  => $success,
+            'response' => $data
+        );
+
+        return new JsonModel($response);
+    }
+
 
     public function toolContentContainerAnalyticsTabContentAction()
     {
