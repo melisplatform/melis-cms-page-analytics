@@ -24,15 +24,27 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
        $melisKey = $this->getMelisKey();
        $pageHitId = (int) $this->params()->fromQuery('idPage', $this->params()->fromQuery('pageHitId'));
 
+
+       $pageHitId  = (int) $this->params()->fromQuery('idPage', $this->params()->fromQuery('pageHitId'));
+       $pageTree   = $this->getServiceLocator()->get('MelisEngineTree');
+       $pageUrl    = $pageTree->getPageLink($pageHitId, true);
+       $pageTreeSvc = $this->getServiceLocator()->get('MelisEngineTree');
+       $siteData    = $pageTreeSvc->getSiteByPageId($pageHitId);
+       $siteId      = null;
+
+       if($siteData) {
+           $siteId = (int) $siteData->sdom_site_id;
+       }
+
        $this->pageId = $pageHitId;
 
        $table         = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-       $curData       = (array) $table->getEntryById(1)->current();
+       $curData       = $table->getAnalytics($siteId)->current();
        $display       = null;
        $displayScript = null;
        $pageUrl       = null;
        if($curData) {
-           $currentAnalytics = $curData['pad_current_analytics_id'];
+           $currentAnalytics = $curData->pad_analytics_key;
            $config           = $this->getServiceLocator()->get('MelisCoreConfig');
 
            if($currentAnalytics) {
