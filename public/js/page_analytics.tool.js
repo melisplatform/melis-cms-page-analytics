@@ -19,6 +19,18 @@ $(function() {
                     $("div#analytics-settings-form").html("");
                 }
             });
+
+            $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getAnalyticsScript', {site_id: siteId, analytics_key : analyticsKey}, function(data) {
+                var editor = ace.edit("pads_js_analytics");
+
+                if(data.response.pads_js_analytics) {
+                    editor.setValue(data.response.pads_js_analytics);
+                }
+                else {
+                    editor.setValue("");
+                }
+
+            });
         }
     });
 
