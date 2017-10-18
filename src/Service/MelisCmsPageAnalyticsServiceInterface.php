@@ -4,5 +4,5 @@ namespace MelisCmsPageAnalytics\Service;
 
 interface MelisCmsPageAnalyticsServiceInterface
 {
-	public function getCurrentAnalytics();
+	public function getAnalytics($siteId);
 }

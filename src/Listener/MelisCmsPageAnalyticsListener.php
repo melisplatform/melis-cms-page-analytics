@@ -71,16 +71,22 @@ class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractL
 
                         $siteId        = (int) $siteData->sdom_site_id;
                         $table         = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-                        $analyticsData = $table->getAnalyticsDataBySiteId($siteId)->current();
+
+
+                        $analyticsData = $table->getAnalytics($siteId)->current();
 
                         if($analyticsData) {
+                            $currentAnalyticsKey = $analyticsData->pad_analytics_key;
+                            $analyticsData = $table->getAnalytics($siteId, $currentAnalyticsKey)->current();
 
-                            $script = $analyticsData->pad_js_analytics;
-                            if($script && !empty($script)) {
-                                $script = '<script>' . $script . '</script>';
-                                $content = str_replace('</head>', $script.'</head>', $params['content']);
+                            if($analyticsData) {
+                                $script = $analyticsData->pads_js_analytics;
+                                if($script && !empty($script)) {
+                                    $script = '<script>' . $script . '</script>';
+                                    $content = str_replace('</head>', $script.'</head>', $params['content']);
 
-                                return $content;
+                                    return $content;
+                                }
                             }
                         }
                     }
