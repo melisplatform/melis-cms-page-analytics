@@ -325,8 +325,14 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $analyticsData = $analyticsTable->getAnalytics($siteId)->current();
 
             if ($analyticsData) {
-                $data['page_analytics_id'] = $analyticsData->pad_analytics_key;
-                $data['pads_js_analytics'] = $analyticsData->pads_js_analytics;
+                $currentAnalyticsKey = $analyticsData->pad_analytics_key;
+                $analyticsData = $analyticsTable->getAnalytics($siteId, $currentAnalyticsKey)->current();
+
+                if($analyticsData) {
+                    $data['page_analytics_id'] = $analyticsData->pad_analytics_key;
+                    $data['pads_js_analytics'] = $analyticsData->pads_js_analytics;
+                }
+
             }
         }
 
