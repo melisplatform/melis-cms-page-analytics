@@ -1,14 +1,14 @@
 $(function() {
 
     $("body").on("change", "select#page_analytics_id", function() {
-        var value  = $(this).val().toString();
-        var siteId = parseInt($("form#select_page_analytic_form select#site_id").val());
+        var analyticsKey  = $(this).val().toString();
+        var siteId        = parseInt($("form#select_page_analytic_form select#site_id").val());
 
-        if(!isNaN(siteId)) {
+        if(!isNaN(siteId) && analyticsKey) {
             $.ajax({
                 type    : 'POST',
                 url     : '/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSettingsForm',
-                data    : {page_analytics_id : value, site_id : siteId},
+                data    : {analytics_key : analyticsKey, site_id : siteId},
                 dataType    : 'html',
                 encode		: true
             }).success(function(data){
@@ -41,10 +41,10 @@ $(function() {
 
         var formData = new FormData(this);
         // formData.push();
-        var editor = ace.edit("pad_js_analytics");
+        var editor = ace.edit("pads_js_analytics");
         var script = editor.getValue();
 
-        formData.append("pad_js_analytics", script);
+        formData.append("pads_js_analytics", script);
 
         melisCoreTool.pending("button");
         $.ajax({
@@ -76,10 +76,10 @@ $(function() {
 
         if(!isNaN(siteId)) {
             $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSiteAnalytics', {site_id: siteId}, function(data) {
-                var editor = ace.edit("pad_js_analytics");
+                var editor = ace.edit("pads_js_analytics");
 
-                if(data.response.pad_js_analytics) {
-                    editor.setValue(data.response.pad_js_analytics);
+                if(data.response.pads_js_analytics) {
+                    editor.setValue(data.response.pads_js_analytics);
                 }
                 else {
                     editor.setValue("");

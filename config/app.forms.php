@@ -30,7 +30,7 @@ return array(
 
                         array(
                             'spec' => array(
-                                'name' => 'pad_current_analytics_id',
+                                'name' => 'pad_analytics_key',
                                 'type' => 'PageAnalyticsSelect',
                                 'options' => array(
                                     'label' => 'tr_melis_cms_page_select',
@@ -72,8 +72,8 @@ return array(
                                 array('name' => 'StringTrim'),
                             ),
                         ),
-                        'pad_current_analytics_id' => array(
-                            'name' => 'pad_current_analytics_id',
+                        'pad_analytics_key' => array(
+                            'name' => 'pad_analytics_key',
                             'required' => true,
                             'validators' => array(
                                 array(

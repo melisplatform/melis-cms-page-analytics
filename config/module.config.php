@@ -55,6 +55,7 @@ return array(
         'factories' => array(
             'MelisCmsPageAnalyticsTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsTableFactory',
             'MelisCmsPageAnalyticsDataTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsDataTableFactory',
+            'MelisCmsPageAnalyticsDataSettingsTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsDataSettingsTableFactory',
 
             'MelisCmsPageAnalyticsService' => 'MelisCmsPageAnalytics\Service\Factory\MelisCmsPageAnalyticsServiceFactory',
             'MelisCmsDefaultPageAnalyticsService' => 'MelisCmsPageAnalytics\Service\Factory\MelisCmsDefaultPageAnalyticsServiceFactory',
