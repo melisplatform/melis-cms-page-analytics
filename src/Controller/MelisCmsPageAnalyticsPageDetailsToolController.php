@@ -42,7 +42,6 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
        $curData       = $table->getAnalytics($siteId)->current();
        $display       = null;
        $displayScript = null;
-       $pageUrl       = null;
        if($curData) {
            $currentAnalytics = $curData->pad_analytics_key;
            $config           = $this->getServiceLocator()->get('MelisCoreConfig');
@@ -85,6 +84,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
        $view->melisKey  = $melisKey;
        $view->pageHitId = $pageHitId;
        $view->display   = $display;
+       $view->pageUrl   = $pageUrl;
 
 
        return $view;  
