@@ -13,10 +13,10 @@ if($this->hasAccess) { ?>
     <div id="analytics-settings-form">
 
     </div>
-    <span id="pad_js_analytics_cont" class="hidden">
+    <span id="pads_js_analytics_cont" class="hidden">
         <label for="pas_js_analytics"><?= $this->translate('tr_meliscms_page_analytics_site_analytics_script'); ?></label>
         <i class="fa fa-info-circle fa-lg pull-right tip-info" data-toggle="tooltip" data-placement="left" title="" data-original-title="<?= $this->translate('tr_meliscms_page_analytics_site_analytics_script_tooltip'); ?>"></i>
-        <pre id="pad_js_analytics" name="pad_js_analytics"></pre>
+        <pre id="pads_js_analytics" name="pads_js_analytics"></pre>
     </span>
     <div class="pull-right">
         <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> <?= $this->translate('tr_meliscore_tool_gen_save') ?></button>
@@ -30,10 +30,10 @@ if($this->hasAccess) { ?>
             // before creating an editor patch up things for old ie
             require("ace/ext/old_ie");
             // now ace will work even on ie7!
-            var editor = ace.edit("pad_js_analytics");
+            var editor = ace.edit("pads_js_analytics");
             editor.setTheme("ace/theme/textmate");
             editor.session.setMode("ace/mode/javascript");
-            $("span#pad_js_analytics_cont").removeClass("hidden");
+            $("span#pads_js_analytics_cont").removeClass("hidden");
         });
     </script>
 </div>
