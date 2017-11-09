@@ -386,7 +386,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     }
     public function toolContentContainerAnalyticsSettingsTabContentAction()
     {
-        
+
         $melisKey = $this->getMelisKey();
         
         $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_settings_content');
@@ -417,5 +417,26 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         
         return $isAccessible;
     }
+    /**
+     * This method will modify the data of analytics
+     *
+     * @param siteAnalyticsData
+     *
+     * return array
+     */
+    public function modifyAnalyticsData($siteAnalyticsData)
+    {
+        if($siteAnalyticsData){
+            foreach ($siteAnalyticsData as $dataKey => $dataValue){
+                if($dataValue == "2015"){
+                    $dataValue = "2015";
+                }
+            }
+        }
+
+        return $siteAnalyticsData;
+
+    }
+
 
 }

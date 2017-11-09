@@ -217,5 +217,24 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
    public function toolContentTableRefreshAction()
   {
      return new ViewModel();
-  } 
+  }
+  /**
+   * Returns analytics of a site
+   * @param siteId
+   *
+   * return array
+   */
+  public function getAnalytics($siteId)
+  {
+      $success = 0;
+      $error   = array();
+      $data    = array();
+
+      $analytics = $this->serviceLocator()->get("MelisPageAnalytics");
+      $data      = $analytics->getAnalyticsBySiteId($siteId);
+      $data      = array();
+
+      return $data;
+
+  }
 }
