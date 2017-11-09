@@ -121,6 +121,26 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $view;
     }
 
+    /**
+     * This method will modify the data of analytics
+     *
+     * @param siteAnalyticsData
+     *
+     * return array
+     */
+    public function modifyAnalyticsData($siteAnalyticsData)
+    {
+        if($siteAnalyticsData){
+            foreach ($siteAnalyticsData as $dataKey => $dataValue){
+                if($dataValue == "2015"){
+                    $dataValue = "2015";
+                }
+            }
+        }
+
+        return $siteAnalyticsData;
+
+    }
 
     public function getMelisCmsPageAnalyticsDataAction()
     {
@@ -472,26 +492,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $isAccessible = $melisCoreRights->isAccessible($xmlRights, MelisCoreRightsService::MELISCORE_PREFIX_TOOLS, $key);
 
         return $isAccessible;
-    }
-    /**
-     * This method will modify the data of analytics
-     *
-     * @param siteAnalyticsData
-     *
-     * return array
-     */
-    public function modifyAnalyticsData($siteAnalyticsData)
-    {
-        if($siteAnalyticsData){
-            foreach ($siteAnalyticsData as $dataKey => $dataValue){
-                if($dataValue == "2015"){
-                    $dataValue = "2015";
-                }
-            }
-        }
-
-        return $siteAnalyticsData;
-
     }
 
 

@@ -112,6 +112,25 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
        $view->title = $pageName;
        return $view;
    }
+    /**
+     * Returns analytics of a site
+     * @param siteId
+     *
+     * return array
+     */
+    public function getAnalytics($siteId)
+    {
+        $success = 0;
+        $error   = array();
+        $data    = array();
+
+        $analytics = $this->serviceLocator()->get("MelisPageAnalytics");
+        $data      = $analytics->getAnalyticsBySiteId($siteId);
+        $data      = array();
+
+        return $data;
+
+    }
    /*
     * Page Hit Page Detail Content Container
     */
@@ -230,23 +249,5 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
   {
      return new ViewModel();
   }
-  /**
-   * Returns analytics of a site
-   * @param siteId
-   *
-   * return array
-   */
-  public function getAnalytics($siteId)
-  {
-      $success = 0;
-      $error   = array();
-      $data    = array();
 
-      $analytics = $this->serviceLocator()->get("MelisPageAnalytics");
-      $data      = $analytics->getAnalyticsBySiteId($siteId);
-      $data      = array();
-
-      return $data;
-
-  }
 }
