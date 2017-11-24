@@ -11,8 +11,9 @@ use Zend\EventManager\EventInterface;
 /**
  * Class Module
  * @package MelisCmsPageAnalytics
- * @version v1.0
+ * @require melis-core|melis-cms
  */
+
  class Module
 {
     public function onBootstrap(MvcEvent $e)
