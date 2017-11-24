@@ -194,70 +194,43 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $request = $this->getRequest();
 
         if ($request->isPost()) {
-            $post                    = $this->getTool()->sanitizeRecursive(get_object_vars($request->getPost()), array('pads_js_analytics'));
-            $analayticsTable         = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-            $analayticsSettingsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataSettingsTable');
+            $post  = get_object_vars($request->getPost());
+            $padId =  $post['page_analytics_id'];
+            $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
 
-
-            $form = $this->getForm();
+            $form =  $this->getForm();
             $form->setData($post);
 
-            if ($form->isValid()) {
+            $curData = $table->getEntryById(1)->current();
+            if($form->isValid()) {
+                if ($curData) {
 
-                $siteId       = (int) $post['pad_site_id'];
-                $analyticsKey = $post['pad_analytics_key'];
+                    $table->save(array(
+                        'pad_current_analytics' => $padId
+                    ), $curData->pad_id);
 
-                // create a temp storage for serialization excluding the important columns
-                $tmpPostSrlz = $post;
-                unset($tmpPostSrlz['pad_site_id']);
-                unset($tmpPostSrlz['pad_analytics_key']);
-                unset($tmpPostSrlz['pads_js_analytics']);
-                $analyticsSettings = serialize($tmpPostSrlz);
-
-                // first check if the analytics data exists
-                $analyticsData = $analayticsTable->getEntryByField('pad_site_id', $siteId)->current();
-
-                if($analyticsData) {
-                    // update analytics data table to set what analytics key is currently being selected
-                    $analyticsId = $analayticsTable->save(array(
-                        'pad_analytics_key' => $post['pad_analytics_key']
-                    ), $analyticsData->pad_id);
-                }
-                else {
-                    $analyticsId = $analayticsTable->save(array(
-                        'pad_site_id' => $siteId,
-                        'pad_analytics_key' => $post['pad_analytics_key']
-                    ));
-                }
-
-                // check if the analytics settings data exists
-                $analyticsSettingsData = $analayticsTable->getAnalytics($siteId, $analyticsKey)->current();
-
-                if($analyticsSettingsData && $analyticsSettingsData->pads_id) {
-                    // update the analytics settings data
-                    $analayticsSettingsTable->save(array(
-                        'pads_settings' => $analyticsSettings,
-                        'pads_js_analytics' => $post['pads_js_analytics']
-                    ), $analyticsSettingsData->pads_id);
-                }
-                else {
-
-                    $analayticsSettingsTable->save(array(
-                        'pads_site_id' => $siteId,
-                        'pads_analytics_key' =>  $analyticsKey,
-                        'pads_settings' => $analyticsSettings,
-                        'pads_js_analytics' => $post['pads_js_analytics']
-                    ));
-                }
+                    // save analytics settings
+                    $settingsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsSettingsTable');
+                    $settingsData = $settingsTable->getEntryByField('pas_analytics', $padId)->current();
 
 
-                if($analyticsId) {
+                    if ($settingsData) {
+                        $settingsTable->save(array(
+                            'pas_analytics' => $padId,
+                            'pas_settings' => serialize((array)$request->getPost())
+                        ), (int)$settingsData->pas_id);
+                    } else {
+                        $settingsTable->save(array(
+                            'pas_analytics' => $padId,
+                            'pas_settings' => serialize((array)$request->getPost())
+                        ));
+                    }
+
                     $success = 1;
                     $message = 'tr_meliscms_page_analytics_settings_select_save_ok';
                 }
-
-
-            } else {
+            }
+            else {
                 $errors = $this->formatErrorMessage($form->getMessages());
             }
 
@@ -265,9 +238,9 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
         $response = [
             'success' => $success,
-            'title' => $this->getTool()->getTranslation($title),
+            'title'   => $this->getTool()->getTranslation($title),
             'message' => $this->getTool()->getTranslation($message),
-            'errors' => $errors
+            'errors'  => $errors
         ];
 
 
@@ -283,8 +256,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         if ($this->getRequest()->isPost()) {
 
             // /melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSettingsForm
-            $analyticsKey = $this->getTool()->sanitize($this->getRequest()->getPost('analytics_key'));
-            $siteId       = (int) $this->getRequest()->getPost('site_id');
+            $analyticsKey = $this->getRequest()->getPost('page_analytics_id');
             $config = $this->getServiceLocator()->get('MelisCoreConfig');
             $settings = $config->getItem('meliscms/datas/page_analytics/' . $analyticsKey . '/interface/settings_form');
 
@@ -295,11 +267,11 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                 $factory->setFormElementManager($formElements);
                 $form = $factory->createForm($settings);
 
-                $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-                $settingsData = $analyticsTable->getAnalytics($siteId, $analyticsKey)->current();
+                $settingsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsSettingsTable');
+                $settingsData = $settingsTable->getEntryByField('pas_analytics', $analyticsKey)->current();
 
                 if ($settingsData) {
-                    $data = unserialize($settingsData->pads_settings);
+                    $data = unserialize($settingsData->pas_settings);
                     $form->setData($data);
                 }
 
@@ -312,72 +284,41 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $view;
     }
 
-    public function getSiteAnalyticsAction()
+    /**
+     * Returns the a formatted error messages with its labels
+     * @param array $errors
+     * @return array
+     */
+    private function formatErrorMessage($errors = array())
     {
-        $success = false;
-        $errors = array();
-        $data = array();
-        $request = $this->getRequest();
+        $melisMelisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
+        $appConfigForm = $melisMelisCoreConfig->getItem('meliscms/forms/select_page_analytic_form');
+        $appConfigForm = $appConfigForm['elements'];
 
-        if ($request->isPost()) {
-            $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-            $siteId = (int)$request->getPost('site_id');
-            $analyticsData = $analyticsTable->getAnalytics($siteId)->current();
-
-            if ($analyticsData) {
-                $currentAnalyticsKey = $analyticsData->pad_analytics_key;
-                $analyticsData = $analyticsTable->getAnalytics($siteId, $currentAnalyticsKey)->current();
-
-                if($analyticsData) {
-                    $data['page_analytics_id'] = $analyticsData->pad_analytics_key;
-                    $data['pads_js_analytics'] = $analyticsData->pads_js_analytics;
-                }
-
+        foreach ($errors as $keyError => $valueError)
+        {
+            foreach ($appConfigForm as $keyForm => $valueForm)
+            {
+                if ($valueForm['spec']['name'] == $keyError &&
+                    !empty($valueForm['spec']['options']['label']))
+                    $errors[$keyError]['label'] = $valueForm['spec']['options']['label'];
             }
         }
 
-        $response = array(
-            'success' => $success,
-            'errors' => $errors,
-            'response' => $data
-        );
-
-
-        return new JsonModel($response);
+        return $errors;
     }
 
-    public function getAnalyticsScriptAction()
+
+    public function toolContentContainerAnalyticsTabAction()
     {
-        $success = 0;
-        $data    = array();
-        $request = $this->getRequest();
+        $melisKey = $this->getMelisKey();
+        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab');
 
-        if($request->isPost()) {
-
-            $siteId = (int) $request->getPost('site_id');
-            $analyticsKey = $this->getTool()->sanitize($request->getPost('analytics_key'));
-
-            $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-            $analyticsData = $analyticsTable->getAnalytics($siteId, $analyticsKey)->current();
-
-            if($analyticsData)
-                $data['pads_js_analytics'] = $analyticsData->pads_js_analytics;
-
-            $success = 1;
-
-
-        }
-
-
-        $response = array(
-            'success'  => $success,
-            'response' => $data
-        );
-
-        return new JsonModel($response);
+        $view = new ViewModel();
+        $view->melisKey = $melisKey;
+        $view->hasAccess = $hasAccess;
+        return $view;
     }
-
-
     public function toolContentContainerAnalyticsTabContentAction()
     {
         $melisKey = $this->getMelisKey();
@@ -385,61 +326,64 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $display = null;
         $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
 
-        $siteId  = (int) $this->params()->fromQuery('siteId', null);
+        $curData = (array)$table->getEntryById(1)->current();
+        $display = null;
+
         $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_content');
-        $curData = array();
-        if($siteId) {
-            $curData = $table->getEntryByField('pad_site_id', $siteId)->current();
 
-            if ($curData) {
+        if ($curData) {
+            $currentAnalytics = $curData['pad_current_analytics'];
+            $data = array('page_analytics_id' => $currentAnalytics);
+            $form->setData($data);
 
-                $currentAnalytics = $curData->pad_analytics_key;
-                $data = array('page_analytics_id' => $currentAnalytics);
-                $form->setData($data);
+            $config = $this->getServiceLocator()->get('MelisCoreConfig');
 
-                $config = $this->getServiceLocator()->get('MelisCoreConfig');
+            if ($currentAnalytics) {
+                $pageAnalyticsData = $config->getItem('meliscms/datas/page_analytics');
+                $pageAnalyticsData = $pageAnalyticsData[$currentAnalytics];
 
-                if ($currentAnalytics) {
-                    $pageAnalyticsData = $config->getItem('meliscms/datas/page_analytics');
-                    $pageAnalyticsData = isset($pageAnalyticsData[$currentAnalytics]) ?
-                        $pageAnalyticsData[$currentAnalytics] : null;
-
-                    if ($pageAnalyticsData) {
-                        $forward = $pageAnalyticsData['forward'];
-                        $display = $this->getTool()->getViewContent($forward);
-                        $display = str_replace(array(
-                            'sDom : "<', 'rip>>"', 'return "<div>',
-                            '<endaction/></div>";',
-                            '"<a class="btn btn-default melis-refreshTable',
-                            'fa-refresh"></i></a>"',
-                            '(".search input[type="search"]")'
-                        ), array(
-                            "sDom : '<", "rip>>'",
-                            "return '<div>",
-                            "<endaction/></div>';",
-                            "'<a class=\"btn btn-default melis-refreshTable",
-                            "fa-refresh\"></i></a>'",
-                            "(\".search input[type='search']\")"
-                        ), $display);
-                    }
-
+                if ($pageAnalyticsData) {
+                    $forward = $pageAnalyticsData['forward'];
+                    $display = $this->getTool()->getViewContent($forward);
+                    $display = str_replace(array(
+                        'sDom : "<', 'rip>>"', 'return "<div>',
+                        '<endaction/></div>";',
+                        '"<a class="btn btn-default melis-refreshTable',
+                        'fa-refresh"></i></a>"',
+                        '(".search input[type="search"]")'
+                    ), array(
+                        "sDom : '<", "rip>>'",
+                        "return '<div>",
+                        "<endaction/></div>';",
+                        "'<a class=\"btn btn-default melis-refreshTable",
+                        "fa-refresh\"></i></a>'",
+                        "(\".search input[type='search']\")"
+                    ), $display);
                 }
+
             }
         }
-
         $view = new ViewModel();
 
-        $view->melisKey  = $melisKey;
-        $view->display   = $display;
+        $view->melisKey = $melisKey;
+        $view->display  = $display;
         $view->hasAccess = $hasAccess;
-        $view->siteId    =  $siteId;
-        $view->setVariable('form', $form);
 
         return $view;
 
     }
 
 
+
+    public function toolContentContainerAnalyticsSettingsTabAction()
+    {
+        $melisKey = $this->getMelisKey();
+        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_settings');
+        $view = new ViewModel();
+        $view->melisKey = $melisKey;
+        $view->hasAccess = $hasAccess;
+        return $view;
+    }
     public function toolContentContainerAnalyticsSettingsTabContentAction()
     {
 
@@ -472,29 +416,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $isAccessible = $melisCoreRights->isAccessible($xmlRights, MelisCoreRightsService::MELISCORE_PREFIX_TOOLS, $key);
 
         return $isAccessible;
-    }
-
-    /**
-     * Returns the a formatted error messages with its labels
-     * @param array $errors
-     * @return array
-     */
-    private function formatErrorMessage($errors = array())
-    {
-        $melisMelisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
-        $appConfigForm = $melisMelisCoreConfig->getItem('meliscms/forms/select_page_analytic_form');
-        $appConfigForm = $appConfigForm['elements'];
-
-        foreach ($errors as $keyError => $valueError) {
-            foreach ($appConfigForm as $keyForm => $valueForm) {
-                if ($valueForm['spec']['name'] == $keyError &&
-                    !empty($valueForm['spec']['options']['label'])
-                )
-                    $errors[$keyError]['label'] = $valueForm['spec']['options']['label'];
-            }
-        }
-
-        return $errors;
     }
 
 }
