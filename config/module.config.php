@@ -73,6 +73,7 @@ return array(
     'form_elements' => array(
         'factories' => array(
             'PageAnalyticsSelect' => 'MelisCmsPageAnalytics\Form\Factory\PageAnalyticsSelectFactory',
+            'PageAnalyticsSiteSelect' => 'MelisCmsPageAnalytics\Form\Factory\PageAnalyticsSiteSelectFactory',
         ),
     ),
     'view_manager' => array(

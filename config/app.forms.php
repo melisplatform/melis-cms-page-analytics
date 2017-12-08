@@ -15,7 +15,7 @@ return array(
                         array(
                             'spec' => array(
                                 'name' => 'pad_site_id',
-                                'type' => 'MelisEngineSiteSelect',
+                                'type' => 'PageAnalyticsSiteSelect',
                                 'options' => array(
                                     'label' => 'tr_melis_engine_sites',
                                     'tooltip' => 'tr_melis_engine_sites_select',
