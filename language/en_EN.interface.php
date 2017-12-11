@@ -58,6 +58,11 @@ return array(
     'tr_meliscms_page_analytics_site_id_empty' => 'Please select a site',
 
     'tr_meliscms_page_analytics_site_analytics_script' => 'Analytics script',
-    'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'This will be the script or the javascript of your analytics, do not include the <script> &amp; </script> tags'
+
+    /**
+     * Google Analytics Settings Configuration
+     */
+    'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'Code obtained from Google Analytics (see documentation below for more information)',
+
 
 );

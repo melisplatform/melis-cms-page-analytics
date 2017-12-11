@@ -42,6 +42,7 @@ return array(
     'tr_meliscms_page_analytics_settings_select_tooltip' =>  'Choisissez le module analytics que vous souhaitez utiliser',
     'tr_meliscms_page_analytics_settings_select_tooltip_ko' =>  'Veuillez choisir le module analytics à utiliser',
     'tr_meliscms_page_analytics_settings_select_blank' =>  'Choisissez un module analytics',
+    'tr_meliscms_page_analytics_settings_no_analytics' => 'No analytics module (stop tracking)',
     'tr_meliscms_page_analytics_settings_select_save_ok' =>  'Le module analytics a été changé avec succès',
     'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Impossible de changer le module analytics',
     
@@ -56,6 +57,6 @@ return array(
     'tr_meliscms_page_analytics_site_id_empty' => 'Please select a site',
 
     'tr_meliscms_page_analytics_site_analytics_script' => 'Analytics script',
-    'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'This will be the script or the javascript of your analytics, do not include the <script> &amp; </script> tags'
+    'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'Code obtenu auprès de Google Analytics (voir la documentation plus bas pour plus d\'informations)',
 
 );

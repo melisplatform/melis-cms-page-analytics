@@ -1,7 +1,7 @@
 $(function() {
     $("body").on("change", "select#page_analytics_id", function() {
         melisCoreTool.pending("button");
-        var analyticsKey  = $(this).val().toString();
+        var analyticsKey  = $(this).val();
         var siteId        = parseInt($("form#select_page_analytic_form select#site_id").val());
 
         if(!isNaN(siteId) && analyticsKey === 'melis_cms_google_analytics') {
@@ -20,25 +20,25 @@ $(function() {
                             var editor = ace.edit("pads_js_analytics");
                             editor.setValue(data.response.pads_js_analytics);
                             $("span#pads_js_analytics_cont").removeClass("hidden");
+                            melisCoreTool.done("button");
                         }
                     });
                 }
                 else {
                     $("div#analytics-settings-form").html("");
+                    melisCoreTool.done("button");
                 }
             });
-            melisCoreTool.done("button");
         }
         else{
             $("div#analytics-settings-form").html("");
             $("span#pads_js_analytics_cont").addClass("hidden");
             melisCoreTool.done("button");
         }
-    });
 
-    // $("body").on("click", "a#cms-page-anlytics-tab-settings-button",  function() {
-    //     $("select#page_analytics_id").trigger("change");
-    // });
+        // Disable first option
+        $('select#page_analytics_id option:first-child').attr('disabled', 'true');
+    });
 
     $("body").on("click", "a.melis-cms-page-analytics-refresh", function() {
         var pageId = activeTabId.split("_")[0];

@@ -18,7 +18,7 @@ return array(
                                 'type' => 'PageAnalyticsSiteSelect',
                                 'options' => array(
                                     'label' => 'tr_melis_engine_sites',
-                                    'tooltip' => 'tr_melis_engine_sites_select',
+                                    'tooltip' => 'tr_melis_cms_google_analytics_settings_site_select_tooltip',
                                     'empty_option' => 'tr_melis_engine_sites_select',
                                     'disable_inarray_validator' => true,
                                 ),

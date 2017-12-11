@@ -521,4 +521,26 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $errors;
     }
 
+    public function getGoogleAnalyticsGuideAction()
+    {
+        $tool = $this->getTool();
+
+        $guide  = "<h4>".$tool->getTranslation('tr_meliscms_google_analytics_guide_title')."</h4>";
+        $guide .= "<p><strong>".$tool->getTranslation('tr_meliscms_google_analytics_guide_subtitle')."</strong></p>";
+
+        for ($i=1; $i < 4; $i++) {
+            $guide .= "<p><strong>" . $tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i) . "</strong></p>";
+            $steps = explode(PHP_EOL, $tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_items'));
+            $guide .= "<ol><p>";
+            foreach ($steps as $step) {
+                $guide .= "<li>" . $step . "</li>";
+            }
+            $guide .= "</p></ol>";
+        }
+
+        $guide .= $tool->getTranslation('tr_meliscms_google_analytics_guide_footnote');
+
+        echo $guide;
+        die();
+    }
 }
