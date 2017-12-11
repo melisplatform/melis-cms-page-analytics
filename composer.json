@@ -16,7 +16,8 @@
     "analytics"
   ],
   "extra": {
-    "module-name": "MelisCmsPageAnalytics"
+    "module-name": "MelisCmsPageAnalytics",
+    "dbdeploy": true
   },
   "require": {
     "php": "^5.5 || ^7.0",
