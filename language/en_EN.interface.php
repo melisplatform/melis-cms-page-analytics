@@ -43,6 +43,7 @@ return array(
     'tr_meliscms_page_analytics_settings_select_tooltip' =>  'Select the analytics module you wish to use',
     'tr_meliscms_page_analytics_settings_select_tooltip_ko' =>  'Please select the analytics module to use',
     'tr_meliscms_page_analytics_settings_select_blank' =>  'Select an analytics module',
+    'tr_meliscms_page_analytics_settings_no_analytics' =>  'No analytics module (stop tracking)',
     'tr_meliscms_page_analytics_settings_select_save_ok' =>  'The analytics module has been changed successfully',
     'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Unable to change analytics module',
     

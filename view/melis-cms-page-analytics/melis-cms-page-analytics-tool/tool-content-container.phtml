@@ -17,30 +17,27 @@ if (!empty($this->zoneconfig['conf']['id']))
                     
                     foreach ($this->zoneconfig['interface'] as $keyConfig => $menuConfig)
                     {
-                            
-                            $id = '';
-                            if (!empty($menuConfig['conf']['id']))
-                                $id = ' id="' . $this->idPage . '_' . $menuConfig['conf']['id'] . '_title"';
+                        $id = '';
+                        if (!empty($menuConfig['conf']['id']))
+                            $id = ' id="' . $this->idPage . '_' . $menuConfig['conf']['id'] . '_title"';
                                 
-                                $tabname = 'Tab';
-                                if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['name']))
-                                    $tabname = $menuConfig['conf']['name'];
+                        $tabname = 'Tab';
+                        if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['name']))
+                            $tabname = $menuConfig['conf']['name'];
                                     
-                                    $icon = '';
-                                    if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['icon']))
-                                        $icon = $menuConfig['conf']['icon'];
-                                        
-                                        ?>
-                							<li> <!-- <?= $id; ?> -->
-                								<a class="glyphicons <?= $icon; ?>" data-toggle="tab" href="#<?= $menuConfig['conf']['id']; ?>">
-                									<i> </i>
-                									<span><?= $tabname; ?></span>
-                								</a>
-                							</li>
-                							<?php
-
-                						}
-                					}
+                        $icon = '';
+                        if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['icon']))
+                            $icon = $menuConfig['conf']['icon'];
+                ?>
+                        <li> <!-- <?= $id; ?> -->
+                            <a class="glyphicons <?= $icon; ?>" data-toggle="tab" href="#<?= $menuConfig['conf']['id']; ?>">
+                                <i> </i>
+                                <span><?= $tabname; ?></span>
+                            </a>
+                        </li>
+                <?php
+                    }
+                }
                 ?>
 
             </ul>
@@ -49,13 +46,22 @@ if (!empty($this->zoneconfig['conf']['id']))
     <div class="spacing-x2 innerAll">
 
         <div class="tab-content">
-
+            <script type="text/javascript">
+                $(function () {
+                    /**
+                     * Part of selecting the First Site in the Site Selection automatically
+                     * A flag to prevent the trigger change in tool-content-container-analytics-tab-content.phtml
+                     * to keep on executing infinitely
+                     */
+                    window.pageAnalyticsSiteSelect          = true;
+                    window.pageAnalyticsSettingsSiteSelect  = true;
+                });
+            </script>
             <?php
 
                 echo $this->meliscms_page_analytics_site_analytics_tab_content;
                 echo $this->meliscms_page_analytics_site_analytics_tab_settings_content;
             ?>
         </div>
-
     </div>
 </div>

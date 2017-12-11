@@ -24,6 +24,20 @@ if($this->hasAccess) { ?>
             </div>
             <?= $this->form()->closeTag(); ?>
             <?= $this->display; ?>
+
+            <script type="text/javascript">
+                $(function() {
+                    // Disable empty option
+                    $('select#analytics-content-side-id option:first-child').attr('disabled', 'true');
+                    if (pageAnalyticsSiteSelect){
+                        var $firstSite = $('select#analytics-content-side-id option:nth-child(2)');
+                        if ($firstSite.length){
+                            $('select#analytics-content-side-id').val($firstSite.val()).trigger('change');
+                            pageAnalyticsSiteSelect = false;
+                        }
+                    }
+                });
+            </script>
         </div>
         <!-- // Tab content END -->
 <?php
