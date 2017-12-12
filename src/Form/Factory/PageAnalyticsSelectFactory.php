@@ -24,6 +24,9 @@ class PageAnalyticsSelectFactory extends MelisSelectFactory
 
         $valueoptions = array();
 
+        // Adds a "No Analytics Module" option
+        $valueoptions['melis_cms_no_analytics'] = 'tr_meliscms_page_analytics_settings_no_analytics';
+
         foreach($pageAnalyticsCfg as $key => $cfg) {
             $valueoptions[$key] = $translator->translate($cfg['conf']['name']);
         }

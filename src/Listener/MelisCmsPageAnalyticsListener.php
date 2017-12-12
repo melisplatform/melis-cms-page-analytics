@@ -82,8 +82,8 @@ class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractL
                             if($analyticsData) {
                                 $script = $analyticsData->pads_js_analytics;
                                 if($script && !empty($script)) {
-                                    $script = '<script>' . $script . '</script>';
-                                    $content = str_replace('</head>', $script.'</head>', $params['content']);
+                                    $script     = $script ;
+                                    $content    = str_replace('</head>', $script.'</head>', $params['content']);
 
                                     return $content;
                                 }

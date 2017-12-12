@@ -1,10 +1,10 @@
 $(function() {
-
     $("body").on("change", "select#page_analytics_id", function() {
-        var analyticsKey  = $(this).val().toString();
+        melisCoreTool.pending("button");
+        var analyticsKey  = $(this).val();
         var siteId        = parseInt($("form#select_page_analytic_form select#site_id").val());
 
-        if(!isNaN(siteId) && analyticsKey) {
+        if(!isNaN(siteId) && analyticsKey === 'melis_cms_google_analytics') {
             $.ajax({
                 type    : 'POST',
                 url     : '/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSettingsForm',
@@ -14,28 +14,30 @@ $(function() {
             }).success(function(data){
                 if(data) {
                     $("div#analytics-settings-form").html(data);
+
+                    $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getAnalyticsScript', {site_id: siteId, analytics_key : analyticsKey}, function(data) {
+                        if(data.response.pads_js_analytics) {
+                            var editor = ace.edit("pads_js_analytics");
+                            editor.setValue(data.response.pads_js_analytics);
+                            $("span#pads_js_analytics_cont").removeClass("hidden");
+                            melisCoreTool.done("button");
+                        }
+                    });
                 }
                 else {
                     $("div#analytics-settings-form").html("");
+                    melisCoreTool.done("button");
                 }
-            });
-
-            $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getAnalyticsScript', {site_id: siteId, analytics_key : analyticsKey}, function(data) {
-                var editor = ace.edit("pads_js_analytics");
-
-                if(data.response.pads_js_analytics) {
-                    editor.setValue(data.response.pads_js_analytics);
-                }
-                else {
-                    editor.setValue("");
-                }
-
             });
         }
-    });
+        else{
+            $("div#analytics-settings-form").html("");
+            $("span#pads_js_analytics_cont").addClass("hidden");
+            melisCoreTool.done("button");
+        }
 
-    $("body").on("click", "a#cms-page-anlytics-tab-settings-button",  function() {
-        $("select#page_analytics_id").trigger("change");
+        // Disable first option
+        $('select#page_analytics_id option:first-child').attr('disabled', 'true');
     });
 
     $("body").on("click", "a.melis-cms-page-analytics-refresh", function() {
@@ -88,13 +90,18 @@ $(function() {
 
         if(!isNaN(siteId)) {
             $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSiteAnalytics', {site_id: siteId}, function(data) {
-                var editor = ace.edit("pads_js_analytics");
-
-                if(data.response.pads_js_analytics) {
-                    editor.setValue(data.response.pads_js_analytics);
+                if (data.response.page_analytics_id === 'melis_cms_google_analytics'){
+                    var editor = ace.edit("pads_js_analytics");
+                    if(data.response.pads_js_analytics) {
+                        editor.setValue(data.response.pads_js_analytics);
+                    }
+                    else {
+                        editor.setValue("");
+                    }
+                    $("span#pads_js_analytics_cont").removeClass("hidden");
                 }
-                else {
-                    editor.setValue("");
+                else{
+                    $("span#pads_js_analytics_cont").addClass("hidden");
                 }
 
                 var selAnalytics = $("form#select_page_analytic_form select#page_analytics_id");

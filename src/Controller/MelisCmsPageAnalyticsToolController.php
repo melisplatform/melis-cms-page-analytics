@@ -212,6 +212,13 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                 unset($tmpPostSrlz['pad_site_id']);
                 unset($tmpPostSrlz['pad_analytics_key']);
                 unset($tmpPostSrlz['pads_js_analytics']);
+
+                // Automatically add 'ga:' prefix on the view ID
+                if ($analyticsKey === 'melis_cms_google_analytics'){
+                    if (mb_substr($tmpPostSrlz['google_analytics_view_id'], 0, 3) !== 'ga:')
+                        $tmpPostSrlz['google_analytics_view_id'] = 'ga:'.$tmpPostSrlz['google_analytics_view_id'];
+                }
+
                 $analyticsSettings = serialize($tmpPostSrlz);
 
                 // first check if the analytics data exists
@@ -287,8 +294,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $view = new ViewModel();
 
         if ($this->getRequest()->isPost()) {
-
-            // /melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSettingsForm
             $analyticsKey = $this->getTool()->sanitize($this->getRequest()->getPost('analytics_key'));
             $siteId       = (int) $this->getRequest()->getPost('site_id');
             $config = $this->getServiceLocator()->get('MelisCoreConfig');
@@ -306,6 +311,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
                 if ($settingsData) {
                     $data = unserialize($settingsData->pads_settings);
+                    $data['google_analytics_view_id'] = substr($data['google_analytics_view_id'], 3);
                     $form->setData($data);
                 }
 
@@ -371,9 +377,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $data['pads_js_analytics']  = $analyticsData->pads_js_analytics;
 
             $success = 1;
-
         }
-
 
         $response = array(
             'success'  => $success,
@@ -517,4 +521,26 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $errors;
     }
 
+    public function getGoogleAnalyticsGuideAction()
+    {
+        $tool = $this->getTool();
+
+        $guide  = "<h4>".$tool->getTranslation('tr_meliscms_google_analytics_guide_title')."</h4>";
+        $guide .= "<p><strong>".$tool->getTranslation('tr_meliscms_google_analytics_guide_subtitle')."</strong></p>";
+
+        for ($i=1; $i < 4; $i++) {
+            $guide .= "<p><strong>" . $tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i) . "</strong></p>";
+            $steps = explode(PHP_EOL, $tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_items'));
+            $guide .= "<ol><p>";
+            foreach ($steps as $step) {
+                $guide .= "<li>" . $step . "</li>";
+            }
+            $guide .= "</p></ol>";
+        }
+
+        $guide .= $tool->getTranslation('tr_meliscms_google_analytics_guide_footnote');
+
+        echo $guide;
+        die();
+    }
 }

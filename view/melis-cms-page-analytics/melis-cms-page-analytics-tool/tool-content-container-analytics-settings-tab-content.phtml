@@ -32,8 +32,18 @@ if($this->hasAccess) { ?>
             // now ace will work even on ie7!
             var editor = ace.edit("pads_js_analytics");
             editor.setTheme("ace/theme/textmate");
-            editor.session.setMode("ace/mode/javascript");
-            $("span#pads_js_analytics_cont").removeClass("hidden");
+            editor.session.setMode("ace/mode/html");
+
+
+            // Disable empty select option
+            $('form#select_page_analytic_form select#site_id option:first-child').attr('disabled', 'true');
+            if (pageAnalyticsSettingsSiteSelect){
+                var $firstSite = $('form#select_page_analytic_form select#site_id option:nth-child(2)');
+                if ($firstSite.length){
+                    $('form#select_page_analytic_form select#site_id').val($firstSite.val()).trigger('change');
+                    pageAnalyticsSettingsSiteSelect = false;
+                }
+            }
         });
     </script>
 </div>
