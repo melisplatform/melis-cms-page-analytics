@@ -19,23 +19,21 @@ $(function() {
                         if(data.response.pads_js_analytics) {
                             var editor = ace.edit("pads_js_analytics");
                             editor.setValue(data.response.pads_js_analytics);
-                            $("span#pads_js_analytics_cont").removeClass("hidden");
-                            melisCoreTool.done("button");
                         }
                     });
                 }
                 else {
                     $("div#analytics-settings-form").html("");
-                    melisCoreTool.done("button");
                 }
             });
+
+            $("span#pads_js_analytics_cont").removeClass("hidden");
         }
         else{
             $("div#analytics-settings-form").html("");
             $("span#pads_js_analytics_cont").addClass("hidden");
-            melisCoreTool.done("button");
         }
-
+        melisCoreTool.done("button");
         // Disable first option
         $('select#page_analytics_id option:first-child').attr('disabled', 'true');
     });
