@@ -1,4 +1,5 @@
 $(function() {
+    // Settings Tab: Handles the change in Site Analytics selection
     $("body").on("change", "select#page_analytics_id", function() {
         melisCoreTool.pending("button");
         var analyticsKey  = $(this).val();
@@ -27,15 +28,16 @@ $(function() {
                 }
             });
 
+            // Show Script Editor & Google Analytics Configuration Guidelines
             $("span#pads_js_analytics_cont").removeClass("hidden");
+            $('div#melis-cms-google-analytics-guidelines').removeClass('hidden');
         }
         else{
             $("div#analytics-settings-form").html("");
             $("span#pads_js_analytics_cont").addClass("hidden");
+            $('div#melis-cms-google-analytics-guidelines').addClass('hidden');
         }
         melisCoreTool.done("button");
-        // Disable first option
-        $('select#page_analytics_id option:first-child').attr('disabled', 'true');
     });
 
     $("body").on("click", "a.melis-cms-page-analytics-refresh", function() {
@@ -83,24 +85,25 @@ $(function() {
         e.preventDefault();
     });
 
+    // Handles Site Selection Change in Settings Tab
     $("body").on("change", "form#select_page_analytic_form select#site_id", function() {
         var siteId = parseInt($(this).val());
 
         if(!isNaN(siteId)) {
             $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSiteAnalytics', {site_id: siteId}, function(data) {
-                if (data.response.page_analytics_id === 'melis_cms_google_analytics'){
-                    var editor = ace.edit("pads_js_analytics");
-                    if(data.response.pads_js_analytics) {
-                        editor.setValue(data.response.pads_js_analytics);
-                    }
-                    else {
-                        editor.setValue("");
-                    }
-                    $("span#pads_js_analytics_cont").removeClass("hidden");
-                }
-                else{
-                    $("span#pads_js_analytics_cont").addClass("hidden");
-                }
+                // if (data.response.page_analytics_id === 'melis_cms_google_analytics'){
+                //     var editor = ace.edit("pads_js_analytics");
+                //     if(data.response.pads_js_analytics) {
+                //         editor.setValue(data.response.pads_js_analytics);
+                //     }
+                //     else {
+                //         editor.setValue("");
+                //     }
+                //     $("span#pads_js_analytics_cont").removeClass("hidden");
+                // }
+                // else{
+                //     $("span#pads_js_analytics_cont").addClass("hidden");
+                // }
 
                 var selAnalytics = $("form#select_page_analytic_form select#page_analytics_id");
                 selAnalytics.val(data.response.page_analytics_id).change();
@@ -108,6 +111,7 @@ $(function() {
         }
     });
 
+    // Handles Site Selection Change in Analytics Tab
     $("body").on("change", "form#select_page_analytic_form_analytics_content select#analytics-content-side-id", function() {
         var siteId = parseInt($(this).val());
         if(!isNaN(siteId)) {

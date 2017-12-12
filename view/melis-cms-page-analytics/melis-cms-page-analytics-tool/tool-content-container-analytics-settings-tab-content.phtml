@@ -21,8 +21,14 @@ if($this->hasAccess) { ?>
     <div class="pull-right">
         <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> <?= $this->translate('tr_meliscore_tool_gen_save') ?></button>
     </div>
-    <div class="clearfix"></div>
 
+    <div id="melis-cms-google-analytics-guidelines" class="row hidden">
+        <div class="col-md-12">
+            <?= $this->google_analytics_config_guide; ?>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
     <?= $this->form()->closeTag(); ?>
 
     <script text="text/javascript">
@@ -34,16 +40,9 @@ if($this->hasAccess) { ?>
             editor.setTheme("ace/theme/textmate");
             editor.session.setMode("ace/mode/html");
 
-
-            // Disable empty select option
+            // Disable first select options
+            $('select#page_analytics_id option:first-child').attr('disabled', 'true');
             $('form#select_page_analytic_form select#site_id option:first-child').attr('disabled', 'true');
-            if (pageAnalyticsSettingsSiteSelect){
-                var $firstSite = $('form#select_page_analytic_form select#site_id option:nth-child(2)');
-                if ($firstSite.length){
-                    $('form#select_page_analytic_form select#site_id').val($firstSite.val()).trigger('change');
-                    pageAnalyticsSettingsSiteSelect = false;
-                }
-            }
         });
     </script>
 </div>
