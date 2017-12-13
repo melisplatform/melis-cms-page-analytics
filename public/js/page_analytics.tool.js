@@ -40,6 +40,7 @@ $(function() {
         melisCoreTool.done("button");
     });
 
+    // Table's Refresh button in MelisCms Page module system
     $("body").on("click", "a.melis-cms-page-analytics-refresh", function() {
         var pageId = activeTabId.split("_")[0];
         melisHelper.zoneReload(pageId+"_id_meliscms_page_analytics", "meliscms_page_analytics_tab_display", {idPage : pageId}, function() {
@@ -51,12 +52,12 @@ $(function() {
 
     });
 
+    // Save on Settings Tab
     $("body").on("submit", "form#select_page_analytic_form", function(e) {
 
-        var formData = new FormData(this);
-        // formData.push();
-        var editor = ace.edit("pads_js_analytics");
-        var script = editor.getValue();
+        var formData    = new FormData(this);
+        var editor      = ace.edit("pads_js_analytics");
+        var script      = editor.getValue();
 
         formData.append("pads_js_analytics", script);
 
@@ -91,20 +92,6 @@ $(function() {
 
         if(!isNaN(siteId)) {
             $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSiteAnalytics', {site_id: siteId}, function(data) {
-                // if (data.response.page_analytics_id === 'melis_cms_google_analytics'){
-                //     var editor = ace.edit("pads_js_analytics");
-                //     if(data.response.pads_js_analytics) {
-                //         editor.setValue(data.response.pads_js_analytics);
-                //     }
-                //     else {
-                //         editor.setValue("");
-                //     }
-                //     $("span#pads_js_analytics_cont").removeClass("hidden");
-                // }
-                // else{
-                //     $("span#pads_js_analytics_cont").addClass("hidden");
-                // }
-
                 var selAnalytics = $("form#select_page_analytic_form select#page_analytics_id");
                 selAnalytics.val(data.response.page_analytics_id).change();
             });
@@ -120,5 +107,9 @@ $(function() {
             });
         }
     });
+
+    // $('div#tableMelisCmsPageAnalytics_wrapper a.melis-refreshTable').on('click', function(){
+    //     melisHelper.zoneReload('', '');
+    // });
 
 });

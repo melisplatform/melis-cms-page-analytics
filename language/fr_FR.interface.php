@@ -28,7 +28,7 @@ return array(
      */
     'tr_meliscms_page_analytics_page_detail_title' => 'Page analytics details page',
     'tr_page_details_header'        => 'Page analytics details en-tête page',
-    'tr_meliscms_page_analytics_page_details_user_ip'       => 'Adresse IP de l\'utilisateur',
+    'tr_meliscms_page_analytics_page_details_user_ip'       => "Adresse IP de l'utilisateur",
     'tr_meliscms_page_analytics_page_details_date_visit' => 'Date de visite',
 
     /*
@@ -57,6 +57,6 @@ return array(
     'tr_meliscms_page_analytics_site_id_empty' => 'Please select a site',
 
     'tr_meliscms_page_analytics_site_analytics_script' => 'Analytics script',
-    'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'Code obtenu auprès de Google Analytics (voir la documentation plus bas pour plus d\'informations)',
+    'tr_meliscms_page_analytics_site_analytics_script_tooltip' => "Code obtenu auprès de Google Analytics (voir la documentation plus bas pour plus d'informations)",
 
 );

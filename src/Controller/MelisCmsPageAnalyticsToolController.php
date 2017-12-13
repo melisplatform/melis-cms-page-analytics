@@ -526,20 +526,19 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     {
         $guide  = '';
         $tool   = $this->getTool();
-        $guide  = '<h4>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_title').'</h4>';
-        $guide .= '<p><strong>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_subtitle').'</strong></p>';
+        $guide  = '<h4>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_title').'</h4><br>';
+        $guide .= '<p><strong>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_subtitle').'</strong></p><br>';
 
         $step   = 0;
         for ($i=1; $i < 4; $i++) {
             $guide .= '<p><strong>'. $tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i) . '</strong></p>';
-            //$steps = explode(PHP_EOL, $tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_items'));
             $guide .= '<p><ol>';
             $step   = 1;
             while (substr($tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_item'.$step), 0, 28) !== 'tr_meliscms_google_analytics'){
                 $guide .= '<li>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_item'.$step).'</li>';
                 $step++;
             }
-            $guide .= '</ol></p>';
+            $guide .= '</ol></p><br>';
         }
 
         $guide .= $tool->getTranslation('tr_meliscms_google_analytics_guide_footnote');
