@@ -56,7 +56,7 @@ return array(
     'tr_meliscms_page_analytics_site_id_ko' => 'Invalid site ID, it should only be numeric',
     'tr_meliscms_page_analytics_site_id_empty' => 'Please select a site',
 
-    'tr_meliscms_page_analytics_site_analytics_script' => 'Analytics script',
+    'tr_meliscms_page_analytics_site_analytics_script' => 'Script analytics',
     'tr_meliscms_page_analytics_site_analytics_script_tooltip' => "Code obtenu auprès de Google Analytics (voir la documentation plus bas pour plus d'informations)",
 
 );
