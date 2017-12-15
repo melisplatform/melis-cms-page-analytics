@@ -283,6 +283,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             'errors' => $errors
         ];
 
+        // add to flash messenger
+        $this->getEventManager()->trigger('melis_cms_page_analytics_flash_messenger', $this, $response);
 
         return new JsonModel($response);
 

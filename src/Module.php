@@ -1,4 +1,11 @@
 <?php
+/**
+ * Melis Technology (http://www.melistechnology.com)
+ *
+ * @copyright Copyright (c) 2017 Melis Technology (http://www.melistechnology.com)
+ *
+ */
+
 namespace MelisCmsPageAnalytics;
 
 use Zend\Mvc\ModuleRouteListener;
@@ -8,6 +15,8 @@ use Zend\Session\Container;
 use Zend\ModuleManager\ModuleManager;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\EventInterface;
+use MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsFlashMessengerListener;
+
 /**
  * Class Module
  * @package MelisCmsPageAnalytics
@@ -19,10 +28,11 @@ use Zend\EventManager\EventInterface;
     public function onBootstrap(MvcEvent $e)
     {
         $eventManager        = $e->getApplication()->getEventManager();
-        $sm = $e->getApplication()->getServiceManager();
+        $sm                  = $e->getApplication()->getServiceManager();
         $moduleRouteListener = new ModuleRouteListener();
         $moduleRouteListener->attach($eventManager);
         $eventManager->attach($sm->get('MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsListener'));
+        $eventManager->attach(new MelisCmsPageAnalyticsFlashMessengerListener());
 
         $this->createTranslations($e);
     }
