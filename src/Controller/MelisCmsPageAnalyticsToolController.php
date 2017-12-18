@@ -188,7 +188,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     public function saveAction()
     {
         $success = 0;
-        $title = 'tr_melis_cms_page_analytics';
+        $title = 'tr_meliscms_page_analytics_title';
         $message = 'tr_meliscms_page_analytics_settings_select_save_ko';
         $errors = [];
         $request = $this->getRequest();
@@ -344,7 +344,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
                 if($analyticsData) {
                     $data['page_analytics_id'] = $analyticsData->pad_analytics_key;
-                    $data['pads_js_analytics'] = $analyticsData->pads_js_analytics;
+                    //$data['pads_js_analytics'] = $analyticsData->pads_js_analytics;
+                    $success = true;
                 }
 
             }

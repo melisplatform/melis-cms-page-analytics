@@ -22,7 +22,6 @@ return array(
     'tr_meliscms_page_analytics_column_action_view' => 'Vue',
     'tr_meliscms_page_analytics_column_action' => 'Action',
 
-
     /*
      * MelisCms page analytics page details
      */
@@ -43,7 +42,7 @@ return array(
     'tr_meliscms_page_analytics_settings_select_tooltip_ko' =>  'Veuillez choisir le module analytics à utiliser',
     'tr_meliscms_page_analytics_settings_select_blank' =>  'Choisissez un module analytics',
     'tr_meliscms_page_analytics_settings_no_analytics' => 'No analytics module (stop tracking)',
-    'tr_meliscms_page_analytics_settings_select_save_ok' =>  'Le module analytics a été changé avec succès',
+    'tr_meliscms_page_analytics_settings_select_save_ok' =>  'Thème de la plateforme les paramètres ont été sauvegardés avec succès',//'Le module analytics a été changé avec succès',
     'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Impossible de changer le module analytics',
     
     // Interface
@@ -52,9 +51,10 @@ return array(
     'tr_meliscms_page_analytics_tool_config' => 'Page analytics',
     'tr_meliscms_page_analytics_page_details_title' => 'Page analytics details title',
     'tr_meliscms_page_analytics_page_details_content_title' => 'Page analytics content details title',
-
+    'tr_meliscms_page_analytics_select_site' => 'Choisissez un site',
     'tr_meliscms_page_analytics_site_id_ko' => 'Invalid site ID, it should only be numeric',
     'tr_meliscms_page_analytics_site_id_empty' => 'Please select a site',
+    'tr_meliscms_page_analytics_inactive_module' => 'The analytics module for this site is deactivated.',
 
     'tr_meliscms_page_analytics_site_analytics_script' => 'Script analytics',
     'tr_meliscms_page_analytics_site_analytics_script_tooltip' => "Code obtenu auprès de Google Analytics (voir la documentation plus bas pour plus d'informations)",
