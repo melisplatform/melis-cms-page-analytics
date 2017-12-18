@@ -42,7 +42,7 @@ return array(
     'tr_meliscms_page_analytics_settings_select_tooltip_ko' =>  'Veuillez choisir le module analytics à utiliser',
     'tr_meliscms_page_analytics_settings_select_blank' =>  'Choisissez un module analytics',
     'tr_meliscms_page_analytics_settings_no_analytics' => 'No analytics module (stop tracking)',
-    'tr_meliscms_page_analytics_settings_select_save_ok' =>  'Thème de la plateforme les paramètres ont été sauvegardés avec succès',//'Le module analytics a été changé avec succès',
+    'tr_meliscms_page_analytics_settings_select_save_ok' =>  'Les paramètres ont été sauvegardés avec succès',
     'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Impossible de changer le module analytics',
     
     // Interface
