@@ -1,6 +1,5 @@
 <?php
 namespace MelisCmsPageAnalytics;
-
 return array(
     'plugins' => array(
         'meliscore' => array(
@@ -194,7 +193,7 @@ return array(
                                         'name' => 'tr_meliscms_page_analytics_tab_content',
                                         'melisKey' => 'meliscms_page_analytics_site_analytics_tab_content',
                                         'icon' => 'glyphicons stats'
-                                        
+
                                     ),
                                     'forward' => array(
                                         'module' => 'MelisCmsPageAnalytics',
@@ -210,7 +209,7 @@ return array(
                                         'name' => 'tr_meliscms_page_analytics_settings_tab_content',
                                         'melisKey' => 'meliscms_page_analytics_site_analytics_tab_settings_content',
                                         'icon' => 'glyphicons  settings'
-                                        
+
                                     ),
                                     'forward' => array(
                                         'module' => 'MelisCmsPageAnalytics',
