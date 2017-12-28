@@ -72,7 +72,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     /*
      * Search Data in the table
      */
-    public function toolContentTableSearchAction()
+    public function toolContentTableSearchToolAction()
     {
         return new ViewModel();
     }
@@ -126,7 +126,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     public function getMelisCmsPageAnalyticsDataAction()
     {
         $data = $this->melisCmsPageAnalytcisTable()->fetchAll()->toArray();
-
         $request = $this->getRequest();
 
         $dataCount = 0;
@@ -136,16 +135,15 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
         if ($request->isPost()) {
 
-            $post = get_object_vars($request->getPost());
-
+            $post = $request->getPost()->toArray();
             $columns = array_keys($this->getTool()->getColumns());
-            $draw = (int)$post['draw'];
-            $selColOrder = $columns[(int)$post['order'][0]['column']];
+            $draw           = (int)$post['draw'];
+            $selColOrder    = $columns[(int)$post['order'][0]['column']];
             $orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
-            $searchValue = isset($post['search']['value']) ? $post['search']['value'] : null;
+            $searchValue    = isset($post['search']['value']) ? $post['search']['value'] : null;
             $searchableCols = $this->getTool()->getSearchableColumns();
-            $start = (int)$post['start'];
-            $length = (int)$post['length'];
+            $start          = (int)$post['start'];
+            $length         = (int)$post['length'];
 
             $data = $this->melisCmsPageAnalytcisTable()->getData($searchValue, $searchableCols, $selColOrder, $orderDirection, $start, $length)->toArray();
             $dataCount = $this->melisCmsPageAnalytcisTable()->getTotalData();
@@ -159,7 +157,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                 }
 
                 $tableData[$ctr]['DT_RowId'] = $tableData[$ctr]['ph_id'];
-
             }
         }
         $response = [
@@ -436,14 +433,14 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                                 '<endaction/></div>";',
                                 '"<a class="btn btn-default melis-cms-page-analytics-refresh-table-tool',
                                 'fa-refresh"></i></a>"',
-                                '(".search input[type="search"]")'
+                                '(".melis_cms_page_analytics_tool_search input[type="search"]")'
                             ), array(
                                 "sDom : '<", "rip>>'",
                                 "return '<div>",
                                 "<endaction/></div>';",
                                 "'<a class=\"btn btn-default melis-cms-page-analytics-refresh-table-tool",
                                 "fa-refresh\"></i></a>'",
-                                "(\".search input[type='search']\")"
+                                "(\".melis_cms_page_analytics_tool_search input[type='search']\")"
                             ), $display);
                         }
 

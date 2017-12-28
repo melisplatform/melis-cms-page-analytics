@@ -46,14 +46,14 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                         '<endaction/></div>";',
                         '"<a class="btn btn-default melis-cms-page-analytics-refresh',
                         'fa-refresh"></i></a>"',
-                        '.search input[type="search"]'
+                        '.melis_cms_page_analytics_page_search input[type="search"]'
                     ), array(
                         "sDom : '<", "rip>>'",
                         "return '<div>",
                         "<endaction/></div>';",
                         "'<a class=\"btn btn-default melis-cms-page-analytics-refresh",
                         "fa-refresh\"></i></a>'",
-                        ".search input[type='search']"
+                        ".melis_cms_page_analytics_page_search input[type='search']"
                     ), $display);
                     // get the url the page
                     $pageTree = $this->getServiceLocator()->get('MelisEngineTree');
@@ -155,12 +155,14 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
     {
         $data  = $this->melisCmsPageAnalytcisTable()->fetchAll()->toArray();
         $request = $this->getRequest();
+
         $dataCount = 0;
         $dataFilteredCount = 0;
         $tableData = array();
         $draw = 0;
+
         if($request->isPost()) {
-            $post    = get_object_vars($request->getPost());
+            $post    = $request->getPost()->toArray();
             $columns = array_keys($this->getTool()->getColumns());
             $draw           = (int) $post['draw'];
             $selColOrder    = $columns[(int) $post['order'][0]['column']];
@@ -169,7 +171,8 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
             $searchableCols = $this->getTool()->getSearchableColumns();
             $start          = (int) $post['start'];
             $length         = (int) $post['length'];
-            $pageHitId      = (int) $post['pageId'] ?: $this->pageId;
+            $pageHitId      = (int) $post['pageId'];
+
             $data = $this->melisCmsPageAnalytcisTable()->getDataByPageId($pageHitId, $searchValue, $searchableCols, $selColOrder , $orderDirection , $start, $length)->toArray();
             $dataCount = $this->melisCmsPageAnalytcisTable()->getTotalData();
             $dataFilteredCount = $this->melisCmsPageAnalytcisTable()->getTotalFiltered();
@@ -180,8 +183,8 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                 {
                     $tableData[$ctr][$vKey] = $this->getTool()->limitedText($vValue, 80);
                 }
-                $tableData[$ctr]['DT_RowId']      = $tableData[$ctr]['ph_id'];
 
+                $tableData[$ctr]['DT_RowId']      = $tableData[$ctr]['ph_id'];
             }
 
         }
@@ -203,7 +206,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
     /*
      * Search Data in the table
      */
-    public function toolContentTableSearchAction()
+    public function toolContentTableSearchPageAction()
     {
         return new ViewModel();
     }

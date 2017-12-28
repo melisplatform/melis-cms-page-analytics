@@ -26,10 +26,10 @@ namespace MelisCmsPageAnalytics;
                                 ),
                             ),
                             'center' => array(
-                                'search' => array(
+                                'melis_cms_page_analytics_tool_search' => array(
                                     'module' => 'MelisCmsPageAnalytics',
                                     'controller' => 'MelisCmsPageAnalyticsTool',
-                                    'action' => 'tool-content-table-search',
+                                    'action' => 'tool-content-table-search-tool',
                                 ),
                             ),
                             'right' => array(
@@ -106,10 +106,10 @@ namespace MelisCmsPageAnalytics;
                                 ),
                             ),
                             'center' => array(
-                                'search' => array(
+                                'melis_cms_page_analytics_page_search' => array(
                                     'module' => 'MelisCmsPageAnalytics',
                                     'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
-                                    'action' => 'tool-content-table-search',
+                                    'action' => 'tool-content-table-search-page',
                                 ),
                             ),
                             'right' => array(
@@ -140,7 +140,7 @@ namespace MelisCmsPageAnalytics;
                             // because the 10% is reserved to the action column where the buttons will be displayed
                         ),
                         // Set what columns that will be used when searching
-                        'searchables' => array('ph_id', 'ph_user_ip','ph_date_visit'),
+                        'searchables' => array('ph_id', 'ph_date_visit'),
                         'actionButtons' => array(),
                     ),
                    

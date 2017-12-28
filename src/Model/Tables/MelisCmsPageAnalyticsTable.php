@@ -74,7 +74,7 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
                 $select->where->or->like($column, '%'.$search.'%');
             }
         }  
-            
+
         $getCount = $this->tableGateway->selectWith($select);
         // set current data count for pagination
         $this->setCurrentDataCount((int) $getCount->count());
