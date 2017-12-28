@@ -110,6 +110,19 @@ return array(
                                                         'jsdatas' => array()
                                                     ),
                                                 ),
+                                                // For reloading table in the page
+                                                'melis_cms_page_analytics_page_table' => array(
+                                                    'conf' =>array(
+                                                        'id' => 'id_melis_cms_page_analytics_page_table',
+                                                        'name' => 'tr_melis_cms_page_analytics_page_table',
+                                                        'melisKey' => 'melis_cms_page_analytics_page_table'
+                                                    ),
+                                                    'forward' => array(
+                                                        'module' => 'MelisCmsPageAnalytics',
+                                                        'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
+                                                        'action' => 'tool-content-container'
+                                                    ),
+                                                ),
                                             ),
                                         ),
                                     ),
@@ -193,7 +206,6 @@ return array(
                                         'name' => 'tr_meliscms_page_analytics_tab_content',
                                         'melisKey' => 'meliscms_page_analytics_site_analytics_tab_content',
                                         'icon' => 'glyphicons stats'
-
                                     ),
                                     'forward' => array(
                                         'module' => 'MelisCmsPageAnalytics',
@@ -201,6 +213,21 @@ return array(
                                         'action' => 'tool-content-container-analytics-tab-content',
                                         'jscallback' => '',
                                         'jsdatas' => array()
+                                    ),
+                                    'interface' => array(
+                                        // added to have zone reload only the tab
+                                        'melis_cms_page_analytics_tool_table' => array(
+                                            'conf' =>array(
+                                                'id' => 'id_melis_cms_page_analytics_tool_table',
+                                                'name' => 'tr_melis_cms_page_analytics_tool_table',
+                                                'melisKey' => 'melis_cms_page_analytics_tool_table'
+                                            ),
+                                            'forward' => array(
+                                                'module' => 'MelisCmsPageAnalytics',
+                                                'controller' => 'MelisCmsPageAnalyticsTool',
+                                                'action' => 'tool-default-page-analytics-table'
+                                            ),
+                                        ),
                                     ),
                                 ),
                                 'meliscms_page_analytics_site_analytics_tab_settings_content' => array(

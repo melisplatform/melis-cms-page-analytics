@@ -40,19 +40,20 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                 if($pageAnalyticsData) {
                     $forward = $pageAnalyticsData['interface']['analytics_for_page']['forward'];
                     $display = $this->getTool()->getViewContent($forward);
+
                     $display = str_replace(array(
                         'sDom : "<', 'rip>>"', 'return "<div>',
                         '<endaction/></div>";',
                         '"<a class="btn btn-default melis-cms-page-analytics-refresh',
                         'fa-refresh"></i></a>"',
-                        '(".search input[type="search"]")'
+                        '.search input[type="search"]'
                     ), array(
                         "sDom : '<", "rip>>'",
                         "return '<div>",
                         "<endaction/></div>';",
                         "'<a class=\"btn btn-default melis-cms-page-analytics-refresh",
                         "fa-refresh\"></i></a>'",
-                        "(\".search input[type='search']\")"
+                        ".search input[type='search']"
                     ), $display);
                     // get the url the page
                     $pageTree = $this->getServiceLocator()->get('MelisEngineTree');
@@ -206,7 +207,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
     {
         return new ViewModel();
     }
-    public function toolContentTableRefreshAction()
+    public function toolContentTableRefreshPageAction()
     {
         return new ViewModel();
     }

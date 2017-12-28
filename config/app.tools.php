@@ -33,10 +33,10 @@ namespace MelisCmsPageAnalytics;
                                 ),
                             ),
                             'right' => array(
-                                'refresh' => array(
+                                'melis_cms_page_analytics_tool_refresh' => array(
                                     'module' => 'MelisCmsPageAnalytics',
                                     'controller' => 'MelisCmsPageAnalyticsTool',
-                                    'action' => 'tool-content-table-refresh',
+                                    'action' => 'tool-content-table-refresh-tool',
                                 ),
                             ),
 
@@ -113,10 +113,10 @@ namespace MelisCmsPageAnalytics;
                                 ),
                             ),
                             'right' => array(
-                                'refresh' => array(
+                                'melis_cms_page_analytics_page_refresh' => array(
                                     'module' => 'MelisCmsPageAnalytics',
                                     'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
-                                    'action' => 'tool-content-table-refresh',
+                                    'action' => 'tool-content-table-refresh-page',
                                 ),
                             ),
 

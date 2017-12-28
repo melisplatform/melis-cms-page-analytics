@@ -88,7 +88,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     /*
      * Zone Refresh
      */
-    public function toolContentTableRefreshAction()
+    public function toolContentTableRefreshToolAction()
     {
         return new ViewModel();
     }
@@ -114,10 +114,11 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
         $view = new ViewModel();
 
-        $view->melisKey = $melisKey;
-        $view->tableColumns = $columns;
-        $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#tableMelisCmsPageAnalytics');
-        $view->hasAccess = $hasAccess;
+        $view->melisKey                 = $melisKey;
+        $view->tableColumns             = $columns;
+        $view->getToolDataTableConfig   = $this->getTool()->getDataTableConfiguration('#tableMelisCmsPageAnalytics');
+        $view->hasAccess                = $hasAccess;
+
         return $view;
     }
 
@@ -391,6 +392,10 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     }
 
 
+    /**
+     * Returns the Contents of the selected Page Analytics Module
+     * @return ViewModel
+     */
     public function toolContentContainerAnalyticsTabContentAction()
     {
         $melisKey = $this->getMelisKey();
@@ -429,14 +434,14 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                             $display = str_replace(array(
                                 'sDom : "<', 'rip>>"', 'return "<div>',
                                 '<endaction/></div>";',
-                                '"<a class="btn btn-default melis-refreshTable',
+                                '"<a class="btn btn-default melis-cms-page-analytics-refresh-table-tool',
                                 'fa-refresh"></i></a>"',
                                 '(".search input[type="search"]")'
                             ), array(
                                 "sDom : '<", "rip>>'",
                                 "return '<div>",
                                 "<endaction/></div>';",
-                                "'<a class=\"btn btn-default melis-refreshTable",
+                                "'<a class=\"btn btn-default melis-cms-page-analytics-refresh-table-tool",
                                 "fa-refresh\"></i></a>'",
                                 "(\".search input[type='search']\")"
                             ), $display);

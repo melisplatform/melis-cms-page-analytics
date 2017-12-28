@@ -55,13 +55,7 @@ $(function() {
     // Table's Refresh button in MelisCms Page module system
     $("body").on("click", "a.melis-cms-page-analytics-refresh", function() {
         var pageId = activeTabId.split("_")[0];
-        melisHelper.zoneReload(pageId+"_id_meliscms_page_analytics", "meliscms_page_analytics_tab_display", {idPage : pageId}, function() {
-            setTimeout(function() {
-                $("#"+pageId+"_id_meliscms_page_analytics").addClass("active");
-            }, 600);
-
-        });
-
+        melisHelper.zoneReload(pageId+'_id_melis_cms_page_analytics_page_table', 'melis_cms_page_analytics_page_table', {idPage: pageId});
     });
 
     // Save on Settings Tab
@@ -120,8 +114,10 @@ $(function() {
         }
     });
 
-    // $('div#tableMelisCmsPageAnalytics_wrapper a.melis-refreshTable').on('click', function(){
-    //     melisHelper.zoneReload('', '');
-    // });
+    // Refresh functionality in the Analytics Tab
+    $('body').on('click', 'a.melis-cms-page-analytics-refresh-table-tool', function(){
+        console.log('VLOG OUT!');
+        melisHelper.zoneReload('id_melis_cms_page_analytics_tool_table', 'melis_cms_page_analytics_tool_table');
+    });
 
 });
