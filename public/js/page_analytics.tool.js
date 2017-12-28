@@ -116,7 +116,6 @@ $(function() {
 
     // Refresh functionality in the Analytics Tab
     $('body').on('click', 'a.melis-cms-page-analytics-refresh-table-tool', function(){
-        console.log('VLOG OUT!');
         melisHelper.zoneReload('id_melis_cms_page_analytics_tool_table', 'melis_cms_page_analytics_tool_table');
     });
 
