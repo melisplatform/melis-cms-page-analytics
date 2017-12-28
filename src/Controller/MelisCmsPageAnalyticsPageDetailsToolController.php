@@ -153,7 +153,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
     }
     public function getMelisCmsPageAnalyticsPageDetailsDataAction()
     {
-        $data  = $this->melisCmsPageAnalytcisTable()->fetchAll()->toArray();
+        //$data  = $this->melisCmsPageAnalytcisTable()->fetchAll()->toArray();
         $request = $this->getRequest();
 
         $dataCount = 0;
