@@ -540,7 +540,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $guide .= '<p><ol>';
             $step   = 1;
             while (substr($tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_item'.$step), 0, 28) !== 'tr_meliscms_google_analytics'){
-                $guide .= '<li>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_item'.$step).'</li>';
+                $guide .= '<li><p>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_item'.$step).'</p></li>';
                 $step++;
             }
             $guide .= '</ol></p><br>';

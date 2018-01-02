@@ -109,7 +109,7 @@ $(function() {
         var siteId = parseInt($(this).val());
         if(!isNaN(siteId)) {
             melisHelper.zoneReload("id_meliscms_page_analytics_site_analytics_tab_content", "meliscms_page_analytics_site_analytics_tab_content", {siteId : siteId}, function() {
-                $("div#id_meliscms_page_analytics_site_analytics_tab_content").addClass("active");
+                $body.find("div#id_meliscms_page_analytics_site_analytics_tab_content").addClass("active");
             });
         }
     });
