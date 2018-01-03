@@ -16,7 +16,7 @@ namespace MelisCmsPageAnalytics;
                         // additional request parameters, this should be a javascript function
                         'dataFunction' => '',
                         // the callback event that will be called after table rendering
-                        'ajaxCallback' => '',
+                        'ajaxCallback' => 'melisCmsPageAnalyticsAppendLoadedFlag()',
                         'filters' => array(
                             'left' => array(
                                 'limit' => array(
@@ -124,11 +124,8 @@ namespace MelisCmsPageAnalytics;
                         'columns' => array(
                             // the key should be the actual column name of the table
                             'ph_id' => array(
-                                // text that will be displayed on the table
                                 'text' => 'tr_meliscms_page_analytics_column_id',
-                                // the width of the column
                                 'css'  => array('width' => '20%', 'padding-right' => 0),
-                                // if true, then the column is sortable to ASC or DESC
                                 'sortable' => true
                             ),
                             'ph_date_visit' => array(

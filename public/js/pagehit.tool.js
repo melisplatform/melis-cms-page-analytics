@@ -1,6 +1,16 @@
 var _pageId = null;
+window.melisCmsPageAnalyticsAppendLoadedFlag = function () {
+    $('<div id="id_melis_cms_page_analytics_loaded_flag"></div>').insertAfter("#tableMelisCmsPageAnalytics_wrapper");
+}
 window.setPageId = function(d) {
 	d.pageId = activeTabId.split("_")[0];
+
+    // Hot fix for Default Order
+    // console.log('hey');
+    // d.params = {
+    //     pageId: activeTabId.split("_")[0],
+    //     defaultOrder: 'DESC'
+    // };
 }
 $(function() {
     $body = $("body");

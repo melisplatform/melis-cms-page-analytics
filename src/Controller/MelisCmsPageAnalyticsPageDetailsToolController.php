@@ -166,12 +166,22 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
             $columns = array_keys($this->getTool()->getColumns());
             $draw           = (int) $post['draw'];
             $selColOrder    = $columns[(int) $post['order'][0]['column']];
+
             $orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
+            // Setting Default Order
+//            if(isset($post['params']['defaultOrder'])){
+//                echo 'hey hey hey';
+//                $orderDirection = $post['params']['defaultOrder'];
+//            }else {
+//                $orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
+//            }
+//            $orderDirection = 'DESC';
+
             $searchValue    = isset($post['search']['value']) ? $post['search']['value'] : null;
             $searchableCols = $this->getTool()->getSearchableColumns();
             $start          = (int) $post['start'];
             $length         = (int) $post['length'];
-            $pageHitId      = (int) $post['pageId'];
+            $pageHitId      = (int) $post['params']['pageId'];
 
             $data = $this->melisCmsPageAnalytcisTable()->getDataByPageId($pageHitId, $searchValue, $searchableCols, $selColOrder , $orderDirection , $start, $length)->toArray();
             $dataCount = $this->melisCmsPageAnalytcisTable()->getTotalData();

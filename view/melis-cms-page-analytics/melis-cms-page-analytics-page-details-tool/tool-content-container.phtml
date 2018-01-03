@@ -18,13 +18,21 @@
         {
             $columns[] = $columnText['text'];
         }
-        // print_r($columns);
         $this->melisGenericTable()->setColumns($columns);
         echo $this->melisGenericTable()->renderTable();
     ?>
     <script type="text/javascript">
         $(document).ready(function() {
             <?= $this->getToolDataTableConfig; ?>
+
+//            var searchTable = setInterval(function(){
+//                var pageAnalyticsTable = $body.find("#<?//= $this->pageHitId . '_tableMelisCmsPageAnalyticsPageDetails'?>// thead tr th:first-child.sorting_asc");
+//                if(pageAnalyticsTable.length)
+//                {
+//                    pageAnalyticsTable.removeClass('sorting_asc');
+//                    clearInterval(searchTable);
+//                }
+//            }, 300);
         });
     </script>
 </div>

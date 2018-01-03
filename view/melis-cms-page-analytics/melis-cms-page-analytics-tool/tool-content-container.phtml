@@ -29,7 +29,7 @@ if (!empty($this->zoneconfig['conf']['id']))
                         if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['icon']))
                             $icon = $menuConfig['conf']['icon'];
                 ?>
-                        <li> <!-- <?= $id; ?> -->
+                        <li class="pestenathis">
                             <a class="glyphicons <?= $icon; ?>" data-toggle="tab" href="#<?= $menuConfig['conf']['id']; ?>">
                                 <i> </i>
                                 <span><?= $tabname; ?></span>
@@ -52,10 +52,26 @@ if (!empty($this->zoneconfig['conf']['id']))
                      * to keep on executing infinitely
                      */
                     window.pageAnalyticsSiteSelect = true;
+
+                    /**
+                     * Applying an overlay to prevent user from switching to different tab before
+                     * Content from the AJAX call is loaded
+                     */
+                    $('<div class="melis-cms-page-analytics-temp-overlay"></div>').insertAfter("#id_meliscms_page_analytics_content");
+                    var searchContent = setInterval(function () {
+                        checkContent(searchContent);
+                    }, 300);
+
+                    function checkContent(timer) {
+                        var content = $body.find("#id_melis_cms_page_analytics_loaded_flag");
+                        if ( content.length ){
+                            $body.find('.melis-cms-page-analytics-temp-overlay').remove();
+                            clearInterval(timer);
+                        }
+                    }
                 });
             </script>
             <?php
-
                 echo $this->meliscms_page_analytics_site_analytics_tab_content;
                 echo $this->meliscms_page_analytics_site_analytics_tab_settings_content;
             ?>
