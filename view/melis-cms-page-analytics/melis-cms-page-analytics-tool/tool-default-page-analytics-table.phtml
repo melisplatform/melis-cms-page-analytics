@@ -30,6 +30,18 @@
             <script type="text/javascript">
                 $(document).ready(function() {
                     <?= $this->getToolDataTableConfig; ?>
+
+                    /**
+                     * Deletes the Caret in the First Column
+                     */
+                    var searchTable = setInterval(function(){
+                        var toolAnalyticsTable = $body.find("#tableMelisCmsPageAnalytics thead tr th:first-child.sorting_asc");
+                        if(toolAnalyticsTable.length)
+                        {
+                            toolAnalyticsTable.removeClass('sorting_asc');
+                            clearInterval(searchTable);
+                        }
+                    }, 300);
                 });
             </script>
             <?php

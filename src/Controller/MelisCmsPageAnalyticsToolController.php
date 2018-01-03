@@ -139,7 +139,11 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $columns = array_keys($this->getTool()->getColumns());
             $draw           = (int)$post['draw'];
             $selColOrder    = $columns[(int)$post['order'][0]['column']];
-            $orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
+
+            // Setting Default Order
+            //$orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
+            $orderDirection = 'DESC';
+
             $searchValue    = isset($post['search']['value']) ? $post['search']['value'] : null;
             $searchableCols = $this->getTool()->getSearchableColumns();
             $start          = (int)$post['start'];

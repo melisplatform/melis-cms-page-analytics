@@ -4,13 +4,6 @@ window.melisCmsPageAnalyticsAppendLoadedFlag = function () {
 }
 window.setPageId = function(d) {
 	d.pageId = activeTabId.split("_")[0];
-
-    // Hot fix for Default Order
-    // console.log('hey');
-    // d.params = {
-    //     pageId: activeTabId.split("_")[0],
-    //     defaultOrder: 'DESC'
-    // };
 }
 $(function() {
     $body = $("body");
