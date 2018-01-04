@@ -341,22 +341,32 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $analyticsData = $analyticsTable->getAnalytics($siteId)->current();
 
             if ($analyticsData) {
-                $currentAnalyticsKey = $analyticsData->pad_analytics_key;
-                $analyticsData = $analyticsTable->getAnalytics($siteId, $currentAnalyticsKey)->current();
+                $data['analyticsModuleIsSet']   = true;
+                $currentAnalyticsKey            = $analyticsData->pad_analytics_key;
+                $currentAnalyticsData           = $analyticsTable->getAnalytics($siteId, $currentAnalyticsKey)->current();
 
-                if($analyticsData) {
-                    $data['page_analytics_id'] = $analyticsData->pad_analytics_key;
-                    //$data['pads_js_analytics'] = $analyticsData->pads_js_analytics;
+                if($currentAnalyticsData) {
+                    $data['page_analytics_id'] = $currentAnalyticsData->pad_analytics_key;
                     $success = true;
-                }
 
-            }
+                    // Checks if Current Analytics is activated
+                    if ($data['page_analytics_id'] == 'melis_cms_no_analytics'){
+                        // active by default
+                        $data['activeAnalytics'] = true;
+                    }
+                    else{
+                        $config = $this->getServiceLocator()->get('MelisCoreConfig');
+                        $data['activeAnalytics'] = $config->getItem('meliscms/datas/page_analytics/'.$data['page_analytics_id'])? true: false;
+                    }
+
+                }
+            }else $data['analyticsModuleIsSet'] = false;
         }
 
         $response = array(
             'success' => $success,
             'errors' => $errors,
-            'response' => $data
+            'response' => $data,
         );
 
 
@@ -447,14 +457,14 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                                 "(\".melis_cms_page_analytics_tool_search input[type='search']\")"
                             ), $display);
                         }
-
                     }
                 }
                 else {
                     $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_inactive_module');
                 }
-
-
+            }
+            else {
+                $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_no_module_set');
             }
         }
 
