@@ -451,7 +451,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     }
                 }
                 else {
-                    $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_module_deactivated_msg');
+                    $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_inactive_module');
                 }
 
 
