@@ -56,6 +56,8 @@ return array(
     'tr_meliscms_page_analytics_site_id_empty' => 'Veuillez sélectionner un site',
     'tr_meliscms_page_analytics_inactive_module' => 'Le module analytics pour ce site est désactivé.',
     'tr_meliscms_page_analytics_no_module_set' => 'Pour afficher les données du site veuillez choisir un module analytics pour ce site dans les paramètres.',
+    'tr_meliscms_page_analytics_page_no_module_set' => 'Pour afficher les données de la page veuillez choisir un module analytics depuis l\'outil Site analytics',
+
 
     'tr_meliscms_page_analytics_site_analytics_script' => 'Script analytics',
     'tr_meliscms_page_analytics_site_analytics_script_tooltip' => "Code obtenu auprès de Google Analytics (voir la documentation plus bas pour plus d'informations)",

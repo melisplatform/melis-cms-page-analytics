@@ -69,6 +69,9 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                 $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_inactive_module');
             }
         }
+        else{
+            $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_no_module_set');
+        }
         $view = new ViewModel();
         $view->melisKey  = $melisKey;
         $view->pageHitId = $pageHitId;

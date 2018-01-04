@@ -15,7 +15,7 @@ return array(
     'tr_meliscms_page_analytics_select_site' => 'Select a Site',
     'tr_meliscms_page_analytics_inactive_module' => 'The analytics module for this site is deactivated.',
     'tr_meliscms_page_analytics_no_module_set' => 'To display the site data, please select an analytics module for this site in Settings.',
-
+    'tr_meliscms_page_analytics_page_no_module_set' => 'To display the page\'s data, please select an analytics module from the Site Analytics module.',
 
     // Table and Forms
     'tr_meliscms_page_analytics_column_id' => 'ID',
@@ -25,7 +25,6 @@ return array(
     'tr_meliscms_page_analytics_column_date_visit' => 'Last Date Visited',
     'tr_meliscms_page_analytics_column_action_view' => 'View',
     'tr_meliscms_page_analytics_column_action' => 'Action',
-
 
     /*
      * MelisCms Page Analytics Page Details
