@@ -24,18 +24,6 @@
     <script type="text/javascript">
         $(document).ready(function() {
             <?= $this->getToolDataTableConfig; ?>
-
-            /**
-             * Deletes the Caret in the First Column
-             */
-            var searchTable = setInterval(function(){
-                var pageAnalyticsTable = $body.find("#<?= $this->pageHitId . '_tableMelisCmsPageAnalyticsPageDetails'?> thead tr th:first-child.sorting_asc");
-                if(pageAnalyticsTable.length)
-                {
-                    pageAnalyticsTable.removeClass('sorting_asc');
-                    clearInterval(searchTable);
-                }
-            }, 300);
         });
     </script>
 </div>

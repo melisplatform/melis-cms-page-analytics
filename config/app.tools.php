@@ -49,27 +49,27 @@ namespace MelisCmsPageAnalytics;
                                 // the width of the column
                                 'css'  => array('width' => '10%', 'padding-right' => 0),
                                 // if true, then the column is sortable to ASC or DESC
-                                'sortable' => false
+                                'sortable' => true
                             ),
                             'ph_page_id' => array(
                                 'text' => 'tr_meliscms_page_analytics_column_page_id',
                                 'css'  => array('width' => '10%', 'padding-right' => 0),
-                                'sortable' => false
+                                'sortable' => true
                             ),
                             'page_name' => array(
                                 'text' => 'tr_meliscms_page_analytics_column_page_name',
                                 'css'  => array('width' => '30%', 'padding-right' => 0),
-                                'sortable' => false
+                                'sortable' => true
                             ),
                             'count' => array(
                                 'text' => 'tr_visotrs_count',
                                 'css'  => array('width' => '20%', 'padding-right' => 0),
-                                'sortable' => false
+                                'sortable' => true
                             ), 
                             'last_date_visited' => array(
                                 'text' => 'tr_meliscms_page_analytics_column_date_visit',
                                 'css'  => array('width' => '20%', 'padding-right' => 0),
-                                'sortable' => false
+                                'sortable' => true
                             ),
                             // NOTE: the total width that has been set should not go more than 90%,
                             // because the 10% is reserved to the action column where the buttons will be displayed
@@ -126,12 +126,12 @@ namespace MelisCmsPageAnalytics;
                             'ph_id' => array(
                                 'text' => 'tr_meliscms_page_analytics_column_id',
                                 'css'  => array('width' => '20%', 'padding-right' => 0),
-                                'sortable' => false
+                                'sortable' => true
                             ),
                             'ph_date_visit' => array(
                                 'text' => 'tr_meliscms_page_analytics_page_details_date_visit',
                                 'css'  => array('width' => '40%', 'padding-right' => 0),
-                                'sortable' => false
+                                'sortable' => true
                             ),
                             // NOTE: the total width that has been set should not go more than 90%,
                             // because the 10% is reserved to the action column where the buttons will be displayed

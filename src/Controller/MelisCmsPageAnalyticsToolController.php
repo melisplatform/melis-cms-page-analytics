@@ -116,8 +116,10 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
         $view->melisKey                 = $melisKey;
         $view->tableColumns             = $columns;
-        $view->getToolDataTableConfig   = $this->getTool()->getDataTableConfiguration('#tableMelisCmsPageAnalytics');
         $view->hasAccess                = $hasAccess;
+
+        // Setting first column's (ID) default Order to descending
+        $view->getToolDataTableConfig   = $this->getTool()->getDataTableConfiguration('#tableMelisCmsPageAnalytics', true, false, array('order' => '[[0, "desc"]]'));
 
         return $view;
     }
@@ -139,11 +141,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $columns = array_keys($this->getTool()->getColumns());
             $draw           = (int)$post['draw'];
             $selColOrder    = $columns[(int)$post['order'][0]['column']];
-
-            // Setting Default Order
-            //$orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
-            $orderDirection = 'DESC';
-
+            $orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
             $searchValue    = isset($post['search']['value']) ? $post['search']['value'] : null;
             $searchableCols = $this->getTool()->getSearchableColumns();
             $start          = (int)$post['start'];
