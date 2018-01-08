@@ -22,7 +22,7 @@ if($this->hasAccess) { ?>
         ))->setValue($this->siteId)); ?>
         </div>
         <?= $this->form()->closeTag(); ?>
-        <?= $this->display; ?>
+        <?= $this->errMsg? "<h4 id='id_melis_cms_page_analytics_loaded_flag'>".$this->errMsg."</h4>": $this->display; ?>
 
         <script type="text/javascript">
             $(function() {
@@ -37,7 +37,7 @@ if($this->hasAccess) { ?>
                 }
             });
         </script>
-</div>
+    </div>
 <?php
 }
 ?>

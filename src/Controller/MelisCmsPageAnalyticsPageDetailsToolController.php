@@ -26,18 +26,23 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
         if($siteData) {
             $siteId = (int) $siteData->sdom_site_id;
         }
-        $this->pageId = $pageHitId;
-        $table         = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-        $curData       = $table->getAnalytics($siteId)->current();
-        $display       = null;
-        $displayScript = null;
+        $this->pageId   = $pageHitId;
+        $table          = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+        $curData        = $table->getAnalytics($siteId)->current();
+        $display        = null;
+        $displayScript  = null;
+        $errMsg         = "";
+
         if($curData) {
-            $currentAnalytics = $curData->pad_analytics_key;
-            $config           = $this->getServiceLocator()->get('MelisCoreConfig');
-            if($currentAnalytics) {
-                $pageAnalyticsData = $config->getItem('meliscms/datas/page_analytics');
-                $pageAnalyticsData = $pageAnalyticsData[$currentAnalytics];
-                if($pageAnalyticsData) {
+            $config             = $this->getServiceLocator()->get('MelisCoreConfig');
+            $currentAnalytics   = $curData->pad_analytics_key;
+            $hasAnalyticsConfig = $config->getItem('meliscms/datas/page_analytics/'.$currentAnalytics);
+
+            if($hasAnalyticsConfig) {
+                //$pageAnalyticsData = $config->getItem('meliscms/datas/page_analytics');
+                //$pageAnalyticsData = $pageAnalyticsData[$currentAnalytics];
+                $pageAnalyticsData = $hasAnalyticsConfig;
+                //if($pageAnalyticsData) {
                     $forward = $pageAnalyticsData['interface']['analytics_for_page']['forward'];
                     $display = $this->getTool()->getViewContent($forward);
 
@@ -58,14 +63,21 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                     // get the url the page
                     $pageTree = $this->getServiceLocator()->get('MelisEngineTree');
                     $pageUrl  = $pageTree->getPageLink($pageHitId, true);
-                }
+                //}
             }
+            else{
+                $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_inactive_module');
+            }
+        }
+        else{
+            $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_no_module_set');
         }
         $view = new ViewModel();
         $view->melisKey  = $melisKey;
         $view->pageHitId = $pageHitId;
         $view->display   = $display;
         $view->pageUrl   = $pageUrl;
+        $view->errMsg    = $errMsg;
         return $view;
     }
     public function toolContainerPageAnalyticsPageDetailsAction()
@@ -115,9 +127,11 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
         $view = new ViewModel();
         $view->melisKey = $melisKey;
         $view->tableColumns = $columns;
-
-        $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#'. $pageHitId .'_tableMelisCmsPageAnalyticsPageDetails');
         $view->pageHitId = $pageHitId;
+
+        // Setting first column's (ID) default Order to descending
+        $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#'. $pageHitId .'_tableMelisCmsPageAnalyticsPageDetails', true, false, array('order' => '[[0, "desc"]]'));
+
         return $view;
     }
     /*

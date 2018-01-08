@@ -7,6 +7,16 @@ if (!empty($this->zoneconfig['conf']['id']))
 ?>
 
 <div <?= $id; ?> data-melisKey="<?= $this->melisKey; ?>">
+    <script type="text/javascript">
+        $(function () {
+            /**
+             * Selecting the First Site in the Site Selection automatically
+             * A flag to prevent the trigger change in tool-content-container-analytics-tab-content.phtml
+             * to keep on executing infinitely
+             */
+            window.pageAnalyticsSiteSelect = true;
+        });
+    </script>
     <div class="widget widget-tabs widget-tabs-double-2 widget-tabs-responsive">
         <div class="widget-head nav">
             <ul class="tabs-label nav-tabs">
@@ -29,7 +39,7 @@ if (!empty($this->zoneconfig['conf']['id']))
                         if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['icon']))
                             $icon = $menuConfig['conf']['icon'];
                 ?>
-                        <li> <!-- <?= $id; ?> -->
+                        <li>
                             <a class="glyphicons <?= $icon; ?>" data-toggle="tab" href="#<?= $menuConfig['conf']['id']; ?>">
                                 <i> </i>
                                 <span><?= $tabname; ?></span>
@@ -44,18 +54,7 @@ if (!empty($this->zoneconfig['conf']['id']))
         </div>
     </div>
     <div class="widget-body tab-content spacing-x2 innerAll">
-            <script type="text/javascript">
-                $(function () {
-                    /**
-                     * Selecting the First Site in the Site Selection automatically
-                     * A flag to prevent the trigger change in tool-content-container-analytics-tab-content.phtml
-                     * to keep on executing infinitely
-                     */
-                    window.pageAnalyticsSiteSelect = true;
-                });
-            </script>
             <?php
-
                 echo $this->meliscms_page_analytics_site_analytics_tab_content;
                 echo $this->meliscms_page_analytics_site_analytics_tab_settings_content;
             ?>

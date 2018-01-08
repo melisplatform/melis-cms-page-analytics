@@ -6,10 +6,19 @@ pre#pads_js_analytics{
     width:100%;
     height:200px;
 }
-
 #content .melis-cms-google-analytics-guidelines{
     line-height: 1.5em;
     word-wrap: break-word;
     margin-top: 20px;
     margin-bottom: 50px;
+}
+
+.melis-cms-page-analytics-temp-overlay{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    cursor: progress;
 }
