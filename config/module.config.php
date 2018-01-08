@@ -68,6 +68,7 @@ return array(
         'invokables' => array(
             'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsTool' => 'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsToolController',
             'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsPageDetailsTool' => 'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsPageDetailsToolController',
+            'MelisCmsPageAnalytics\Controller\MelisSetup' => 'MelisCmsPageAnalytics\Controller\MelisSetupController',
         ),
     ),
     'form_elements' => array(
