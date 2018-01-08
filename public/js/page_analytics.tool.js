@@ -1,16 +1,17 @@
 $(function() {
     // Handles Site Selection Change in Analytics Tab
     $("body").on("change", "form#select_page_analytic_form_analytics_content select#analytics-content-side-id", function() {
-
-        console.log('applying overlay');
+        /**
+         * Applying an overlay to prevent user from switching to different tab before
+         * Content from the AJAX call is loaded
+         */
         $('<div class="melis-cms-page-analytics-temp-overlay"></div>').insertAfter("#id_meliscms_page_analytics_content");
 
         var siteId = parseInt($(this).val());
         if(!isNaN(siteId)) {
             melisHelper.zoneReload("id_meliscms_page_analytics_site_analytics_tab_content", "meliscms_page_analytics_site_analytics_tab_content", {siteId : siteId}, function() {
                 $body.find("div#id_meliscms_page_analytics_site_analytics_tab_content").addClass("active");
-                $body.find('.melis-cms-page-analytics-temp-overlay').remove();
-                console.log('callback: adds active class and removes overlay');
+                $body.find('.melis-cms-page-analytics-temp-overlay').remove();  // Removes overlay after content is loaded
             });
         }
     });

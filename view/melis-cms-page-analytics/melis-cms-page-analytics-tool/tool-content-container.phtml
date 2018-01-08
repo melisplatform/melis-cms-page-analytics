@@ -7,6 +7,16 @@ if (!empty($this->zoneconfig['conf']['id']))
 ?>
 
 <div <?= $id; ?> data-melisKey="<?= $this->melisKey; ?>">
+    <script type="text/javascript">
+        $(function () {
+            /**
+             * Selecting the First Site in the Site Selection automatically
+             * A flag to prevent the trigger change in tool-content-container-analytics-tab-content.phtml
+             * to keep on executing infinitely
+             */
+            window.pageAnalyticsSiteSelect = true;
+        });
+    </script>
     <div class="widget widget-tabs widget-tabs-double-2 widget-tabs-responsive">
         <div class="widget-head nav">
             <ul class="tabs-label nav-tabs">
@@ -44,33 +54,6 @@ if (!empty($this->zoneconfig['conf']['id']))
         </div>
     </div>
     <div class="widget-body tab-content spacing-x2 innerAll">
-            <script type="text/javascript">
-                $(function () {
-                    /**
-                     * Selecting the First Site in the Site Selection automatically
-                     * A flag to prevent the trigger change in tool-content-container-analytics-tab-content.phtml
-                     * to keep on executing infinitely
-                     */
-                    window.pageAnalyticsSiteSelect = true;
-
-                    /**
-                     * Applying an overlay to prevent user from switching to different tab before
-                     * Content from the AJAX call is loaded
-                     */
-//                    $('<div class="melis-cms-page-analytics-temp-overlay"></div>').insertAfter("#id_meliscms_page_analytics_content");
-//                    var searchContent = setInterval(function () {
-//                        checkContent(searchContent);
-//                    }, 300);
-//
-//                    function checkContent(timer) {
-//                        var content = $body.find("#id_melis_cms_page_analytics_loaded_flag");
-//                        if ( content.length ){
-//                            $body.find('.melis-cms-page-analytics-temp-overlay').remove();
-//                            clearInterval(timer);
-//                        }
-//                    }
-                });
-            </script>
             <?php
                 echo $this->meliscms_page_analytics_site_analytics_tab_content;
                 echo $this->meliscms_page_analytics_site_analytics_tab_settings_content;
