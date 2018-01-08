@@ -58,11 +58,10 @@ return array(
     'tr_meliscms_page_analytics_site_id_ko' => 'Invalid site ID, it should only be numeric',
     'tr_meliscms_page_analytics_site_id_empty' => 'Please select a site',
     'tr_meliscms_page_analytics_site_analytics_script' => 'Analytics script',
+    'tr_melis_cms_google_analytics_settings_site_select_tooltip' => 'Select the site you wish to set the analytics settings from',
 
     /**
      * Google Analytics Settings Configuration
      */
     'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'Code obtained from Google Analytics (see documentation below for more information)',
-
-
 );
