@@ -61,5 +61,5 @@ return array(
 
     'tr_meliscms_page_analytics_site_analytics_script' => 'Script analytics',
     'tr_meliscms_page_analytics_site_analytics_script_tooltip' => "Code obtenu auprès de Google Analytics (voir la documentation plus bas pour plus d'informations)",
-
+    'tr_meliscms_page_analytics_site_analytics_deleted_marker' => 'Page supprimée',
 );

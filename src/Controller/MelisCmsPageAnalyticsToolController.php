@@ -127,7 +127,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
     public function getMelisCmsPageAnalyticsDataAction()
     {
-        //$data = $this->melisCmsPageAnalytcisTable()->fetchAll()->toArray();
         $request = $this->getRequest();
 
         $dataCount = 0;
@@ -159,6 +158,11 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                 }
 
                 $tableData[$ctr]['DT_RowId'] = $tableData[$ctr]['ph_id'];
+
+                // Marking deleted pages
+                if (empty($tableData[$ctr]['page_name'])){
+                    $tableData[$ctr]['page_name'] = $this->getTool()->getTranslation('tr_meliscms_page_analytics_site_analytics_deleted_marker');
+                }
             }
         }
         $response = [

@@ -64,4 +64,5 @@ return array(
      * Google Analytics Settings Configuration
      */
     'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'Code obtained from Google Analytics (see documentation below for more information)',
+    'tr_meliscms_page_analytics_site_analytics_deleted_marker' => 'Page deleted',
 );
