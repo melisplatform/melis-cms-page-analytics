@@ -24,7 +24,7 @@ $(function() {
             // Retrieves Current Page Analytics Module for the selected site via siteId
             $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSiteAnalytics', {site_id: siteId}, function(data) {
                 if (!data.response.analyticsModuleIsSet){
-                    $body.find("form#select_page_analytic_form select#page_analytics_id").val("");
+                    $body.find("form#select_page_analytic_form select#page_analytics_id").val("").change();
                 }
                 else if(data.response.activeAnalytics){
                     // when the set Page Analytics module for the selected site is active
@@ -48,8 +48,8 @@ $(function() {
     // Settings Tab: Handles Analytics Module change
     $("body").on("change", "select#page_analytics_id", function() {
         melisCoreTool.pending("button");
-        var analyticsKey  = $(this).val();
-        var siteId        = parseInt($("form#select_page_analytic_form select#site_id").val());
+        var analyticsKey  = $body.find(this).val();
+        var siteId        = parseInt($body.find("form#select_page_analytic_form select#site_id").val());
 
         if(!isNaN(siteId) && analyticsKey === 'melis_cms_google_analytics') {
             $.ajax({
@@ -60,7 +60,7 @@ $(function() {
                 encode      : true
             }).success(function(data){
                 if(data) {
-                    $("div#analytics-settings-form").html(data);
+                    $body.find("div#analytics-settings-form").html(data);
 
                     $.post('/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getAnalyticsScript', {site_id: siteId, analytics_key : analyticsKey}, function(data) {
                         if(data.response.pads_js_analytics) {
@@ -70,18 +70,18 @@ $(function() {
                     });
                 }
                 else {
-                    $("div#analytics-settings-form").html("");
+                    $body.find("div#analytics-settings-form").html("");
                 }
             });
 
             // Show Script Editor & Google Analytics Configuration Guidelines
-            $("span#pads_js_analytics_cont").removeClass("hidden");
-            $('div#melis-cms-google-analytics-guidelines').removeClass('hidden');
+            $body.find("span#pads_js_analytics_cont").removeClass("hidden");
+            $body.find('div#melis-cms-google-analytics-guidelines').removeClass('hidden');
         }
         else{
-            $("div#analytics-settings-form").html("");
-            $("span#pads_js_analytics_cont").addClass("hidden");
-            $('div#melis-cms-google-analytics-guidelines').addClass('hidden');
+            $body.find("div#analytics-settings-form").html("");
+            $body.find("span#pads_js_analytics_cont").addClass("hidden");
+            $body.find('div#melis-cms-google-analytics-guidelines').addClass('hidden');
         }
 
         melisCoreTool.done("button");
