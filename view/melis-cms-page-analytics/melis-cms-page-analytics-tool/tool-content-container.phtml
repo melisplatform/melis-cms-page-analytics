@@ -7,6 +7,16 @@ if (!empty($this->zoneconfig['conf']['id']))
 ?>
 
 <div <?= $id; ?> data-melisKey="<?= $this->melisKey; ?>">
+    <script type="text/javascript">
+        $(function () {
+            /**
+             * Selecting the First Site in the Site Selection automatically
+             * A flag to prevent the trigger change in tool-content-container-analytics-tab-content.phtml
+             * to keep on executing infinitely
+             */
+            window.pageAnalyticsSiteSelect = true;
+        });
+    </script>
     <div class="widget widget-tabs widget-tabs-double-2 widget-tabs-responsive">
         <div class="widget-head nav">
             <ul class="tabs-label nav-tabs">
@@ -17,45 +27,36 @@ if (!empty($this->zoneconfig['conf']['id']))
                     
                     foreach ($this->zoneconfig['interface'] as $keyConfig => $menuConfig)
                     {
-                            
-                            $id = '';
-                            if (!empty($menuConfig['conf']['id']))
-                                $id = ' id="' . $this->idPage . '_' . $menuConfig['conf']['id'] . '_title"';
+                        $id = '';
+                        if (!empty($menuConfig['conf']['id']))
+                            $id = ' id="' . $this->idPage . '_' . $menuConfig['conf']['id'] . '_title"';
                                 
-                                $tabname = 'Tab';
-                                if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['name']))
-                                    $tabname = $menuConfig['conf']['name'];
+                        $tabname = 'Tab';
+                        if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['name']))
+                            $tabname = $menuConfig['conf']['name'];
                                     
-                                    $icon = '';
-                                    if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['icon']))
-                                        $icon = $menuConfig['conf']['icon'];
-                                        
-                                        ?>
-                							<li> <!-- <?= $id; ?> -->
-                								<a class="glyphicons <?= $icon; ?>" data-toggle="tab" href="#<?= $menuConfig['conf']['id']; ?>">
-                									<i> </i>
-                									<span><?= $tabname; ?></span>
-                								</a>
-                							</li>
-                							<?php
-
-                						}
-                					}
+                        $icon = '';
+                        if (!empty($menuConfig['conf']) && !empty($menuConfig['conf']['icon']))
+                            $icon = $menuConfig['conf']['icon'];
+                ?>
+                        <li>
+                            <a class="glyphicons <?= $icon; ?>" data-toggle="tab" href="#<?= $menuConfig['conf']['id']; ?>">
+                                <i> </i>
+                                <span><?= $tabname; ?></span>
+                            </a>
+                        </li>
+                <?php
+                    }
+                }
                 ?>
 
             </ul>
         </div>
     </div>
-    <div class="spacing-x2 innerAll">
-
-        <div class="tab-content">
-
+    <div class="widget-body tab-content spacing-x2 innerAll">
             <?php
-
                 echo $this->meliscms_page_analytics_site_analytics_tab_content;
                 echo $this->meliscms_page_analytics_site_analytics_tab_settings_content;
             ?>
-        </div>
-
     </div>
 </div>

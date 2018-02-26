@@ -1,31 +1,50 @@
 <?php
-if($this->hasAccess)
-{ 
-	$this->melisGenericTable()->setTable(array(
-	    'id' => 'tableMelisCmsPageAnalytics',
-	    'class' => 'table table-striped table-primary dt-responsive nowrap',
-	    'cellspacing' => '0',
-	    'width' => '100%'
-	));
-	$columns = array();
-	$columnStyle = array();
-	foreach($this->tableColumns as $columnText)
-	{
-	    $columns[] = $columnText['text'];
-
-	}
-	// print_r($columns);
-	$this->melisGenericTable()->setColumns($columns);
-
-	echo $this->melisGenericTable()->renderTable();
-	?>
-
-	<!-- /CONTENT -->
-	<script type="text/javascript">
-	    $(document).ready(function() {
-	        <?= $this->getToolDataTableConfig; ?>
-	    });
-	</script>
-<?php
- }
+    $id             = empty($this->zoneconfig['conf']['id'])? 'id_melis_cms_page_analytics_tool_table': $this->zoneconfig['conf']['id'];
+    $dataMeliskey   = empty($this->melisKey)? 'melis_cms_page_analytics_tool_table': $this->melisKey;
 ?>
+
+<div  id="<?= $id;?>" data-melisKey="<?= $dataMeliskey;?>" class="melis-cms-page-analytics-tool-table">
+    <?php
+        if($this->hasAccess)
+        {
+            $this->melisGenericTable()->setTable(array(
+                'id' => 'tableMelisCmsPageAnalytics',
+                'class' => 'table table-striped table-primary dt-responsive nowrap',
+                'cellspacing' => '0',
+                'width' => '100%'
+            ));
+            $columns = array();
+            $columnStyle = array();
+            foreach($this->tableColumns as $columnText)
+            {
+                $columns[] = $columnText['text'];
+
+            }
+            // print_r($columns);
+            $this->melisGenericTable()->setColumns($columns);
+
+            echo $this->melisGenericTable()->renderTable();
+            ?>
+
+            <!-- /CONTENT -->
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    <?= $this->getToolDataTableConfig; ?>
+
+                    /**
+                     * Deletes the Caret in the First Column
+                     */
+                    var searchTable = setInterval(function(){
+                        var toolAnalyticsTable = $body.find("#tableMelisCmsPageAnalytics thead tr th:first-child.sorting_asc");
+                        if(toolAnalyticsTable.length)
+                        {
+                            toolAnalyticsTable.removeClass('sorting_asc');
+                            clearInterval(searchTable);
+                        }
+                    }, 300);
+                });
+            </script>
+            <?php
+        }
+    ?>
+</div>

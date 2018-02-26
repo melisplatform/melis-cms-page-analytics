@@ -1,4 +1,7 @@
 var _pageId = null;
+window.melisCmsPageAnalyticsAppendLoadedFlag = function () {
+    $('<div id="id_melis_cms_page_analytics_loaded_flag"></div>').insertAfter("#tableMelisCmsPageAnalytics_wrapper");
+}
 window.setPageId = function(d) {
 	d.pageId = activeTabId.split("_")[0];
 }
@@ -25,69 +28,5 @@ $(function() {
 
 		}, 	
 	}
-
-	$("body").on("submit", "form#select_page_analytic_form", function(e) {
-
-        var formData = new FormData(this);
-        melisCoreTool.pending("button");
-        $.ajax({
-            type    : 'POST',
-            url     : '/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/save',
-            data    : formData,
-            processData : false,
-            cache       : false,
-            contentType : false,
-            dataType    : 'json',
-        }).success(function(data){
-            if(data.success) {
-                melisHelper.melisOkNotification(data.title, data.message);
-                melisHelper.zoneReload("id_meliscms_page_analytics_display", "meliscms_page_analytics_display");
-            }
-            else {
-                melisHelper.melisKoNotification(data.title, data.message, data.errors);
-            }
-            melisCore.flashMessenger();
-            melisCoreTool.done("button");
-        }).error(function(){
-            melisCoreTool.done("button");
-        });
-		e.preventDefault();
-	});
-
-    $("body").on("change", "select#page_analytics_id", function() {
-        var value = $(this).val().toString();
-
-        $.ajax({
-            type    : 'POST',
-            url     : '/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getSettingsForm',
-            data    : {page_analytics_id : value},
-            dataType    : 'html',
-            encode		: true
-        }).success(function(data){
-            if(data) {
-                $("div#analytics-settings-form").html(data);
-            }
-            else {
-                $("div#analytics-settings-form").html("");
-            }
-        });
-
-    });
-
-    $("body").on("click", "a#cms-page-anlytics-tab-settings-button",  function() {
-        $("select#page_analytics_id").trigger("change");
-    });
-
-    $("body").on("click", "a.melis-cms-page-analytics-refresh", function() {
-        var pageId = activeTabId.split("_")[0];
-        melisHelper.zoneReload(pageId+"_id_meliscms_page_analytics", "meliscms_page_analytics_tab_display", {idPage : pageId}, function() {
-            setTimeout(function() {
-                $("#"+pageId+"_id_meliscms_page_analytics").addClass("active");
-            }, 600);
-
-        });
-
-    })
-
 
 });

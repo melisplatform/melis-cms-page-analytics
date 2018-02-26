@@ -61,21 +61,32 @@ class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractL
 
                 if(isset($params['content'])) {
 
-                    $table   = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-                    $curData =  (array) $table->getEntryById(1)->current();
-                    $currentAnalytics = isset($curData['pad_current_analytics']) ? $curData['pad_current_analytics'] : null;
+                    $pageId = isset($params['idPage']) ? (int) $params['idPage'] : null;
 
-                    if($currentAnalytics) {
-                        $config = $this->getServiceLocator()->get('config');
-                        $pageAnalyticsData = $config['plugins']['meliscms']['datas']['page_analytics'];
-                        $pageAnalyticsData = isset($pageAnalyticsData[$currentAnalytics])? $pageAnalyticsData[$currentAnalytics] : null;
+                    // get the site domain of the page
+                    $pageTreeSvc = $this->getServiceLocator()->get('MelisEngineTree');
+                    $siteData    = $pageTreeSvc->getSiteByPageId($pageId);
 
-                        if($pageAnalyticsData) {
-                            $script = isset($pageAnalyticsData['datas']['universal_analytics_tracking_code']['script']) ? $pageAnalyticsData['datas']['universal_analytics_tracking_code']['script'] : null;
-                            if($script && !empty($script)) {
-                                $content = str_replace('</head>', $script.'</head>', $params['content']);
+                    if($siteData) {
 
-                                return $content;
+                        $siteId        = (int) $siteData->sdom_site_id;
+                        $table         = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+
+
+                        $analyticsData = $table->getAnalytics($siteId)->current();
+
+                        if($analyticsData) {
+                            $currentAnalyticsKey = $analyticsData->pad_analytics_key;
+                            $analyticsData = $table->getAnalytics($siteId, $currentAnalyticsKey)->current();
+
+                            if($analyticsData) {
+                                $script = $analyticsData->pads_js_analytics;
+                                if($script && !empty($script)) {
+                                    $script     = $script ;
+                                    $content    = str_replace('</head>', $script.'</head>', $params['content']);
+
+                                    return $content;
+                                }
                             }
                         }
                     }

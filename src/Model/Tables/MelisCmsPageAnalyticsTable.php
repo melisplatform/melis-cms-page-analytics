@@ -3,6 +3,7 @@
 namespace MelisCmsPageAnalytics\Model\Tables;
 
 use MelisEngine\Model\Tables\MelisGenericTable;
+use Zend\Db\Sql\Where;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\Db\Sql\Expression;
 
@@ -66,15 +67,20 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
     {
         $select = $this->tableGateway->getSql()->select();
         $select->columns(array('*'));
-        $select->where->equalTo('ph_page_id',$pageId);
 
+        $where = new Where();
+        $where->equalTo('ph_page_id',$pageId);
 
         if(!empty($searchableColumns) && !empty($search)) {
+            $nest = $where->and->nest();
             foreach($searchableColumns as $column) {
-                $select->where->or->like($column, '%'.$search.'%');
+                // nest function creates a nested query like so:
+                // ...AND (`ph_id` LIKE '%$search%' OR `ph_date_visit` LIKE '%$search%')
+                $nest->like($column,'%'.$search.'%')->or;
             }
-        }  
-            
+            $select->where($where);
+        }
+
         $getCount = $this->tableGateway->selectWith($select);
         // set current data count for pagination
         $this->setCurrentDataCount((int) $getCount->count());

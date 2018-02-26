@@ -38,6 +38,47 @@ return array(
                     ),
                 ),
             ),
+            /*
+          * This route will handle the
+          * alone setup of a module
+          */
+            'setup-melis-cms-page-analytics' => array(
+                'type'    => 'Literal',
+                'options' => array(
+                    'route'    => '/MelisCmsPageAnalytics',
+                    'defaults' => array(
+                        '__NAMESPACE__' => 'MelisCmsPageAnalytics\Controller',
+                        'controller'    => 'MelisSetup',
+                        'action'        => 'setup-form',
+                    ),
+                ),
+                'may_terminate' => true,
+                'child_routes' => array(
+                    'default' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => '/[:controller[/:action]]',
+                            'constraints' => array(
+                                'controller' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                'action'     => '[a-zA-Z][a-zA-Z0-9_-]*',
+                            ),
+                            'defaults' => array(
+//
+                            ),
+                        ),
+                    ),
+                    'setup' => array(
+                        'type' => 'Segment',
+                        'options' => array(
+                            'route' => '/setup',
+                            'defaults' => array(
+                                'controller' => 'MelisCmsPageAnalytics\Controller\MelisSetup',
+                                'action' => 'setup-form',
+                            ),
+                        ),
+                    ),
+                ),
+            ),
         ),
     ),
 
@@ -55,7 +96,7 @@ return array(
         'factories' => array(
             'MelisCmsPageAnalyticsTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsTableFactory',
             'MelisCmsPageAnalyticsDataTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsDataTableFactory',
-            'MelisCmsPageAnalyticsSettingsTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsSettingsTableFactory',
+            'MelisCmsPageAnalyticsDataSettingsTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsDataSettingsTableFactory',
 
             'MelisCmsPageAnalyticsService' => 'MelisCmsPageAnalytics\Service\Factory\MelisCmsPageAnalyticsServiceFactory',
             'MelisCmsDefaultPageAnalyticsService' => 'MelisCmsPageAnalytics\Service\Factory\MelisCmsDefaultPageAnalyticsServiceFactory',
@@ -68,11 +109,13 @@ return array(
         'invokables' => array(
             'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsTool' => 'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsToolController',
             'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsPageDetailsTool' => 'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsPageDetailsToolController',
+            'MelisCmsPageAnalytics\Controller\MelisSetup' => 'MelisCmsPageAnalytics\Controller\MelisSetupController',
         ),
     ),
     'form_elements' => array(
         'factories' => array(
             'PageAnalyticsSelect' => 'MelisCmsPageAnalytics\Form\Factory\PageAnalyticsSelectFactory',
+            'PageAnalyticsSiteSelect' => 'MelisCmsPageAnalytics\Form\Factory\PageAnalyticsSiteSelectFactory',
         ),
     ),
     'view_manager' => array(

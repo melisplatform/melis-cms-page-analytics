@@ -17,16 +17,25 @@ class MelisCmsPageAnalyticsDataTable extends MelisGenericTable
         $this->idField = 'pad_id';
     }
 
-    public function getCurrentAnalyticsData()
+
+    public function getAnalytics($siteId, $analyticsKey = null)
     {
         $select = $this->tableGateway->getSql()->select();
 
-        $select->join('melis_cms_page_analytics_settings', 'melis_cms_page_analytics_settings.pas_analytics = melis_cms_page_analytics_data.pad_current_analytics', array('*'), $select::JOIN_LEFT);
+        $select->join('melis_cms_page_analytics_data_settings', 'melis_cms_page_analytics_data_settings.pads_site_id = melis_cms_page_analytics_data.pad_site_id',
+            array('*'), $select::JOIN_LEFT);
 
+
+        $select->where->equalTo('pad_site_id', (int) $siteId);
+
+        if(!is_null($analyticsKey) && !empty($analyticsKey)) {
+            $select->where->and->equalTo('pads_analytics_key', $analyticsKey);
+        }
 
         $resultSet = $this->tableGateway->selectWith($select);
 
         return $resultSet;
-
     }
+
+
 }

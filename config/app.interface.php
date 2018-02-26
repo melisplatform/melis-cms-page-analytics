@@ -1,6 +1,5 @@
 <?php
 namespace MelisCmsPageAnalytics;
-
 return array(
     'plugins' => array(
         'meliscore' => array(
@@ -66,9 +65,7 @@ return array(
                             ),
                         ),
                         'datas' => array(
-                            'universal_analytics_tracking_code' => array(
-                                'script' => "<script>console.log('You are using Melis CMS Page Analytics');</script>"
-                            )
+                            'universal_analytics_tracking_code' => array()
                         ),
                     )
                 )
@@ -113,6 +110,19 @@ return array(
                                                         'jsdatas' => array()
                                                     ),
                                                 ),
+                                                // For reloading table in the page
+                                                'melis_cms_page_analytics_page_table' => array(
+                                                    'conf' =>array(
+                                                        'id' => 'id_melis_cms_page_analytics_page_table',
+                                                        'name' => 'tr_melis_cms_page_analytics_page_table',
+                                                        'melisKey' => 'melis_cms_page_analytics_page_table'
+                                                    ),
+                                                    'forward' => array(
+                                                        'module' => 'MelisCmsPageAnalytics',
+                                                        'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
+                                                        'action' => 'tool-content-container'
+                                                    ),
+                                                ),
                                             ),
                                         ),
                                     ),
@@ -138,7 +148,10 @@ return array(
                     'MelisCmsPageAnalytics/css/site_analytics.css',
                 ),
                 'js' => array(
+                    'MelisCmsPageAnalytics/plugin/ace-editor/ace.js',
+                    'MelisCmsPageAnalytics/plugin/ace-editor/ext-old_ie.js',
                     'MelisCmsPageAnalytics/js/pagehit.tool.js',
+                    'MelisCmsPageAnalytics/js/page_analytics.tool.js',
                 )
             ),
             'interface' => array(
@@ -193,7 +206,6 @@ return array(
                                         'name' => 'tr_meliscms_page_analytics_tab_content',
                                         'melisKey' => 'meliscms_page_analytics_site_analytics_tab_content',
                                         'icon' => 'glyphicons stats'
-                                        
                                     ),
                                     'forward' => array(
                                         'module' => 'MelisCmsPageAnalytics',
@@ -202,6 +214,21 @@ return array(
                                         'jscallback' => '',
                                         'jsdatas' => array()
                                     ),
+                                    'interface' => array(
+                                        // added to have zone reload only the tab
+                                        'melis_cms_page_analytics_tool_table' => array(
+                                            'conf' =>array(
+                                                'id' => 'id_melis_cms_page_analytics_tool_table',
+                                                'name' => 'tr_melis_cms_page_analytics_tool_table',
+                                                'melisKey' => 'melis_cms_page_analytics_tool_table'
+                                            ),
+                                            'forward' => array(
+                                                'module' => 'MelisCmsPageAnalytics',
+                                                'controller' => 'MelisCmsPageAnalyticsTool',
+                                                'action' => 'tool-default-page-analytics-table'
+                                            ),
+                                        ),
+                                    ),
                                 ),
                                 'meliscms_page_analytics_site_analytics_tab_settings_content' => array(
                                     'conf' => array(
@@ -209,7 +236,7 @@ return array(
                                         'name' => 'tr_meliscms_page_analytics_settings_tab_content',
                                         'melisKey' => 'meliscms_page_analytics_site_analytics_tab_settings_content',
                                         'icon' => 'glyphicons  settings'
-                                        
+
                                     ),
                                     'forward' => array(
                                         'module' => 'MelisCmsPageAnalytics',

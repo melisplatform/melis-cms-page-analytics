@@ -16,7 +16,7 @@ namespace MelisCmsPageAnalytics;
                         // additional request parameters, this should be a javascript function
                         'dataFunction' => '',
                         // the callback event that will be called after table rendering
-                        'ajaxCallback' => '',
+                        'ajaxCallback' => 'melisCmsPageAnalyticsAppendLoadedFlag()',
                         'filters' => array(
                             'left' => array(
                                 'limit' => array(
@@ -26,17 +26,17 @@ namespace MelisCmsPageAnalytics;
                                 ),
                             ),
                             'center' => array(
-                                'search' => array(
+                                'melis_cms_page_analytics_tool_search' => array(
                                     'module' => 'MelisCmsPageAnalytics',
                                     'controller' => 'MelisCmsPageAnalyticsTool',
-                                    'action' => 'tool-content-table-search',
+                                    'action' => 'tool-content-table-search-tool',
                                 ),
                             ),
                             'right' => array(
-                                'refresh' => array(
+                                'melis_cms_page_analytics_tool_refresh' => array(
                                     'module' => 'MelisCmsPageAnalytics',
                                     'controller' => 'MelisCmsPageAnalyticsTool',
-                                    'action' => 'tool-content-table-refresh',
+                                    'action' => 'tool-content-table-refresh-tool',
                                 ),
                             ),
 
@@ -106,17 +106,17 @@ namespace MelisCmsPageAnalytics;
                                 ),
                             ),
                             'center' => array(
-                                'search' => array(
+                                'melis_cms_page_analytics_page_search' => array(
                                     'module' => 'MelisCmsPageAnalytics',
                                     'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
-                                    'action' => 'tool-content-table-search',
+                                    'action' => 'tool-content-table-search-page',
                                 ),
                             ),
                             'right' => array(
-                                'refresh' => array(
+                                'melis_cms_page_analytics_page_refresh' => array(
                                     'module' => 'MelisCmsPageAnalytics',
                                     'controller' => 'MelisCmsPageAnalyticsPageDetailsTool',
-                                    'action' => 'tool-content-table-refresh',
+                                    'action' => 'tool-content-table-refresh-page',
                                 ),
                             ),
 
@@ -124,11 +124,8 @@ namespace MelisCmsPageAnalytics;
                         'columns' => array(
                             // the key should be the actual column name of the table
                             'ph_id' => array(
-                                // text that will be displayed on the table
                                 'text' => 'tr_meliscms_page_analytics_column_id',
-                                // the width of the column
                                 'css'  => array('width' => '20%', 'padding-right' => 0),
-                                // if true, then the column is sortable to ASC or DESC
                                 'sortable' => true
                             ),
                             'ph_date_visit' => array(
@@ -140,7 +137,7 @@ namespace MelisCmsPageAnalytics;
                             // because the 10% is reserved to the action column where the buttons will be displayed
                         ),
                         // Set what columns that will be used when searching
-                        'searchables' => array('ph_id', 'ph_user_ip','ph_date_visit'),
+                        'searchables' => array('ph_id', 'ph_date_visit'),
                         'actionButtons' => array(),
                     ),
                    
