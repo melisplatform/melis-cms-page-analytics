@@ -61,7 +61,7 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 -- Data for table `melis_cms_page_analytics_data_settings`
 -- -----------------------------------------------------
 START TRANSACTION;
-INSERT INTO `melis_cms_page_analytics_data_settings` (`pads_id`, `pads_site_id`, `pads_analytics_key`, `pads_settings`, `pads_js_analytics`) VALUES (DEFAULT, 1, 'melis_cms_page_analytics', NULL, '<script>console.log(\"Melis CMS Page Analytics\");</script>');
+INSERT INTO `melis_cms_page_analytics_data_settings` (`pads_id`, `pads_site_id`, `pads_analytics_key`, `pads_settings`, `pads_js_analytics`) VALUES (DEFAULT, 1, 'melis_cms_page_analytics', NULL, '');
 
 COMMIT;
 
