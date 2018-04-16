@@ -24,7 +24,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
         $siteData    = $pageTreeSvc->getSiteByPageId($pageHitId);
         $siteId      = null;
         if($siteData) {
-            $siteId = (int) $siteData->sdom_site_id;
+            $siteId = (int) $siteData->site_id;
         }
         $this->pageId   = $pageHitId;
         $table          = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
