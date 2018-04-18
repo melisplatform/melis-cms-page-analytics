@@ -145,14 +145,28 @@ return array(
             ),
             'ressources' => array(
                 'css' => array(
-                    'MelisCmsPageAnalytics/css/site_analytics.css',
+                    '/MelisCmsPageAnalytics/css/site_analytics.css',
                 ),
                 'js' => array(
-                    'MelisCmsPageAnalytics/plugin/ace-editor/ace.js',
-                    'MelisCmsPageAnalytics/plugin/ace-editor/ext-old_ie.js',
-                    'MelisCmsPageAnalytics/js/pagehit.tool.js',
-                    'MelisCmsPageAnalytics/js/page_analytics.tool.js',
-                )
+                    '/MelisCmsPageAnalytics/plugin/ace-editor/ace.js',
+                    '/MelisCmsPageAnalytics/plugin/ace-editor/ext-old_ie.js',
+                    '/MelisCmsPageAnalytics/js/pagehit.tool.js',
+                    '/MelisCmsPageAnalytics/js/page_analytics.tool.js',
+                ),
+                /**
+                 * the "build" configuration compiles all assets into one file to make
+                 * lesser requests
+                 */
+                'build' => [
+                    // lists of assets that will be loaded in the layout
+                    'css' => [
+                        '/MelisCmsPageAnalytics/build/css/bundle.css',
+
+                    ],
+                    'js' => [
+                        '/MelisCmsPageAnalytics/build/js/bundle.js',
+                    ]
+                ]
             ),
             'interface' => array(
                 'meliscms_page_analytics_tool_display' => array(
