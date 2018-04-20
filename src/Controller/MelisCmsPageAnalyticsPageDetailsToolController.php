@@ -39,10 +39,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
             $hasAnalyticsConfig = $config->getItem('meliscms/datas/page_analytics/'.$currentAnalytics);
 
             if($hasAnalyticsConfig) {
-                //$pageAnalyticsData = $config->getItem('meliscms/datas/page_analytics');
-                //$pageAnalyticsData = $pageAnalyticsData[$currentAnalytics];
                 $pageAnalyticsData = $hasAnalyticsConfig;
-                //if($pageAnalyticsData) {
                     $forward = $pageAnalyticsData['interface']['analytics_for_page']['forward'];
                     $display = $this->getTool()->getViewContent($forward);
 
@@ -63,7 +60,6 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                     // get the url the page
                     $pageTree = $this->getServiceLocator()->get('MelisEngineTree');
                     $pageUrl  = $pageTree->getPageLink($pageHitId, true);
-                //}
             }
             else{
                 $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_inactive_module');
@@ -167,7 +163,6 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
     }
     public function getMelisCmsPageAnalyticsPageDetailsDataAction()
     {
-        //$data  = $this->melisCmsPageAnalytcisTable()->fetchAll()->toArray();
         $request = $this->getRequest();
 
         $dataCount = 0;
