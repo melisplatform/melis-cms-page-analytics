@@ -1,0 +1,21 @@
+<melis-cms-page-analytics>
+	<package_info>
+		<mp_title>Melis Cms Page Analytics</mp_title>
+		<mp_subtitle>The default analytics module of Melis Platform.</mp_subtitle>
+		<mp_description>
+			This module activates the default and basic MelisCmsPageAnalytics.<br />
+			It will come with a tool and a special tab on every page's edition.<br />
+			The default tool allows to have a visitation counter on pages but is meant to be overidden by other modules dedicated to Google Analytics or any other similar system.<br />
+			The tool offers the choice to select which analytics module (developped for Melis Platform) is to be used.
+		</mp_description>
+		<mp_maintainers>melisplatform</mp_maintainers>
+		<mp_group>Melis Marketing</mp_group>
+	</package_info>
+	<package_images>
+		<img_1>
+			<mpi_image_title>Melis Cms Page Analytics</mpi_image_title>
+			<mpi_image_file>melis-cms-page-analytics.png</mpi_image_file>
+			<mpi_image_main>1</mpi_image_main>
+		</img_1>
+	</package_images>
+</melis-cms-page-analytics>

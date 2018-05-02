@@ -381,7 +381,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $data    = array();
         $request = $this->getRequest();
 
-        if($request->isPost()) {
+        if ($request->isPost()) {
 
             $siteId = (int) $request->getPost('site_id');
             $analyticsKey = $this->getTool()->sanitize($request->getPost('analytics_key'));
@@ -389,9 +389,10 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
             $analyticsData = $analyticsTable->getAnalytics($siteId, $analyticsKey)->current();
 
-            if($analyticsData)
+            if ($analyticsData) {
                 $data['pads_analytics_key'] = $analyticsData->pads_analytics_key;
-            $data['pads_js_analytics']  = $analyticsData->pads_js_analytics;
+            }
+            $data['pads_js_analytics']  = $analyticsData->pads_js_analytics?? '';
 
             $success = 1;
         }
@@ -543,26 +544,35 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $errors;
     }
 
+    /**
+     * Returns the Google Analytics Service if it exists,
+     * otherwise, returns false.
+     * @return array|bool|object
+     */
+    private function getGoogleAnalyticsService()
+    {
+        try {
+            $service = $this->getServiceLocator()->get('MelisCmsGoogleAnalyticsService');
+            return  $service;
+        } catch (\Exception $exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Gets the guidelines on how to setup Google Analytics
+     * via Google Analytics Service
+     * @return string
+     */
     private function getGoogleAnalyticsGuideAction()
     {
-        $guide  = '';
-        $tool   = $this->getTool();
-        $guide  = '<h4>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_title').'</h4><br>';
-        $guide .= '<p><strong>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_subtitle').'</strong></p><br>';
+        $guide              = '';
+        $googleAnalytics    = $this->getGoogleAnalyticsService();
 
-        $step   = 0;
-        for ($i=1; $i < 3; $i++) {
-            $guide .= '<p><strong>'. $tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i) . '</strong></p>';
-            $guide .= '<p><ol>';
-            $step   = 1;
-            while (substr($tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_item'.$step), 0, 28) !== 'tr_meliscms_google_analytics'){
-                $guide .= '<li><p>'.$tool->getTranslation('tr_meliscms_google_analytics_guide_step'.$i.'_item'.$step).'</p></li>';
-                $step++;
-            }
-            $guide .= '</ol></p><br>';
+        if ($googleAnalytics) {
+            // google-analytics-service exists
+            $guide  = $googleAnalytics->getGoogleAnalyticsGuide();
         }
-
-        $guide .= $tool->getTranslation('tr_meliscms_google_analytics_guide_footnote');
 
         return $guide;
     }
