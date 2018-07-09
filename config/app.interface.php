@@ -8,7 +8,12 @@ return array(
                     'interface' => array(
                         'meliscms_toolstree_section' => array(
                             'interface' => array(
-                                'meliscms_site_tools' => array(
+                                'meliscms_site_tools_parent_menu' => array(
+                                    'conf' => [
+                                        'name' => 'tr_meliscms_page_analytics_title',
+                                        'icon' => 'fa-bar-chart',
+                                        'melisKey' => 'meliscms_site_tools_parent_menu'
+                                    ],
                                     'interface' => array(
                                         // this will be the configuration of the tool.
                                         'meliscms_page_analytics_tool_config' => array(
