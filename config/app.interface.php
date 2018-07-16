@@ -6,14 +6,9 @@ return array(
             'interface' => array(
                 'meliscore_leftmenu' => array(
                     'interface' => array(
-                        'meliscms_toolstree_section' => array(
+                        'meliscore_toolstree' => array(
                             'interface' => array(
-                                'meliscms_site_tools_parent_menu' => array(
-                                    'conf' => [
-                                        'name' => 'tr_meliscms_page_analytics_title',
-                                        'icon' => 'fa-bar-chart',
-                                        'melisKey' => 'meliscms_site_tools_parent_menu'
-                                    ],
+                                'meliscms_tools_section' => array(
                                     'interface' => array(
                                         // this will be the configuration of the tool.
                                         'meliscms_page_analytics_tool_config' => array(
