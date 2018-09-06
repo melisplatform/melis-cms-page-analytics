@@ -6,7 +6,7 @@ return array(
             'interface' => array(
                 'meliscore_leftmenu' => array(
                     'interface' => array(
-                        'meliscms_toolstree_section' => array(
+                        'melismarketing_toolstree_section' => array(
                             'interface' => array(
                                 'meliscms_site_tools_parent_menu' => array(
                                     'conf' => [
