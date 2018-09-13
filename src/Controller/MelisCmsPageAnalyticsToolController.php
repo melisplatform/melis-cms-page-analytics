@@ -9,7 +9,7 @@
 
 namespace MelisCmsPageAnalytics\Controller;
 
-use MelisCore\Service\MelisCoreConfigService;
+use Zend\Form\Element;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\View\Model\JsonModel;
@@ -219,13 +219,28 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $analayticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
             $analayticsSettingsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataSettingsTable');
 
+            /**
+             * Checking for google analytics settings form errors.
+             * Disclaimer: This is not the ideal way of doing things but MelisCmsPageAnalytics module
+             * was designed this way. A possible refactor in the future can be done.
+             */
+            if ($post['pad_analytics_key'] == 'melis_cms_google_analytics') {
+                $googleAnalytics = $this->getGoogleAnalyticsService();
+                $form = $googleAnalytics->getSettingsForm();
+                $form->setData($post);
+                if (!$form->isValid()) {
+                    $errors = $this->formatErrorMessage($form->getMessages(), $post['pad_analytics_key']);
+                }
+            }
+
             $form = $this->getForm();
             $form->setData($post);
 
-            if ($form->isValid()) {
+            if ($form->isValid() && empty($errors)) {
                 $formData = $form->getData();
                 $siteId = (int)$formData['pad_site_id'];
                 $analyticsKey = $formData['pad_analytics_key'];
+                $analyticsSettings = [];
 
                 /**
                  * Storing the private key file to the private key file directory.
@@ -236,12 +251,12 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                  * Additional validations can be added in the future such as:
                  * checking for certain keys, format of the values, etc.
                  */
+                $privateKeyFileDir = '';
                 if ($analyticsKey == 'melis_cms_google_analytics' &&
                     !empty($post['google_analytics_private_key']) &&
                     $post['google_analytics_private_key']['type'] === "application/json"
                 ) {
                     $privateKey = $post['google_analytics_private_key'];
-                    $privateKeyFileDir = '';
                     $conf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('meliscms');
                     if (!empty($conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'])) {
                         $privateKeyFileDir = $conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'];
@@ -255,20 +270,18 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     if (is_dir($dst) && is_writable($dst)) {
                         $dst .= DIRECTORY_SEPARATOR . $privateKey['name'];
                         copy($src, $dst);
-                        $dst = realpath($dst);
+                        $privateKeyFileDir = realpath($dst);
                     } else {
                         throw new \Exception('Private key file directory is not writable or does not exist.');
                     }
+
+                    /**
+                     *  Prepare settings to be serialized
+                     */
+                    // Automatically add 'ga:' prefix on the view ID
+                    $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
+                    $analyticsSettings['google_analytics_private_key'] = $privateKeyFileDir;
                 }
-
-                /**
-                 *  Prepare settings to be serialized
-                 */
-
-                $analyticsSettings = [];
-                // Automatically add 'ga:' prefix on the view ID
-                $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
-                $analyticsSettings['google_analytics_private_key'] = $dst;
                 $analyticsSettings = serialize($analyticsSettings);
 
                 // first check if the analytics data exists
@@ -310,15 +323,12 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     ));
                 }
 
-
                 if ($analyticsId) {
                     $success = 1;
                     $message = 'tr_meliscms_page_analytics_settings_select_save_ok';
                 }
-
-
             } else {
-                $errors = $this->formatErrorMessage($form->getMessages());
+                $errors = array_merge($errors, $this->formatErrorMessage($form->getMessages(), $post['pad_analytics_key']));
             }
 
         }
@@ -337,29 +347,31 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
     }
 
-    private function getForm()
+    /**
+     * Returns the Google Analytics Service if it exists,
+     * otherwise, returns false.
+     * @return array|bool|object
+     */
+    private function getGoogleAnalyticsService()
     {
-        $config = $this->getServiceLocator()->get('MelisCoreConfig');
-        $formConfig = $config->getItem('meliscms/forms/select_page_analytic_form');
-        $factory = new \Zend\Form\Factory();
-        $formElements = $this->serviceLocator->get('FormElementManager');
-
-        $factory->setFormElementManager($formElements);
-
-        $form = $factory->createForm($formConfig);
-
-        return $form;
+        try {
+            $service = $this->getServiceLocator()->get('MelisCmsGoogleAnalyticsService');
+            return $service;
+        } catch (\Exception $exception) {
+            return false;
+        }
     }
 
     /**
      * Returns the a formatted error messages with its labels
      * @param array $errors
+     * @param $analyticsModule
      * @return array
      */
-    private function formatErrorMessage($errors = array())
+    private function formatErrorMessage($errors = array(), $analyticsModule)
     {
         $melisMelisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
-        $appConfigForm = $melisMelisCoreConfig->getItem('meliscms/forms/select_page_analytic_form');
+        $appConfigForm = $melisMelisCoreConfig->getItem('meliscms/forms/' . $analyticsModule . '_settings_form');
         $appConfigForm = $appConfigForm['elements'];
 
         foreach ($errors as $keyError => $valueError) {
@@ -374,6 +386,29 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $errors;
     }
 
+    private function getForm()
+    {
+        $config = $this->getServiceLocator()->get('MelisCoreConfig');
+        $formConfig = $config->getItem('meliscms/forms/melis_cms_page_analytics_settings_form');
+        $factory = new \Zend\Form\Factory();
+        $formElements = $this->serviceLocator->get('FormElementManager');
+
+        $factory->setFormElementManager($formElements);
+
+        $form = $factory->createForm($formConfig);
+
+        return $form;
+    }
+
+    /**
+     * Returns the settings form of the selected analytics module for a site
+     *
+     * Disclaimer:
+     *  This is not the ideal way of extending a module's functionality,
+     *  a possible refactor can be done in the future to improve this method
+     *
+     * @return ViewModel
+     */
     public function getSettingsFormAction()
     {
         $form = null;
@@ -383,28 +418,48 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $analyticsKey = $this->getTool()->sanitize($this->getRequest()->getPost('analytics_key'));
             $siteId = (int)$this->getRequest()->getPost('site_id');
             $config = $this->getServiceLocator()->get('MelisCoreConfig');
-            $settings = $config->getItem('meliscms/datas/page_analytics/' . $analyticsKey . '/interface/settings_form');
+            $settings = $config->getItem('meliscms/forms/' . $analyticsKey . '_settings_form');
 
-            if ($settings && $analyticsKey) {
+            if (!empty($settings) && !empty($analyticsKey)) {
                 $factory = new \Zend\Form\Factory();
                 $formElements = $this->serviceLocator->get('FormElementManager');
-
                 $factory->setFormElementManager($formElements);
+                /** @var \Zend\Form\Form $form */
                 $form = $factory->createForm($settings);
 
                 $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
                 $settingsData = $analyticsTable->getAnalytics($siteId, $analyticsKey)->current();
 
-                if ($settingsData) {
+                if (!empty($settingsData)) {
                     $data = unserialize($settingsData->pads_settings);
                     $data['google_analytics_view_id'] = substr($data['google_analytics_view_id'], 3);
+
+                    /**
+                     * Get the file name to act as a placeholder for the browse button
+                     */
+                    if (!empty($data['google_analytics_private_key'])) {
+                        $privateKeyFileName = explode(DIRECTORY_SEPARATOR, $data['google_analytics_private_key']);
+                        $data['google_analytics_private_key_val'] = $privateKeyFileName[count($privateKeyFileName) - 1];
+
+                        /**
+                         * Creating the element that will hold the private key filename value
+                         */
+                        $form->add([
+                            'type' => 'Zend\\Form\\Element\\Hidden',
+                            'name' => 'google_analytics_private_key_val',
+                            'attributes' => [
+                                'id' => 'id_google_analytics_private_key_val',
+                                'value' => $privateKeyFileName
+                            ]
+                        ]);
+                    }
+
                     $form->setData($data);
                 }
-
+            } else {
+                echo "No settings form was found from the configuration files.";
             }
-
         }
-
         $view->form = $form;
 
         return $view;
@@ -604,20 +659,5 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         }
 
         return $guide;
-    }
-
-    /**
-     * Returns the Google Analytics Service if it exists,
-     * otherwise, returns false.
-     * @return array|bool|object
-     */
-    private function getGoogleAnalyticsService()
-    {
-        try {
-            $service = $this->getServiceLocator()->get('MelisCmsGoogleAnalyticsService');
-            return $service;
-        } catch (\Exception $exception) {
-            return false;
-        }
     }
 }
