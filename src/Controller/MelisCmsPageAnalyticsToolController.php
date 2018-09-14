@@ -432,7 +432,10 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
                 if (!empty($settingsData)) {
                     $data = unserialize($settingsData->pads_settings);
-                    $data['google_analytics_view_id'] = substr($data['google_analytics_view_id'], 3);
+                    if (!empty($data['google_analytics_view_id']) && strpos($data['google_analytics_view_id'], 'ga:') !== false) {
+                        $viewIdStart = (int)strpos($data['google_analytics_view_id'], 'ga:');
+                        $data['google_analytics_view_id'] = substr($data['google_analytics_view_id'], $viewIdStart + 3);
+                    }
 
                     /**
                      * Get the file name to act as a placeholder for the browse button

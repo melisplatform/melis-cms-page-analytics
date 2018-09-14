@@ -12,15 +12,14 @@ if ($this->hasAccess) { ?>
         <?= $this->melisFieldCollection($form); ?>
         <div id="analytics-settings-form"></div>
         <span id="pads_js_analytics_cont" class="hidden">
-        <label for="pas_js_analytics"><?= $this->translate('tr_meliscms_page_analytics_site_analytics_script'); ?></label>
-        <i class="fa fa-info-circle fa-lg pull-right tip-info" data-toggle="tooltip" data-placement="left" title=""
-           data-original-title="<?= $this->translate('tr_meliscms_page_analytics_site_analytics_script_tooltip'); ?>"></i>
-        <pre id="pads_js_analytics" name="pads_js_analytics"></pre>
-    </span>
+            <label for="pas_js_analytics"><?= $this->translate('tr_meliscms_page_analytics_site_analytics_script'); ?></label>
+            <i class="fa fa-info-circle fa-lg pull-right tip-info" data-toggle="tooltip" data-placement="left" title=""
+               data-original-title="<?= $this->translate('tr_meliscms_page_analytics_site_analytics_script_tooltip'); ?>"></i>
+            <pre id="pads_js_analytics" name="pads_js_analytics"></pre>
+        </span>
         <div class="clearfix">
             <div class="pull-right">
-                <button type="submit" class="btn btn-success"><i
-                            class="fa fa-save"></i> <?= $this->translate('tr_meliscore_tool_gen_save') ?></button>
+                <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> <?= $this->translate('tr_meliscore_tool_gen_save') ?></button>
             </div>
         </div>
 
@@ -35,12 +34,7 @@ if ($this->hasAccess) { ?>
 
         <script text="text/javascript">
             $(function () {
-                // before creating an editor patch up things for old ie
-                require("ace/ext/old_ie");
-                // now ace will work even on ie7!
                 var editor = ace.edit("pads_js_analytics");
-                editor.setTheme("ace/theme/textmate");
-                editor.session.setMode("ace/mode/html");
 
                 // Disable first select options
                 $('select#page_analytics_id option:first-child').attr('disabled', 'true');
