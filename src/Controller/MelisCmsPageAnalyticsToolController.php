@@ -260,6 +260,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     $conf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('meliscms');
                     if (!empty($conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'])) {
                         $privateKeyFileDir = $conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'];
+                        $privateKeyFileDir = str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $privateKeyFileDir);
                     }
 
                     $src = $privateKey['tmp_name'];
@@ -267,7 +268,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     /**
                      * Check the directory & throw error if directory does not exist.
                      */
-                    if (is_dir($dst) && is_writable($dst)) {
+                    if (file_exists($dst) && is_dir($dst)) {
                         $dst .= DIRECTORY_SEPARATOR . $privateKey['name'];
                         copy($src, $dst);
                         $privateKeyFileDir = realpath($dst);
@@ -278,10 +279,9 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     /**
                      *  Prepare settings to be serialized
                      */
-                    // Automatically add 'ga:' prefix on the view ID
-                    $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
                     $analyticsSettings['google_analytics_private_key'] = $privateKeyFileDir;
                 }
+                $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
                 $analyticsSettings = serialize($analyticsSettings);
 
                 // first check if the analytics data exists
