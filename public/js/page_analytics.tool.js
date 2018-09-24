@@ -69,7 +69,6 @@ $(function () {
             }).success(function (data) {
                 if (data) {
                     $body.find("div#analytics-settings-form").html(data);
-
                     // Get private key file name value
                     var privateKeyFileName = $body.find('#id_google_analytics_private_key_val');
                     if (privateKeyFileName.length) {
@@ -78,7 +77,15 @@ $(function () {
                         privateKeyFileName = translations.tr_melis_cms_google_analytics_private_key_non;
                     }
 
+                    var disbaleFlag = $body.find("#id_google_analytics_private_key");
+                    if (disbaleFlag.length && disbaleFlag.attr("disabled") === "disabled") {
+                        disbaleFlag = true;
+                        privateKeyFileName = translations.tr_melis_cms_google_analytics_private_key_no_rights
+                    } else {
+                        disbaleFlag = false;
+                    }
                     $body.find("#id_google_analytics_private_key").filestyle({
+                        disabled: disbaleFlag,
                         buttonBefore: true,
                         input: true,
                         buttonText: translations.tr_melis_cms_google_analytics_private_key_upload,

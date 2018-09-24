@@ -17,6 +17,7 @@ use MelisCore\Service\MelisCoreRightsService;
 
 class MelisCmsPageAnalyticsToolController extends AbstractActionController
 {
+    const DS = DIRECTORY_SEPARATOR;
 
     public function toolContainerAction()
     {
@@ -260,22 +261,24 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     $conf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('meliscms');
                     if (!empty($conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'])) {
                         $privateKeyFileDir = $conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'];
-                        $privateKeyFileDir = str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $privateKeyFileDir);
+                        $privateKeyFileDir = str_replace(["\\", "/"], self::DS, $privateKeyFileDir);
                     }
-
                     $src = $privateKey['tmp_name'];
-                    $dst = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . $privateKeyFileDir;
+                    $dst = __DIR__ . self::DS . '..' . self::DS . '..' . self::DS . '..' . $privateKeyFileDir;
                     /**
                      * Check the directory & throw error if directory does not exist.
                      */
-                    if (file_exists($dst) && is_dir($dst)) {
-                        $dst .= DIRECTORY_SEPARATOR . $privateKey['name'];
-                        copy($src, $dst);
-                        $privateKeyFileDir = realpath($dst);
+                    if (is_writable($dst)) {
+                        if (file_exists($dst) && is_dir($dst)) {
+                            $dst .= self::DS . $privateKey['name'];
+                            dd("SRC: " . $src, "DST: " . $dst, "COPY: ");
+                            copy($src, $dst);
+                        } else {
+                            $errors['no_perms'] = 'Private key file directory does not exist.';
+                        }
                     } else {
-                        throw new \Exception('Private key file directory is not writable or does not exist.');
+                        $errors['no_perms'] = 'Contact administrator to set proper permissions to the directory.';
                     }
-
                     /**
                      *  Prepare settings to be serialized
                      */
@@ -427,6 +430,25 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                 /** @var \Zend\Form\Form $form */
                 $form = $factory->createForm($settings);
 
+                /**
+                 * Checking for a writable private key directory,
+                 * otherwise disable the private key upload/browsing function
+                 */
+                if ($analyticsKey === 'melis_cms_google_analytics') {
+                    $privateKeyDir = $config->getItem('meliscms/datas/page_analytics/' . $analyticsKey . '/datas');
+                    if (!empty($privateKeyDir['private_key_file_directory'])) {
+                        $privateKeyDir = $privateKeyDir['private_key_file_directory'];
+                        // Replace proper directory separators (either windows / linux)
+                        $privateKeyDir = str_replace(['\\', '/'], self::DS, $privateKeyDir);
+                        $privateKeyDir = realpath(__DIR__ . self::DS . '..' . self::DS . '..' . self::DS . '..' . $privateKeyDir);
+
+                        if (empty($privateKeyDir) || !file_exists($privateKeyDir) || !is_writable($privateKeyDir)) {
+                            $privateKeyDirElement = $form->get('google_analytics_private_key')->setAttribute('disabled', 'disabled');
+                            $form->add($privateKeyDirElement);
+                        }
+                    }
+                }
+
                 $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
                 $settingsData = $analyticsTable->getAnalytics($siteId, $analyticsKey)->current();
 
@@ -441,7 +463,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                      * Get the file name to act as a placeholder for the browse button
                      */
                     if (!empty($data['google_analytics_private_key'])) {
-                        $privateKeyFileName = explode(DIRECTORY_SEPARATOR, $data['google_analytics_private_key']);
+                        $privateKeyFileName = explode(self::DS, $data['google_analytics_private_key']);
                         $data['google_analytics_private_key_val'] = $privateKeyFileName[count($privateKeyFileName) - 1];
 
                         /**
