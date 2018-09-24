@@ -271,7 +271,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     if (is_writable($dst)) {
                         if (file_exists($dst) && is_dir($dst)) {
                             $dst .= self::DS . $privateKey['name'];
-                            dd("SRC: " . $src, "DST: " . $dst, "COPY: ");
                             copy($src, $dst);
                         } else {
                             $errors['no_perms'] = 'Private key file directory does not exist.';
