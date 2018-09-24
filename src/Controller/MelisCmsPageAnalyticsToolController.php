@@ -281,7 +281,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     /**
                      *  Prepare settings to be serialized
                      */
-                    $analyticsSettings['google_analytics_private_key'] = $privateKeyFileDir;
+                    $analyticsSettings['google_analytics_private_key'] = realpath($dst);
                 }
                 $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
                 $analyticsSettings = serialize($analyticsSettings);
