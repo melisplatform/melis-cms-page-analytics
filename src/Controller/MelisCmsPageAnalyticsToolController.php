@@ -457,6 +457,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     if (!empty($data['google_analytics_view_id']) && strpos($data['google_analytics_view_id'], 'ga:') !== false) {
                         $viewIdStart = (int)strpos($data['google_analytics_view_id'], 'ga:');
                         $data['google_analytics_view_id'] = substr($data['google_analytics_view_id'], $viewIdStart + 3);
+                    } else {
+                    	$data = []; 
                     }
 
                     /**
