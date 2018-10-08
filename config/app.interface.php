@@ -6,9 +6,14 @@ return array(
             'interface' => array(
                 'meliscore_leftmenu' => array(
                     'interface' => array(
-                        'meliscore_toolstree' => array(
+                        'melismarketing_toolstree_section' => array(
                             'interface' => array(
-                                'meliscms_tools_section' => array(
+                                'meliscms_site_tools_parent_menu' => array(
+                                    'conf' => [
+                                        'name' => 'tr_meliscms_page_analytics_title',
+                                        'icon' => 'fa-bar-chart',
+                                        'melisKey' => 'meliscms_site_tools_parent_menu'
+                                    ],
                                     'interface' => array(
                                         // this will be the configuration of the tool.
                                         'meliscms_page_analytics_tool_config' => array(
@@ -65,7 +70,7 @@ return array(
                             ),
                         ),
                         'datas' => array(
-                            'universal_analytics_tracking_code' => array()
+                            'settings_form_path' => '',
                         ),
                     )
                 )
@@ -148,8 +153,7 @@ return array(
                     '/MelisCmsPageAnalytics/css/site_analytics.css',
                 ),
                 'js' => array(
-                    '/MelisCmsPageAnalytics/plugin/ace-editor/ace.js',
-                    '/MelisCmsPageAnalytics/plugin/ace-editor/ext-old_ie.js',
+                    '/MelisCmsPageAnalytics/plugin/ace.js',
                     '/MelisCmsPageAnalytics/js/pagehit.tool.js',
                     '/MelisCmsPageAnalytics/js/page_analytics.tool.js',
                 ),

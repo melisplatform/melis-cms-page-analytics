@@ -21,7 +21,7 @@ class MelisCmsDefaultPageAnalyticsService extends MelisCoreGeneralService
 
         $pageAnalyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsTable');
 
-        $sessionCookie   = isset($_COOKIE['PHPSESSID']) ? $_COOKIE['PHPSESSID'] : null;
+        $sessionCookie   = isset($_COOKIE['PHPSESSID']) ? $_COOKIE['PHPSESSID'] : session_id();
         $currentDateTime =  date("Y-m-d H:i:s");
 
         $pageId   = $arrayParameters['pageId'];

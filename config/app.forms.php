@@ -3,7 +3,7 @@ return array(
     'plugins' => array(
         'meliscms' => array(
             'forms' => array(
-                'select_page_analytic_form' => array(
+                'melis_cms_page_analytics_settings_form' => array(
                     'attributes' => array(
                         'name'   => 'select_page_analytic_form',
                         'id'     => 'select_page_analytic_form',
