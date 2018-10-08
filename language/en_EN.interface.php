@@ -6,7 +6,7 @@ return array(
      */
     'tr_meliscms_page_analytics_title' => 'Site Analytics',
     'tr_meliscms_page_analytics_tool_display_title' => 'Site Analytics',
-    'tr_meliscms_page_analytics_header'  => 'Header',
+    'tr_meliscms_page_analytics_header' => 'Header',
     'tr_meliscms_page_analytics_content' => 'Content',
     'tr_meliscms_page_analytics_tab' => 'Site analytics tab',
     'tr_meliscms_page_analytics_tab_content' => 'Analytics',
@@ -30,8 +30,8 @@ return array(
      * MelisCms Page Analytics Page Details
      */
     'tr_meliscms_page_analytics_page_detail_title' => 'Page Analytics Page Details',
-    'tr_page_details_header'        => 'Page Analytics Page Details Header',
-    'tr_meliscms_page_analytics_page_details_user_ip'       => 'User Ip address',
+    'tr_page_details_header' => 'Page Analytics Page Details Header',
+    'tr_meliscms_page_analytics_page_details_user_ip' => 'User Ip address',
     'tr_meliscms_page_analytics_page_details_date_visit' => 'Date Visit',
 
     /*
@@ -40,15 +40,15 @@ return array(
     'tr_melis_cms_page_analytics' => 'Melis CMS analytics',
     'tr_melis_cms_page_analytics_title' => 'Page Analytics',
     'tr_melis_cms_page_select' => 'Page analytics module',
-    'tr_meliscms_page_analytics_settings' =>  'Settings',
-    'tr_meliscms_page_analytics_settings_select' =>  'Select page analytics tool',
-    'tr_meliscms_page_analytics_settings_select_tooltip' =>  'Select the analytics module you wish to use',
-    'tr_meliscms_page_analytics_settings_select_tooltip_ko' =>  'Please select the analytics module to use',
-    'tr_meliscms_page_analytics_settings_select_blank' =>  'Select an analytics module',
-    'tr_meliscms_page_analytics_settings_no_analytics' =>  'No analytics module',
-    'tr_meliscms_page_analytics_settings_select_save_ok' =>  'The settings have been saved successfully.',
-    'tr_meliscms_page_analytics_settings_select_save_ko' =>  'Unable to change analytics module',
-    
+    'tr_meliscms_page_analytics_settings' => 'Settings',
+    'tr_meliscms_page_analytics_settings_select' => 'Select page analytics tool',
+    'tr_meliscms_page_analytics_settings_select_tooltip' => 'Select the analytics module you wish to use',
+    'tr_meliscms_page_analytics_settings_select_tooltip_ko' => 'Please select the analytics module to use',
+    'tr_meliscms_page_analytics_settings_select_blank' => 'Select an analytics module',
+    'tr_meliscms_page_analytics_settings_no_analytics' => 'No analytics module',
+    'tr_meliscms_page_analytics_settings_select_save_ok' => 'The settings have been saved successfully.',
+    'tr_meliscms_page_analytics_settings_select_save_ko' => 'Unable to change analytics module',
+
     // Interface
     'tr_meliscms_page_analytics_tab_display' => 'Cms page analytics',
     'tr_meliscms_page_analytics_tab_header' => 'Cms page analytics header',
@@ -57,12 +57,12 @@ return array(
     'tr_meliscms_page_analytics_page_details_content_title' => 'Page analytics content details title',
     'tr_meliscms_page_analytics_site_id_ko' => 'Invalid site ID, it should only be numeric',
     'tr_meliscms_page_analytics_site_id_empty' => 'Please select a site',
-    'tr_meliscms_page_analytics_site_analytics_script' => 'Analytics script',
-    'tr_melis_cms_google_analytics_settings_site_select_tooltip' => 'Select the site you wish to set the analytics settings from',
+    'tr_meliscms_page_analytics_settings_site_select_tooltip' => 'Select the site you wish to set the analytics settings from',
 
     /**
      * Google Analytics Settings Configuration
      */
+    'tr_meliscms_page_analytics_site_analytics_script' => 'Analytics script',
     'tr_meliscms_page_analytics_site_analytics_script_tooltip' => 'Code obtained from Google Analytics (see documentation below for more information)',
     'tr_meliscms_page_analytics_site_analytics_deleted_marker' => 'Page deleted',
 );
