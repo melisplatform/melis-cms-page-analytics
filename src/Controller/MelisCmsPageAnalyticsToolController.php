@@ -241,20 +241,23 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                 $formData = $form->getData();
                 $siteId = (int)$formData['pad_site_id'];
                 $analyticsKey = $formData['pad_analytics_key'];
+                $fileChanged = empty($post['fileChanged']) ? false : ($post['fileChanged'] === "false" ? false : true);
                 $analyticsSettings = [];
-
-                /**
-                 * Storing the private key file to the private key file directory.
-                 * > Analytics key == Google Analytics
-                 * > Uploaded private key is NOT empty
-                 * > Uploaded private key is JSON
-                 *
-                 * Additional validations can be added in the future such as:
-                 * checking for certain keys, format of the values, etc.
-                 */
+                $analyticsSettingsData = $analayticsTable->getAnalytics($siteId, $analyticsKey)->current();
                 $privateKeyFileDir = '';
+
                 if ($analyticsKey == 'melis_cms_google_analytics') {
-                    if (!empty($post['google_analytics_private_key']) &&
+                    /**
+                     * Storing the private key file to the private key file directory.
+                     * > User changed the Private Key file
+                     * > Uploaded private key is NOT empty
+                     * > Uploaded private key is JSON
+                     *
+                     * Additional validations can be added in the future such as:
+                     * checking for certain keys, format of the values, etc.
+                     */
+                    if ($fileChanged === true &&
+                        !empty($post['google_analytics_private_key']) &&
                         $post['google_analytics_private_key']['type'] === "application/json"
                     ) {
                         $privateKey = $post['google_analytics_private_key'];
@@ -282,13 +285,17 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                          *  Prepare settings to be serialized
                          */
                         $analyticsSettings['google_analytics_private_key'] = realpath($dst);
+                    } else {
+                        /** retain the current private key file */
+                        $currentSetting = unserialize($analyticsSettingsData->pads_settings);
+                        $analyticsSettings['google_analytics_private_key'] = $currentSetting['google_analytics_private_key'];
                     }
                     $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
                 }
 
                 $analyticsSettings = serialize($analyticsSettings);
 
-                // first check if the analytics data exists
+                /** first check if the analytics data exists */
                 $analyticsData = $analayticsTable->getEntryByField('pad_site_id', $siteId)->current();
 
                 if ($analyticsData) {
@@ -303,9 +310,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     ));
                 }
 
-                // check if the analytics settings data exists
-                $analyticsSettingsData = $analayticsTable->getAnalytics($siteId, $analyticsKey)->current();
-
+                /** check if the analytics settings data exists */
                 if (!empty($analyticsSettingsData) && !empty($analyticsSettingsData->pads_id)) {
                     // removes js script if analytics module selected is NOT google analytics
                     if ($analyticsKey !== 'melis_cms_google_analytics') {
