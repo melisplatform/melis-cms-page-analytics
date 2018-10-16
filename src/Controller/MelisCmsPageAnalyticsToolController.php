@@ -241,72 +241,79 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                 $formData = $form->getData();
                 $siteId = (int)$formData['pad_site_id'];
                 $analyticsKey = $formData['pad_analytics_key'];
+                $fileChanged = empty($post['fileChanged']) ? false : ($post['fileChanged'] === "false" ? false : true);
                 $analyticsSettings = [];
-
-                /**
-                 * Storing the private key file to the private key file directory.
-                 * > Analytics key == Google Analytics
-                 * > Uploaded private key is NOT empty
-                 * > Uploaded private key is JSON
-                 *
-                 * Additional validations can be added in the future such as:
-                 * checking for certain keys, format of the values, etc.
-                 */
+                $analyticsSettingsData = $analayticsTable->getAnalytics($siteId, $analyticsKey)->current();
                 $privateKeyFileDir = '';
-                if ($analyticsKey == 'melis_cms_google_analytics' &&
-                    !empty($post['google_analytics_private_key']) &&
-                    $post['google_analytics_private_key']['type'] === "application/json"
-                ) {
-                    $privateKey = $post['google_analytics_private_key'];
-                    $conf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('meliscms');
-                    if (!empty($conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'])) {
-                        $privateKeyFileDir = $conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'];
-                        $privateKeyFileDir = str_replace(["\\", "/"], self::DS, $privateKeyFileDir);
-                    }
-                    $src = $privateKey['tmp_name'];
-                    $dst = __DIR__ . self::DS . '..' . self::DS . '..' . self::DS . '..' . $privateKeyFileDir;
+
+                if ($analyticsKey == 'melis_cms_google_analytics') {
                     /**
-                     * Check the directory & throw error if directory does not exist.
+                     * Storing the private key file to the private key file directory.
+                     * > User changed the Private Key file
+                     * > Uploaded private key is NOT empty
+                     * > Uploaded private key is JSON
+                     *
+                     * Additional validations can be added in the future such as:
+                     * checking for certain keys, format of the values, etc.
                      */
-                    if (is_writable($dst)) {
-                        if (file_exists($dst) && is_dir($dst)) {
-                            $dst .= self::DS . $privateKey['name'];
-                            copy($src, $dst);
-                        } else {
-                            $errors['no_perms'] = 'Private key file directory does not exist.';
+                    if ($fileChanged === true &&
+                        !empty($post['google_analytics_private_key']) &&
+                        $post['google_analytics_private_key']['type'] === "application/json"
+                    ) {
+                        $privateKey = $post['google_analytics_private_key'];
+                        $conf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('meliscms');
+                        if (!empty($conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'])) {
+                            $privateKeyFileDir = $conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'];
+                            $privateKeyFileDir = str_replace(["\\", "/"], self::DS, $privateKeyFileDir);
                         }
+                        $src = $privateKey['tmp_name'];
+                        $dst = __DIR__ . self::DS . '..' . self::DS . '..' . self::DS . '..' . $privateKeyFileDir;
+                        /**
+                         * Check the directory & throw error if directory does not exist.
+                         */
+                        if (is_writable($dst)) {
+                            if (file_exists($dst) && is_dir($dst)) {
+                                $dst .= self::DS . $privateKey['name'];
+                                copy($src, $dst);
+                            } else {
+                                $errors['no_perms'] = 'Private key file directory does not exist.';
+                            }
+                        } else {
+                            $errors['no_perms'] = 'Contact administrator to set proper permissions to the directory.';
+                        }
+                        /**
+                         *  Prepare settings to be serialized
+                         */
+                        $analyticsSettings['google_analytics_private_key'] = realpath($dst);
                     } else {
-                        $errors['no_perms'] = 'Contact administrator to set proper permissions to the directory.';
+                        /** retain the current private key file */
+                        $currentSetting = unserialize($analyticsSettingsData->pads_settings);
+                        $analyticsSettings['google_analytics_private_key'] = $currentSetting['google_analytics_private_key'];
                     }
-                    /**
-                     *  Prepare settings to be serialized
-                     */
-                    $analyticsSettings['google_analytics_private_key'] = realpath($dst);
+                    $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
                 }
-                $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
+
                 $analyticsSettings = serialize($analyticsSettings);
 
-                // first check if the analytics data exists
+                /** first check if the analytics data exists */
                 $analyticsData = $analayticsTable->getEntryByField('pad_site_id', $siteId)->current();
 
                 if ($analyticsData) {
                     // update analytics data table to set what analytics key is currently being selected
                     $analyticsId = $analayticsTable->save(array(
-                        'pad_analytics_key' => $post['pad_analytics_key']
+                        'pad_analytics_key' => $analyticsKey
                     ), $analyticsData->pad_id);
                 } else {
                     $analyticsId = $analayticsTable->save(array(
                         'pad_site_id' => $siteId,
-                        'pad_analytics_key' => $post['pad_analytics_key']
+                        'pad_analytics_key' => $analyticsKey
                     ));
                 }
 
-                // check if the analytics settings data exists
-                $analyticsSettingsData = $analayticsTable->getAnalytics($siteId, $analyticsKey)->current();
-
+                /** check if the analytics settings data exists */
                 if (!empty($analyticsSettingsData) && !empty($analyticsSettingsData->pads_id)) {
                     // removes js script if analytics module selected is NOT google analytics
-                    if ($post['pad_analytics_key'] !== 'melis_cms_google_analytics') {
+                    if ($analyticsKey !== 'melis_cms_google_analytics') {
                         $post['pads_js_analytics'] = '';
                     }
 
@@ -354,7 +361,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      * otherwise, returns false.
      * @return array|bool|object
      */
-    private function getGoogleAnalyticsService()
+    private
+    function getGoogleAnalyticsService()
     {
         try {
             $service = $this->getServiceLocator()->get('MelisCmsGoogleAnalyticsService');
@@ -370,7 +378,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      * @param $analyticsModule
      * @return array
      */
-    private function formatErrorMessage($errors = array(), $analyticsModule)
+    private
+    function formatErrorMessage($errors = array(), $analyticsModule)
     {
         $melisMelisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
         $appConfigForm = $melisMelisCoreConfig->getItem('meliscms/forms/' . $analyticsModule . '_settings_form');
@@ -388,7 +397,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $errors;
     }
 
-    private function getForm()
+    private
+    function getForm()
     {
         $config = $this->getServiceLocator()->get('MelisCoreConfig');
         $formConfig = $config->getItem('meliscms/forms/melis_cms_page_analytics_settings_form');
@@ -411,7 +421,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      *
      * @return ViewModel
      */
-    public function getSettingsFormAction()
+    public
+    function getSettingsFormAction()
     {
         $form = null;
         $view = new ViewModel();
@@ -457,7 +468,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                         $viewIdStart = (int)strpos($data['google_analytics_view_id'], 'ga:');
                         $data['google_analytics_view_id'] = substr($data['google_analytics_view_id'], $viewIdStart + 3);
                     } else {
-                    	$data = []; 
+                        $data = [];
                     }
 
                     /**
@@ -491,7 +502,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $view;
     }
 
-    public function getSiteAnalyticsAction()
+    public
+    function getSiteAnalyticsAction()
     {
         $success = false;
         $errors = array();
@@ -535,7 +547,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return new JsonModel($response);
     }
 
-    public function getAnalyticsScriptAction()
+    public
+    function getAnalyticsScriptAction()
     {
         $success = 0;
         $data = array();
@@ -569,7 +582,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      * Returns the Contents of the selected Page Analytics Module
      * @return ViewModel
      */
-    public function toolContentContainerAnalyticsTabContentAction()
+    public
+    function toolContentContainerAnalyticsTabContentAction()
     {
         $melisKey = $this->getMelisKey();
         $form = $this->getForm();
@@ -651,7 +665,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
     }
 
-    public function toolContentContainerAnalyticsSettingsTabContentAction()
+    public
+    function toolContentContainerAnalyticsSettingsTabContentAction()
     {
 
         $melisKey = $this->getMelisKey();
@@ -674,7 +689,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      * via Google Analytics Service
      * @return string
      */
-    private function getGoogleAnalyticsGuideAction()
+    private
+    function getGoogleAnalyticsGuideAction()
     {
         $guide = '';
         $googleAnalytics = $this->getGoogleAnalyticsService();
