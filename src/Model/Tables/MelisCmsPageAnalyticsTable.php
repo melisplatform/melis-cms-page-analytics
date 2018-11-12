@@ -78,9 +78,9 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
                 // ...AND (`ph_id` LIKE '%$search%' OR `ph_date_visit` LIKE '%$search%')
                 $nest->like($column,'%'.$search.'%')->or;
             }
-            $select->where($where);
         }
-
+        $select->where($where);
+         
         $getCount = $this->tableGateway->selectWith($select);
         // set current data count for pagination
         $this->setCurrentDataCount((int) $getCount->count());
