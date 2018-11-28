@@ -27,9 +27,9 @@
     "ext-json": "*",
     "ext-pdo_mysql": "*",
     "melisplatform/melis-core": "2.3 - 3",
-    "melisplatform/melis-engine": "^2.3.0",
-    "melisplatform/melis-front": "^2.3.0",
-    "melisplatform/melis-cms": "^2.3.0",
+    "melisplatform/melis-engine": "2.3 - 3",
+    "melisplatform/melis-front": "2.3 - 3",
+    "melisplatform/melis-cms": "2.3 - 3",
     "justinrainbow/json-schema": "5.2.1"
   },
   "require-dev": {
