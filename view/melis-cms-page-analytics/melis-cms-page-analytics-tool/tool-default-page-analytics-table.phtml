@@ -34,7 +34,7 @@
                      * Deletes the Caret in the First Column
                      */
                     var searchTable = setInterval(function(){
-                        var toolAnalyticsTable = $body.find("#tableMelisCmsPageAnalytics thead tr th:first-child.sorting_asc");
+                        var toolAnalyticsTable = $("body").find("#tableMelisCmsPageAnalytics thead tr th:first-child.sorting_asc");
                         if(toolAnalyticsTable.length)
                         {
                             toolAnalyticsTable.removeClass('sorting_asc');

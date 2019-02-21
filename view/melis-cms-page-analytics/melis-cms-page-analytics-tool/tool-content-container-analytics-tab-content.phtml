@@ -26,6 +26,7 @@ if($this->hasAccess) { ?>
 
         <script type="text/javascript">
             $(function() {
+                var $body = $("body");
                 // Disable empty option
                 $body.find('select#analytics-content-side-id option:first-child').attr('disabled', 'true');
                 if (pageAnalyticsSiteSelect){
