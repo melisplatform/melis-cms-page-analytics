@@ -21,7 +21,8 @@ class PageAnalyticsSiteSelectFactory extends MelisSelectFactory
         $sites          = $tableSites->getSites();
 
         foreach($sites as $site) {
-            $valueoptions[$site->site_id] = $site->site_name;
+            $siteLabel = $site->site_label ?? $site->site_name;
+            $valueoptions[$site->site_id] = $siteLabel;
         }
         return $valueoptions;
     }

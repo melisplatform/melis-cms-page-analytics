@@ -1,6 +1,7 @@
 $(function () {
+    var $body = $("body");
     // Handles Site Selection Change in Analytics Tab
-    $("body").on("change", "form#select_page_analytic_form_analytics_content select#analytics-content-side-id", function () {
+    $body.on("change", "form#select_page_analytic_form_analytics_content select#analytics-content-side-id", function () {
         /**
          * Applying an overlay to prevent user from switching to different tab before
          * Content from the AJAX call is loaded
@@ -17,7 +18,7 @@ $(function () {
     });
 
     // Settings Tab: Handles Site Selection Change
-    $("body").on("change", "form#select_page_analytic_form select#site_id", function () {
+    $body.on("change", "form#select_page_analytic_form select#site_id", function () {
         var siteId = parseInt($(this).val());
 
         if (!isNaN(siteId)) {
@@ -50,7 +51,7 @@ $(function () {
     });
 
     // Settings Tab: Handles Analytics Module change
-    $("body").on("change", "select#page_analytics_id", function () {
+    $body.on("change", "select#page_analytics_id", function () {
         melisCoreTool.pending("button");
         var analyticsKey = $body.find(this).val();
         var siteId = parseInt($body.find("form#select_page_analytic_form select#site_id").val());
@@ -132,7 +133,7 @@ $(function () {
     });
 
     // Save on Settings Tab
-    $("body").on("submit", "form#select_page_analytic_form", function (e) {
+    $body.on("submit", "form#select_page_analytic_form", function (e) {
         var formData = new FormData(this);
         var editor = ace.edit("pads_js_analytics");
         var script = editor.getValue();
@@ -166,12 +167,12 @@ $(function () {
     });
 
     // Refresh functionality in the Analytics Tab
-    $('body').on('click', 'a.melis-cms-page-analytics-refresh-table-tool', function () {
+    $body.on('click', 'a.melis-cms-page-analytics-refresh-table-tool', function () {
         melisHelper.zoneReload('id_melis_cms_page_analytics_tool_table', 'melis_cms_page_analytics_tool_table');
     });
 
     // Table's Refresh button in MelisCms Page module system
-    $("body").on("click", "a.melis-cms-page-analytics-refresh", function () {
+    $body.on("click", "a.melis-cms-page-analytics-refresh", function () {
         var pageId = activeTabId.split("_")[0];
         melisHelper.zoneReload(pageId + '_id_melis_cms_page_analytics_page_table', 'melis_cms_page_analytics_page_table', {idPage: pageId});
     });

@@ -6,7 +6,7 @@ window.setPageId = function(d) {
 	d.pageId = activeTabId.split("_")[0];
 }
 $(function() {
-    $body = $("body");
+    var $body = $("body");
     var zoneId   = "";
     var melisKey = "";
 

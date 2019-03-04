@@ -1,5 +1,5 @@
 <?php
-return array(
+return [
 
     /*
      * MelisCms page analytics
@@ -9,6 +9,7 @@ return array(
     'tr_meliscms_page_analytics_header' => 'En-tête',
     'tr_meliscms_page_analytics_content' => 'Contenu',
     'tr_meliscms_page_analytics_tab' => 'Onglet site analytics',
+    'tr_melis_cms_page_analytics_page_table' => 'Site analytics table',
     'tr_meliscms_page_analytics_tab_content' => 'Analytics',
     'tr_meliscms_page_analytics_settings_tab' => 'Onglet paramètres',
     'tr_meliscms_page_analytics_settings_tab_content' => 'Paramètres',
@@ -65,4 +66,4 @@ return array(
     'tr_meliscms_page_analytics_site_analytics_script' => 'Script analytics',
     'tr_meliscms_page_analytics_site_analytics_script_tooltip' => "Code obtenu auprès de Google Analytics (voir la documentation plus bas pour plus d'informations)",
     'tr_meliscms_page_analytics_site_analytics_deleted_marker' => 'Page supprimée',
-);
+];
