@@ -9,11 +9,10 @@
 
 namespace MelisCmsPageAnalytics\Controller;
 
-use Zend\Form\Element;
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
-use Zend\View\Model\JsonModel;
 use MelisCore\Service\MelisCoreRightsService;
+use Zend\Mvc\Controller\AbstractActionController;
+use Zend\View\Model\JsonModel;
+use Zend\View\Model\ViewModel;
 
 class MelisCmsPageAnalyticsToolController extends AbstractActionController
 {
@@ -397,8 +396,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $errors;
     }
 
-    private
-    function getForm()
+    private function getForm()
     {
         $config = $this->getServiceLocator()->get('MelisCoreConfig');
         $formConfig = $config->getItem('meliscms/forms/melis_cms_page_analytics_settings_form');

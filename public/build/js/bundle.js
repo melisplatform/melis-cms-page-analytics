@@ -65,7 +65,7 @@ $(function () {
 
     // Settings Tab: Handles Site Selection Change
     $body.on("change", "form#select_page_analytic_form select#site_id", function () {
-        var siteId = parseInt($(this).val());
+        var siteId = parseInt($body.find(this).val());
 
         if (!isNaN(siteId)) {
             var page_analytics_id = $("#select_page_analytic_form").children("div.form-group").eq(1);
@@ -92,13 +92,19 @@ $(function () {
                     }));
                 }
                 melisHelper.removeLoadingZone(page_analytics_id);
+
+                /** enable save button */
+                $body.find('.mcpa-save-settings').prop('disabled', false);
             });
+        } else {
+            /** enable save button */
+            $body.find('.mcpa-save-settings').prop('disabled', true);
         }
     });
 
     // Settings Tab: Handles Analytics Module change
     $body.on("change", "select#page_analytics_id", function () {
-        melisCoreTool.pending("button");
+        //melisCoreTool.pending("button");
         var analyticsKey = $body.find(this).val();
         var siteId = parseInt($body.find("form#select_page_analytic_form select#site_id").val());
 
@@ -169,7 +175,7 @@ $(function () {
             $body.find('div#melis-cms-google-analytics-guidelines').addClass('hidden');
         }
 
-        melisCoreTool.done("button");
+        //melisCoreTool.done("button");
     });
 
     // Private key changes
