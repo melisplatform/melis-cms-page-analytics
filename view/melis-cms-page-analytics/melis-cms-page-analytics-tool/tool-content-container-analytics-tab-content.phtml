@@ -4,34 +4,31 @@ if (!empty($this->zoneconfig['conf']['id']))
     $id = ' id="' . $this->zoneconfig['conf']['id'] . '"';
 
 $form = $this->form;
-$form->setAttributes(array(
+$form->setAttributes([
     'id' => 'select_page_analytic_form_analytics_content',
     'name' => 'select_page_analytic_form_analytics_content'
-));
-if($this->curData) {
-
-}
+]);
 //Analytics Tab Content
-if($this->hasAccess) { ?>
-    <div <?php echo $id; ?> data-melisKey="<?= $this->melisKey; ?>" class="meliscms_center_tabs tab-pane clearfix">
+if ($this->hasAccess): ?>
+    <div <?= $id; ?> data-melisKey="<?= $this->melisKey; ?>" class="meliscms_center_tabs tab-pane clearfix">
         <?= $this->form()->openTag($form); ?>
         <div class="form-group">
-        <?= $this->formRow($form->get('pad_site_id')->setAttributes(array(
-            'id' => 'analytics-content-side-id',
-            'class' => 'form-control',
-        ))->setValue($this->siteId)); ?>
+            <?= $this->formRow($form->get('pad_site_id')->setAttributes([
+                'id' => 'analytics-content-side-id',
+                'class' => 'form-control',
+            ])->setValue($this->siteId)); ?>
         </div>
         <?= $this->form()->closeTag(); ?>
-        <?= $this->errMsg? "<h4 id='id_melis_cms_page_analytics_loaded_flag'>".$this->errMsg."</h4>": $this->display; ?>
+        <?= $this->errMsg ? "<h4 id='id_melis_cms_page_analytics_loaded_flag'>" . $this->errMsg . "</h4>" : $this->display; ?>
 
         <script type="text/javascript">
-            $(function() {
+            $(function () {
                 var $body = $("body");
                 // Disable empty option
                 $body.find('select#analytics-content-side-id option:first-child').attr('disabled', 'true');
-                if (pageAnalyticsSiteSelect){
+                if (pageAnalyticsSiteSelect) {
                     var $firstSite = $body.find('select#analytics-content-side-id option:nth-child(2)');
-                    if ($firstSite.length){
+                    if ($firstSite.length) {
                         $body.find('select#analytics-content-side-id').val($firstSite.val()).trigger('change');
                         pageAnalyticsSiteSelect = false;
                     }
@@ -39,6 +36,4 @@ if($this->hasAccess) { ?>
             });
         </script>
     </div>
-<?php
-}
-?>
+<?php endif; ?>

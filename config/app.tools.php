@@ -14,7 +14,7 @@ namespace MelisCmsPageAnalytics;
                         // the url that will return the JSON album data
                         'ajaxUrl' => '/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/getMelisCmsPageAnalyticsData',
                         // additional request parameters, this should be a javascript function
-                        'dataFunction' => '',
+                        'dataFunction' => 'melisCmsPageAnalyticsDataFn',
                         // the callback event that will be called after table rendering
                         'ajaxCallback' => 'melisCmsPageAnalyticsAppendLoadedFlag()',
                         'filters' => array(
