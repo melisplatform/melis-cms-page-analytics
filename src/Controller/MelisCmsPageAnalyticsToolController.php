@@ -9,11 +9,10 @@
 
 namespace MelisCmsPageAnalytics\Controller;
 
-use Zend\Form\Element;
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
-use Zend\View\Model\JsonModel;
 use MelisCore\Service\MelisCoreRightsService;
+use Zend\Mvc\Controller\AbstractActionController;
+use Zend\View\Model\JsonModel;
+use Zend\View\Model\ViewModel;
 
 class MelisCmsPageAnalyticsToolController extends AbstractActionController
 {
@@ -162,11 +161,13 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $searchableCols = $this->getTool()->getSearchableColumns();
             $start = (int)$post['start'];
             $length = (int)$post['length'];
+            $siteId = empty($post['siteId']) ? null : (int)$post['siteId'];
 
-            $data = $this->melisCmsPageAnalytcisTable()->getData($searchValue, $searchableCols, $selColOrder, $orderDirection, $start, $length)->toArray();
-            $dataCount = $this->melisCmsPageAnalytcisTable()->getTotalData();
-            $dataFilteredCount = $this->melisCmsPageAnalytcisTable()->getTotalFiltered();
-            $tableData = $data;
+            /** @var \MelisCmsPageAnalytics\Model\Tables\MelisCmsPageAnalyticsTable $analyticsTable */
+            $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsTable');
+            $tableData = $analyticsTable->getData($searchValue, $searchableCols, $selColOrder, $orderDirection, $start, $length, $siteId)->toArray();
+            $dataCount = $analyticsTable->getTotalData();
+            $dataFilteredCount = $analyticsTable->getTotalFiltered();
 
             for ($ctr = 0; $ctr < count($tableData); $ctr++) {
                 // apply text limits
@@ -190,12 +191,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
         ];
         return new JsonModel($response);
-    }
-
-    private function melisCmsPageAnalytcisTable()
-    {
-        $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsTable');
-        return $table;
     }
 
     public function saveAction()
@@ -361,8 +356,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      * otherwise, returns false.
      * @return array|bool|object
      */
-    private
-    function getGoogleAnalyticsService()
+    private function getGoogleAnalyticsService()
     {
         try {
             $service = $this->getServiceLocator()->get('MelisCmsGoogleAnalyticsService');
@@ -378,8 +372,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      * @param $analyticsModule
      * @return array
      */
-    private
-    function formatErrorMessage($errors = array(), $analyticsModule)
+    private function formatErrorMessage($errors = array(), $analyticsModule)
     {
         $melisMelisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
         $appConfigForm = $melisMelisCoreConfig->getItem('meliscms/forms/' . $analyticsModule . '_settings_form');
@@ -397,8 +390,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $errors;
     }
 
-    private
-    function getForm()
+    private function getForm()
     {
         $config = $this->getServiceLocator()->get('MelisCoreConfig');
         $formConfig = $config->getItem('meliscms/forms/melis_cms_page_analytics_settings_form');
@@ -421,8 +413,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      *
      * @return ViewModel
      */
-    public
-    function getSettingsFormAction()
+    public function getSettingsFormAction()
     {
         $form = null;
         $view = new ViewModel();
@@ -502,8 +493,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return $view;
     }
 
-    public
-    function getSiteAnalyticsAction()
+    public function getSiteAnalyticsAction()
     {
         $success = false;
         $errors = array();
@@ -547,8 +537,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         return new JsonModel($response);
     }
 
-    public
-    function getAnalyticsScriptAction()
+    public function getAnalyticsScriptAction()
     {
         $success = 0;
         $data = array();
@@ -582,23 +571,21 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      * Returns the Contents of the selected Page Analytics Module
      * @return ViewModel
      */
-    public
-    function toolContentContainerAnalyticsTabContentAction()
+    public function toolContentContainerAnalyticsTabContentAction()
     {
         $melisKey = $this->getMelisKey();
         $form = $this->getForm();
         $display = null;
-        $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
 
         $siteId = (int)$this->params()->fromQuery('siteId', null);
         $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_content');
-        $curData = array();
         $errMsg = "";
 
         if (!empty($siteId)) {
             /**
              * Getting site analytics data of the current Site selected
              */
+            $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
             $curData = $table->getEntryByField('pad_site_id', $siteId)->current();
 
             if (!empty($curData)) {
@@ -642,6 +629,12 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                                 "fa-refresh\"></i></a>'",
                                 "(\".melis_cms_page_analytics_tool_search input[type='search']\")"
                             ), $display);
+
+                            // Additional data/parameters for dataTable script
+                            $additionalData = [
+                                'siteId' => $siteId
+                            ];
+                            $display = $this->setAdditionalDataTableData($display, $additionalData);
                         }
                     }
                 } else {
@@ -665,8 +658,32 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
     }
 
-    public
-    function toolContentContainerAnalyticsSettingsTabContentAction()
+    /**
+     * Sets the dataFunction for the dataTable configuration
+     * @param string $dataTableConfig
+     * @param array $additionalData
+     * @return mixed|string
+     */
+    private function setAdditionalDataTableData(string $dataTableConfig, array $additionalData)
+    {
+        $customData = "function(d){";
+        foreach ($additionalData as $variableName => $value) {
+            if (is_int($value)) {
+                $customData .= "d." . $variableName . " = " . $value . ";";
+            } elseif (is_string($value)) {
+                $customData .= "d." . $variableName . " = '" . $value . "';";
+            }
+        }
+        $customData .= "}";
+        /** Get data function name */
+        $tableConf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('MelisCmsPageAnalytics/tools/MelisCmsPageAnalytics_tool/table');
+        $appToolsDataFn = empty($tableConf['dataFunction']) ? 'melisCmsPageAnalyticsDataFn' : $tableConf['dataFunction'];
+        $dataTableConfig = str_replace($appToolsDataFn, $customData, $dataTableConfig);
+
+        return $dataTableConfig;
+    }
+
+    public function toolContentContainerAnalyticsSettingsTabContentAction()
     {
 
         $melisKey = $this->getMelisKey();
@@ -689,8 +706,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      * via Google Analytics Service
      * @return string
      */
-    private
-    function getGoogleAnalyticsGuideAction()
+    private function getGoogleAnalyticsGuideAction()
     {
         $guide = '';
         $googleAnalytics = $this->getGoogleAnalyticsService();
