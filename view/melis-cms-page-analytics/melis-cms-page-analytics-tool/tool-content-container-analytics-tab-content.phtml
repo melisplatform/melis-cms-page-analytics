@@ -22,8 +22,7 @@ if ($this->hasAccess): ?>
         <?= $this->errMsg ? "<h4 id='id_melis_cms_page_analytics_loaded_flag'>" . $this->errMsg . "</h4>" : $this->display; ?>
 
         <script type="text/javascript">
-            $(function () {
-                var $body = $("body");
+            (function () {
                 // Disable empty option
                 $body.find('select#analytics-content-side-id option:first-child').attr('disabled', 'true');
                 if (pageAnalyticsSiteSelect) {
@@ -33,7 +32,7 @@ if ($this->hasAccess): ?>
                         pageAnalyticsSiteSelect = false;
                     }
                 }
-            });
+            })();
         </script>
     </div>
 <?php endif; ?>
