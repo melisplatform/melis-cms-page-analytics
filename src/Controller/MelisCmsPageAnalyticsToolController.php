@@ -124,22 +124,53 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
     public function toolDefaultPageAnalyticsTableAction()
     {
+        $siteId = (int)$this->params()->fromQuery('siteId', null);
         $melisKey = $this->getMelisKey();
         $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab');
         $columns = $this->getTool()->getColumns();
+        // Setting first column's (ID) default Order to descending
+        $getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#tableMelisCmsPageAnalytics', true, false, array('order' => '[[0, "desc"]]'));
+
+        // Additional data/parameters for dataTable script
+        $additionalData = [
+            'siteId' => $siteId
+        ];
+        $getToolDataTableConfig = $this->setAdditionalDataTableData($getToolDataTableConfig, $additionalData);
 
         $view = new ViewModel();
 
         $view->melisKey = $melisKey;
         $view->tableColumns = $columns;
         $view->hasAccess = $hasAccess;
-
-        // Setting first column's (ID) default Order to descending
-        $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#tableMelisCmsPageAnalytics', true, false, array('order' => '[[0, "desc"]]'));
+        $view->getToolDataTableConfig = $getToolDataTableConfig;
 
         return $view;
     }
 
+    /**
+     * Sets the dataFunction for the dataTable configuration
+     * @param string $dataTableConfig
+     * @param array $additionalData
+     * @return mixed|string
+     */
+    private function setAdditionalDataTableData(string $dataTableConfig, array $additionalData)
+    {
+        $customData = "function(d){";
+        foreach ($additionalData as $variableName => $value) {
+            if (is_int($value)) {
+                $customData .= "d." . $variableName . " = " . $value . ";";
+            } elseif (is_string($value)) {
+                $customData .= "d." . $variableName . " = '" . $value . "';";
+            }
+        }
+        $customData .= "}";
+        /** Get data function name */
+        $tableConf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('MelisCmsPageAnalytics/tools/MelisCmsPageAnalytics_tool/table');
+        $appToolsDataFn = empty($tableConf['dataFunction']) ? 'melisCmsPageAnalyticsDataFn' : $tableConf['dataFunction'];
+        $dataTableConfig = str_replace($appToolsDataFn, $customData, $dataTableConfig);
+
+        return $dataTableConfig;
+    }
 
     public function getMelisCmsPageAnalyticsDataAction()
     {
@@ -656,31 +687,6 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
         return $view;
 
-    }
-
-    /**
-     * Sets the dataFunction for the dataTable configuration
-     * @param string $dataTableConfig
-     * @param array $additionalData
-     * @return mixed|string
-     */
-    private function setAdditionalDataTableData(string $dataTableConfig, array $additionalData)
-    {
-        $customData = "function(d){";
-        foreach ($additionalData as $variableName => $value) {
-            if (is_int($value)) {
-                $customData .= "d." . $variableName . " = " . $value . ";";
-            } elseif (is_string($value)) {
-                $customData .= "d." . $variableName . " = '" . $value . "';";
-            }
-        }
-        $customData .= "}";
-        /** Get data function name */
-        $tableConf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('MelisCmsPageAnalytics/tools/MelisCmsPageAnalytics_tool/table');
-        $appToolsDataFn = empty($tableConf['dataFunction']) ? 'melisCmsPageAnalyticsDataFn' : $tableConf['dataFunction'];
-        $dataTableConfig = str_replace($appToolsDataFn, $customData, $dataTableConfig);
-
-        return $dataTableConfig;
     }
 
     public function toolContentContainerAnalyticsSettingsTabContentAction()
