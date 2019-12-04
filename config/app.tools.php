@@ -96,7 +96,7 @@ namespace MelisCmsPageAnalytics;
                         // additional request parameters, this should be a javascript function
                         'dataFunction' => 'setPageId',
                         // the callback event that will be called after table rendering
-                        'ajaxCallback' => 'paginateDataTables()',
+                        'ajaxCallback' => '',
                         'filters' => array(
                             'left' => array(
                                 'limit' => array(
