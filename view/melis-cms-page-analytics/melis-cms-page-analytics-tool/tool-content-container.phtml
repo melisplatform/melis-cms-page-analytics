@@ -8,14 +8,14 @@ if (!empty($this->zoneconfig['conf']['id']))
 
 <div <?= $id; ?> data-melisKey="<?= $this->melisKey; ?>">
     <script type="text/javascript">
-        $(function () {
+        (function () {
             /**
              * Selecting the First Site in the Site Selection automatically
              * A flag to prevent the trigger change in tool-content-container-analytics-tab-content.phtml
              * to keep on executing infinitely
              */
             window.pageAnalyticsSiteSelect = true;
-        });
+        })();
     </script>
     <div class="widget widget-tabs widget-tabs-double-2 widget-tabs-responsive">
         <div class="widget-head nav">
