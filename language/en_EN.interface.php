@@ -17,6 +17,7 @@ return [
     'tr_meliscms_page_analytics_inactive_module' => 'The analytics module for this site is deactivated.',
     'tr_meliscms_page_analytics_no_module_set' => 'To display the site data, please select an analytics module for this site in Settings.',
     'tr_meliscms_page_analytics_page_no_module_set' => 'To display the page\'s data, please select an analytics module from the Site Analytics module.',
+    'tr_meliscms_page_analytics_folder_message' => 'This is a folder. There is no analytics data for folders.',
 
     // Table and Forms
     'tr_meliscms_page_analytics_column_id' => 'ID',
