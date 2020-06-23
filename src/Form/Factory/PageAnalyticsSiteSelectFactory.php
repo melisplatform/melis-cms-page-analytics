@@ -10,7 +10,7 @@
 namespace MelisCmsPageAnalytics\Form\Factory;
 
 use MelisCore\Form\Factory\MelisSelectFactory;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
 class PageAnalyticsSiteSelectFactory extends MelisSelectFactory
 {

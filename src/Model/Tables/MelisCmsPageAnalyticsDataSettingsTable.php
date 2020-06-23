@@ -3,18 +3,23 @@
 namespace MelisCmsPageAnalytics\Model\Tables;
 
 use MelisEngine\Model\Tables\MelisGenericTable;
-use Zend\Db\TableGateway\TableGateway;
-use Zend\Db\Sql\Expression;
+use Laminas\Db\TableGateway\TableGateway;
+use Laminas\Db\Sql\Expression;
 
 class MelisCmsPageAnalyticsDataSettingsTable extends MelisGenericTable
 {
-    protected $tableGateway;
-    protected $idField;
+    /**
+     * Model table
+     */
+    const TABLE = 'melis_cms_page_analytics_data_settings';
 
-    public function __construct(TableGateway $tableGateway)
+    /**
+     * Table primary key
+     */
+    const PRIMARY_KEY = 'pads_id';
+
+    public function __construct()
     {
-        parent::__construct($tableGateway);
-        $this->idField = 'pads_id';
+        $this->idField = self::PRIMARY_KEY;
     }
-
 }

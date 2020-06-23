@@ -6,10 +6,11 @@
  *
  */
 namespace MelisCmsPageAnalytics\Controller;
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
-use Zend\View\Model\JsonModel;
-class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionController
+
+use MelisCore\Controller\MelisAbstractActionController;
+use Laminas\View\Model\ViewModel;
+use Laminas\View\Model\JsonModel;
+class MelisCmsPageAnalyticsPageDetailsToolController extends MelisAbstractActionController
 {
     private $pageId = null;
 
@@ -18,13 +19,13 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
         $melisKey = $this->getMelisKey();
         $pageHitId = (int) $this->params()->fromQuery('idPage', $this->params()->fromQuery('pageHitId'));
         $pageHitId  = (int) $this->params()->fromQuery('idPage', $this->params()->fromQuery('pageHitId'));
-        $pageTree   = $this->getServiceLocator()->get('MelisEngineTree');
+        $pageTree   = $this->getServiceManager()->get('MelisEngineTree');
         $pageUrl    = $pageTree->getPageLink($pageHitId, true);
-        $pageTreeSvc = $this->getServiceLocator()->get('MelisEngineTree');
+        $pageTreeSvc = $this->getServiceManager()->get('MelisEngineTree');
         $siteData    = $pageTreeSvc->getSiteByPageId($pageHitId);
-        $pageTree = $this->getServiceLocator()->get('MelisEngineTree');
+        $pageTree = $this->getServiceManager()->get('MelisEngineTree');
         $pageUrl = $pageTree->getPageLink($pageHitId, true);
-        $pageTreeSvc = $this->getServiceLocator()->get('MelisEnginePage');
+        $pageTreeSvc = $this->getServiceManager()->get('MelisEnginePage');
         $siteData = $pageTreeSvc->getDatasPage($pageHitId,'saved');
         $errMsg = "";
         $display = null;
@@ -39,11 +40,11 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                 $siteId = !empty($siteData->getMelisTemplate()) ? (int)$siteData->getMelisTemplate()->tpl_site_id : null;
             }
             $this->pageId = $pageHitId;
-            $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+            $table = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
             $curData = $table->getAnalytics($siteId)->current();
 
             if ($curData) {
-                $config = $this->getServiceLocator()->get('MelisCoreConfig');
+                $config = $this->getServiceManager()->get('MelisCoreConfig');
                 $currentAnalytics = $curData->pad_analytics_key;
                 $hasAnalyticsConfig = $config->getItem('meliscms/datas/page_analytics/' . $currentAnalytics);
 
@@ -67,7 +68,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                         ".melis_cms_page_analytics_page_search input[type='search']"
                     ), $display);
                     // get the url the page
-                    $pageTree = $this->getServiceLocator()->get('MelisEngineTree');
+                    $pageTree = $this->getServiceManager()->get('MelisEngineTree');
                     $pageUrl = $pageTree->getPageLink($pageHitId, true);
                 } else {
                     $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_inactive_module');
@@ -151,12 +152,12 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
     }
     private function melisCmsPageAnalytcisTable()
     {
-        $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsTable');
+        $table = $this->getServiceManager()->get('MelisCmsPageAnalyticsTable');
         return $table;
     }
     private function getTool()
     {
-        $toolSvc = $this->getServiceLocator()->get('MelisCoreTool');
+        $toolSvc = $this->getServiceManager()->get('MelisCoreTool');
         $toolSvc->setMelisToolKey('MelisCmsPageAnalytics', 'MelisCmsPageAnalytics_page_details');
         return $toolSvc;
     }
@@ -166,7 +167,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
      */
     private function getLoggedInUserInfo()
     {
-        $authService = $this->getServiceLocator()->get('MelisCoreAuth');
+        $authService = $this->getServiceManager()->get('MelisCoreAuth');
         if($authService->hasIdentity()) {
             return $authService->getIdentity();
         }

@@ -8,7 +8,7 @@
  */
 
 namespace MelisCmsPageAnalytics\Form\Factory;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 use MelisCore\Form\Factory\MelisSelectFactory;
 
 

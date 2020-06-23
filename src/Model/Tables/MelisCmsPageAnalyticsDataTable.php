@@ -3,24 +3,29 @@
 namespace MelisCmsPageAnalytics\Model\Tables;
 
 use MelisEngine\Model\Tables\MelisGenericTable;
-use Zend\Db\TableGateway\TableGateway;
-use Zend\Db\Sql\Expression;
+use Laminas\Db\Sql\Expression;
 
 class MelisCmsPageAnalyticsDataTable extends MelisGenericTable
 {
-    protected $tableGateway;
-    protected $idField;
+    /**
+     * Model table
+     */
+    const TABLE = 'melis_cms_page_analytics_data';
 
-    public function __construct(TableGateway $tableGateway)
+    /**
+     * Table primary key
+     */
+    const PRIMARY_KEY = 'pad_id';
+
+    public function __construct()
     {
-        parent::__construct($tableGateway);
-        $this->idField = 'pad_id';
+        $this->idField = self::PRIMARY_KEY;
     }
 
 
     public function getAnalytics($siteId, $analyticsKey = null)
     {
-        $select = $this->tableGateway->getSql()->select();
+        $select = $this->getTableGateway()->getSql()->select();
 
         $select->join('melis_cms_page_analytics_data_settings', 'melis_cms_page_analytics_data_settings.pads_site_id = melis_cms_page_analytics_data.pad_site_id',
             array('*'), $select::JOIN_LEFT);
@@ -32,7 +37,7 @@ class MelisCmsPageAnalyticsDataTable extends MelisGenericTable
             $select->where->and->equalTo('pads_analytics_key', $analyticsKey);
         }
 
-        $resultSet = $this->tableGateway->selectWith($select);
+        $resultSet = $this->getTableGateway()->selectWith($select);
 
         return $resultSet;
     }

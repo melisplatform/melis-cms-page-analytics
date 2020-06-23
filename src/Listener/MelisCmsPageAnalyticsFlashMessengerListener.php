@@ -9,45 +9,29 @@
 
 namespace MelisCmsPageAnalytics\Listener;
 
-use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\ListenerAggregateInterface;
-use MelisCore\Listener\MelisCoreGeneralListener;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\EventManager\ListenerAggregateInterface;
+use MelisCore\Listener\MelisGeneralListener;
 
 /**
  * This listener listens to MelisCmsPageAnalytics events in order to add entries in the
  * flash messenger
  */
-class MelisCmsPageAnalyticsFlashMessengerListener extends MelisCoreGeneralListener implements ListenerAggregateInterface
+class MelisCmsPageAnalyticsFlashMessengerListener extends MelisGeneralListener
 {
 
     /**
      * Handles the flash messenger event listener
      * @param EventManagerInterface $events
      */
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $sharedEvents      = $events->getSharedManager();
-
-        $callBackHandler = $sharedEvents->attach(
+        $this->attachEventListener(
+            $events,
             'MelisCmsPageAnalytics',
-            array(
-                'melis_cms_page_analytics_flash_messenger'
-            ),
-            function($e){
-
-                $sm = $e->getTarget()->getServiceLocator();
-                $flashMessenger = $sm->get('MelisCoreFlashMessenger');
-
-                $params = $e->getParams();
-                $params['textTitle']   = $params['title'];
-                $params['textMessage'] = $params['message'];
-                $results = $e->getTarget()->forward()->dispatch(
-                    'MelisCore\Controller\MelisFlashMessenger',
-                    array_merge(array('action' => 'log'), $params)
-                )->getVariables();
-            },
-            -1000);
-
-        $this->listeners[] = $callBackHandler;
+            'melis_cms_page_analytics_flash_messenger',
+            [$this, 'logMessages'],
+            -1000
+        );
     }
 }

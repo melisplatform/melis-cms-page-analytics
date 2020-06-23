@@ -4,21 +4,17 @@ namespace MelisCmsPageAnalytics\Listener;
 
 
 use MelisFront\Listener\MelisFrontSEODispatchRouterAbstractListener;
-use Zend\EventManager\EventManagerInterface;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 
-class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractListener implements ServiceLocatorAwareInterface
+class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractListener
 {
-    protected $serviceLocator;
-
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $sharedEvents = $events->getSharedManager();
-
-        $callBackHandler = $sharedEvents->attach(
+        $this->attachEventListener(
+            $events,
             '*',
-            ['melisfront_site_dispatch_ready'],
+            'melisfront_site_dispatch_ready',
             function ($e) {
                 //page ID
                 $params = $e->getParams();
@@ -28,15 +24,17 @@ class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractL
                 if ($params['renderMode'] == 'front') //only front not back
                 {
                     /** @var \MelisCmsPageAnalytics\Service\MelisCmsDefaultPageAnalyticsService $defaultAnalyticsService */
-                    $defaultAnalyticsService = $this->getServiceLocator()->get('MelisCmsDefaultPageAnalyticsService');
+                    $defaultAnalyticsService = $e->getTarget()->serviceManager->get('MelisCmsDefaultPageAnalyticsService');
                     $defaultAnalyticsService->saveAnalyticsData($pageId);
                 }
             },
-            -10000);
+            -10000
+        );
 
-        $melisLayoutCallBackHandler = $sharedEvents->attach(
+        $this->attachEventListener(
+            $events,
             '*',
-            ['melis_front_layout'],
+            'melis_front_layout',
             function ($e) {
 
                 $params = $e->getParams();
@@ -46,14 +44,13 @@ class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractL
                     $pageId = isset($params['idPage']) ? (int)$params['idPage'] : null;
 
                     // get the site domain of the page
-                    $pageTreeSvc = $this->getServiceLocator()->get('MelisEngineTree');
+                    $pageTreeSvc = $e->getTarget()->getServiceManager()->get('MelisEngineTree');
                     $siteData = $pageTreeSvc->getSiteByPageId($pageId);
 
                     if ($siteData) {
 
                         $siteId = (int)$siteData->sdom_site_id;
-                        $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-
+                        $table = $e->getTarget()->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
 
                         $analyticsData = $table->getAnalytics($siteId)->current();
 
@@ -75,20 +72,5 @@ class MelisCmsPageAnalyticsListener extends MelisFrontSEODispatchRouterAbstractL
                 }
             }
         );
-        $this->listeners[] = $callBackHandler;
-        $this->listeners[] = $melisLayoutCallBackHandler;
     }
-
-    public function getServiceLocator()
-    {
-        return $this->serviceLocator;
-    }
-
-    public function setServiceLocator(ServiceLocatorInterface $sl)
-    {
-        $this->serviceLocator = $sl;
-        return $this;
-    }
-
 }
-     

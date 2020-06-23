@@ -9,12 +9,12 @@
 
 namespace MelisCmsPageAnalytics\Controller;
 
+use MelisCore\Controller\MelisAbstractActionController;
 use MelisCore\Service\MelisCoreRightsService;
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\JsonModel;
-use Zend\View\Model\ViewModel;
+use Laminas\View\Model\JsonModel;
+use Laminas\View\Model\ViewModel;
 
-class MelisCmsPageAnalyticsToolController extends AbstractActionController
+class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 {
     const DS = DIRECTORY_SEPARATOR;
 
@@ -29,8 +29,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     }
 
     /*
-     * getMelisKey method
-     */
+    * getMelisKey method
+    */
     private function getMelisKey()
     {
         $melisKey = $this->params()->fromRoute('melisKey', $this->params()->fromQuery('melisKey'), null);
@@ -50,7 +50,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
     private function getTool()
     {
-        $toolSvc = $this->getServiceLocator()->get('MelisCoreTool');
+        $toolSvc = $this->getServiceManager()->get('MelisCoreTool');
         $toolSvc->setMelisToolKey('MelisCmsPageAnalytics', 'MelisCmsPageAnalytics_tool');
         return $toolSvc;
     }
@@ -63,8 +63,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     }
 
     /*
-     * Limit data in the table
-     */
+    * Limit data in the table
+    */
 
     public function toolContentTableSearchToolAction()
     {
@@ -72,8 +72,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     }
 
     /*
-     * Search Data in the table
-     */
+    * Search Data in the table
+    */
 
     public function toolContentTableActionViewAction()
     {
@@ -90,8 +90,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     }
 
     /*
-     * Zone Refresh
-     */
+    * Zone Refresh
+    */
 
     public function toolContentContainerAction()
     {
@@ -113,8 +113,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     private function hasAccess($key)
     {
         $key = trim($key);
-        $melisCoreAuth = $this->getServiceLocator()->get('MelisCoreAuth');
-        $melisCoreRights = $this->getServiceLocator()->get('MelisCoreRights');
+        $melisCoreAuth = $this->getServiceManager()->get('MelisCoreAuth');
+        $melisCoreRights = $this->getServiceManager()->get('MelisCoreRights');
         $xmlRights = $melisCoreAuth->getAuthRights();
 
         $isAccessible = $melisCoreRights->isAccessible($xmlRights, MelisCoreRightsService::MELIS_PLATFORM_TOOLS_PREFIX, $key);
@@ -165,7 +165,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         }
         $customData .= "}";
         /** Get data function name */
-        $tableConf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('MelisCmsPageAnalytics/tools/MelisCmsPageAnalytics_tool/table');
+        $tableConf = $this->getServiceManager()->get('MelisCoreConfig')->getItem('MelisCmsPageAnalytics/tools/MelisCmsPageAnalytics_tool/table');
         $appToolsDataFn = empty($tableConf['dataFunction']) ? 'melisCmsPageAnalyticsDataFn' : $tableConf['dataFunction'];
         $dataTableConfig = str_replace($appToolsDataFn, $customData, $dataTableConfig);
 
@@ -195,7 +195,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $siteId = empty($post['siteId']) ? null : (int)$post['siteId'];
 
             /** @var \MelisCmsPageAnalytics\Model\Tables\MelisCmsPageAnalyticsTable $analyticsTable */
-            $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsTable');
+            $analyticsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsTable');
             $tableData = $analyticsTable->getData($searchValue, $searchableCols, $selColOrder, $orderDirection, $start, $length, $siteId)->toArray();
             $dataCount = $analyticsTable->getTotalData();
             $dataFilteredCount = $analyticsTable->getTotalFiltered();
@@ -243,8 +243,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                 $request->getFiles()->toArray()
             );
 
-            $analayticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-            $analayticsSettingsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataSettingsTable');
+            $analayticsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
+            $analayticsSettingsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataSettingsTable');
 
             /**
              * Checking for google analytics settings form errors.
@@ -287,7 +287,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                         $post['google_analytics_private_key']['type'] === "application/json"
                     ) {
                         $privateKey = $post['google_analytics_private_key'];
-                        $conf = $this->getServiceLocator()->get('MelisCoreConfig')->getItem('meliscms');
+                        $conf = $this->getServiceManager()->get('MelisCoreConfig')->getItem('meliscms');
                         if (!empty($conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'])) {
                             $privateKeyFileDir = $conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'];
                             $privateKeyFileDir = str_replace(["\\", "/"], self::DS, $privateKeyFileDir);
@@ -370,8 +370,8 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
         $response = [
             'success' => $success,
-            'title' => $this->getTool()->getTranslation($title),
-            'message' => $this->getTool()->getTranslation($message),
+            'textTitle' => $this->getTool()->getTranslation($title),
+            'textMessage' => $this->getTool()->getTranslation($message),
             'errors' => $errors
         ];
 
@@ -390,7 +390,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
     private function getGoogleAnalyticsService()
     {
         try {
-            $service = $this->getServiceLocator()->get('MelisCmsGoogleAnalyticsService');
+            $service = $this->getServiceManager()->get('MelisCmsGoogleAnalyticsService');
             return $service;
         } catch (\Exception $exception) {
             return false;
@@ -405,7 +405,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
      */
     private function formatErrorMessage($errors = array(), $analyticsModule)
     {
-        $melisMelisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
+        $melisMelisCoreConfig = $this->getServiceManager()->get('MelisCoreConfig');
         $appConfigForm = $melisMelisCoreConfig->getItem('meliscms/forms/' . $analyticsModule . '_settings_form');
         $appConfigForm = $appConfigForm['elements'];
 
@@ -423,10 +423,10 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
 
     private function getForm()
     {
-        $config = $this->getServiceLocator()->get('MelisCoreConfig');
+        $config = $this->getServiceManager()->get('MelisCoreConfig');
         $formConfig = $config->getItem('meliscms/forms/melis_cms_page_analytics_settings_form');
-        $factory = new \Zend\Form\Factory();
-        $formElements = $this->serviceLocator->get('FormElementManager');
+        $factory = new \Laminas\Form\Factory();
+        $formElements = $this->getServiceManager()->get('FormElementManager');
 
         $factory->setFormElementManager($formElements);
 
@@ -452,14 +452,14 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         if ($this->getRequest()->isPost()) {
             $analyticsKey = $this->getTool()->sanitize($this->getRequest()->getPost('analytics_key'));
             $siteId = (int)$this->getRequest()->getPost('site_id');
-            $config = $this->getServiceLocator()->get('MelisCoreConfig');
+            $config = $this->getServiceManager()->get('MelisCoreConfig');
             $settings = $config->getItem('meliscms/forms/' . $analyticsKey . '_settings_form');
 
             if (!empty($settings) && !empty($analyticsKey)) {
-                $factory = new \Zend\Form\Factory();
-                $formElements = $this->serviceLocator->get('FormElementManager');
+                $factory = new \Laminas\Form\Factory();
+                $formElements = $this->getServiceManager()->get('FormElementManager');
                 $factory->setFormElementManager($formElements);
-                /** @var \Zend\Form\Form $form */
+                /** @var \Laminas\Form\Form $form */
                 $form = $factory->createForm($settings);
 
                 /**
@@ -481,7 +481,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                     }
                 }
 
-                $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+                $analyticsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
                 $settingsData = $analyticsTable->getAnalytics($siteId, $analyticsKey)->current();
 
                 if (!empty($settingsData)) {
@@ -504,7 +504,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                          * Creating the element that will hold the private key filename value
                          */
                         $form->add([
-                            'type' => 'Zend\\Form\\Element\\Hidden',
+                            'type' => 'Laminas\\Form\\Element\\Hidden',
                             'name' => 'google_analytics_private_key_val',
                             'attributes' => [
                                 'id' => 'id_google_analytics_private_key_val',
@@ -532,7 +532,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
         $request = $this->getRequest();
 
         if ($request->isPost()) {
-            $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+            $analyticsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
             $siteId = (int)$request->getPost('site_id');
             $analyticsData = $analyticsTable->getAnalytics($siteId)->current();
 
@@ -550,7 +550,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                         // active by default
                         $data['activeAnalytics'] = true;
                     } else {
-                        $config = $this->getServiceLocator()->get('MelisCoreConfig');
+                        $config = $this->getServiceManager()->get('MelisCoreConfig');
                         $data['activeAnalytics'] = $config->getItem('meliscms/datas/page_analytics/' . $data['page_analytics_id']) ? true : false;
                     }
 
@@ -579,7 +579,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             $siteId = (int)$request->getPost('site_id');
             $analyticsKey = $this->getTool()->sanitize($request->getPost('analytics_key'));
 
-            $analyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+            $analyticsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
             $analyticsData = $analyticsTable->getAnalytics($siteId, $analyticsKey)->current();
 
             if ($analyticsData) {
@@ -616,14 +616,14 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
             /**
              * Getting site analytics data of the current Site selected
              */
-            $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+            $table = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
             $curData = $table->getEntryByField('pad_site_id', $siteId)->current();
 
             if (!empty($curData)) {
                 /**
                  * Checking for analytics configuration
                  */
-                $config = $this->getServiceLocator()->get('MelisCoreConfig');
+                $config = $this->getServiceManager()->get('MelisCoreConfig');
                 $currentAnalytics = $curData->pad_analytics_key;
                 $hasAnalyticsConfig = $config->getItem('meliscms/datas/page_analytics/' . $currentAnalytics);
 
@@ -633,7 +633,7 @@ class MelisCmsPageAnalyticsToolController extends AbstractActionController
                      */
                     $data = array('page_analytics_id' => $currentAnalytics);
                     $form->setData($data);
-                    $config = $this->getServiceLocator()->get('MelisCoreConfig');
+                    $config = $this->getServiceManager()->get('MelisCoreConfig');
 
                     if (!empty($currentAnalytics)) {
                         /**
