@@ -22,24 +22,33 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
         $pageUrl    = $pageTree->getPageLink($pageHitId, true);
         $pageTreeSvc = $this->getServiceLocator()->get('MelisEngineTree');
         $siteData    = $pageTreeSvc->getSiteByPageId($pageHitId);
-        $siteId      = null;
-        if($siteData) {
-            $siteId = (int) $siteData->site_id;
-        }
-        $this->pageId   = $pageHitId;
-        $table          = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
-        $curData        = $table->getAnalytics($siteId)->current();
-        $display        = null;
-        $displayScript  = null;
-        $errMsg         = "";
+        $pageTree = $this->getServiceLocator()->get('MelisEngineTree');
+        $pageUrl = $pageTree->getPageLink($pageHitId, true);
+        $pageTreeSvc = $this->getServiceLocator()->get('MelisEnginePage');
+        $siteData = $pageTreeSvc->getDatasPage($pageHitId,'saved');
+        $errMsg = "";
+        $display = null;
+        $displayScript = null;
 
-        if($curData) {
-            $config             = $this->getServiceLocator()->get('MelisCoreConfig');
-            $currentAnalytics   = $curData->pad_analytics_key;
-            $hasAnalyticsConfig = $config->getItem('meliscms/datas/page_analytics/'.$currentAnalytics);
+        $pageTree = $siteData->getMelisPageTree();
 
-            if($hasAnalyticsConfig) {
-                $pageAnalyticsData = $hasAnalyticsConfig;
+        if($pageTree->page_type != "FOLDER") {
+
+            $siteId = null;
+            if ($siteData) {
+                $siteId = !empty($siteData->getMelisTemplate()) ? (int)$siteData->getMelisTemplate()->tpl_site_id : null;
+            }
+            $this->pageId = $pageHitId;
+            $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+            $curData = $table->getAnalytics($siteId)->current();
+
+            if ($curData) {
+                $config = $this->getServiceLocator()->get('MelisCoreConfig');
+                $currentAnalytics = $curData->pad_analytics_key;
+                $hasAnalyticsConfig = $config->getItem('meliscms/datas/page_analytics/' . $currentAnalytics);
+
+                if ($hasAnalyticsConfig) {
+                    $pageAnalyticsData = $hasAnalyticsConfig;
                     $forward = $pageAnalyticsData['interface']['analytics_for_page']['forward'];
                     $display = $this->getTool()->getViewContent($forward);
 
@@ -59,15 +68,17 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends AbstractActionContr
                     ), $display);
                     // get the url the page
                     $pageTree = $this->getServiceLocator()->get('MelisEngineTree');
-                    $pageUrl  = $pageTree->getPageLink($pageHitId, true);
+                    $pageUrl = $pageTree->getPageLink($pageHitId, true);
+                } else {
+                    $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_inactive_module');
+                }
+            } else {
+                $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_no_module_set');
             }
-            else{
-                $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_inactive_module');
-            }
+        }else{
+            $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_folder_message');
         }
-        else{
-            $errMsg = $this->getTool()->getTranslation('tr_meliscms_page_analytics_no_module_set');
-        }
+
         $view = new ViewModel();
         $view->melisKey  = $melisKey;
         $view->pageHitId = $pageHitId;

@@ -20,27 +20,54 @@ class MelisCmsDefaultPageAnalyticsService extends MelisCoreGeneralService
         // Sending service start event
         $arrayParameters = $this->sendEvent('melis_cms_default_page_analytics_save_start', $arrayParameters);
         $pageId = $arrayParameters['pageId'];
-        if (!empty($pageId)) {
-            /**
-             * Check for the page's status: Only record views for active pages.
-             * @var \MelisEngine\Model\Tables\MelisPagePublishedTable $pagePublished
-             */
-            $pagePublished = $this->getServiceLocator()->get('MelisEngineTablePagePublished');
-            $pagePublished = current($pagePublished->getEntryById($pageId)->toArray());
-            if (!empty($pagePublished['page_status'])) {
-                /** Page is active */
-                $sessionCookie = isset($_COOKIE['PHPSESSID']) ? $_COOKIE['PHPSESSID'] : session_id();
-                $currentDateTime = date("Y-m-d H:i:s");
 
-                $pageAnalyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsTable');
-                $pageData = $pageAnalyticsTable->getDataBySessionAndPageId((int)$pageId, $sessionCookie)->toArray();
+        $pageTreeSvc = $this->getServiceLocator()->get('MelisEngineTree');
+        $siteData = $pageTreeSvc->getSiteByPageId($pageId);
+        $siteId = (int)$siteData->site_id;
+        $table = $this->getServiceLocator()->get('MelisCmsPageAnalyticsService');
+        $data = $table->getAnalytics($siteId);
+        /**
+         * Getting access token for API calls
+         * @var GoogleAnalyticsAPIService $googleAPIService
+         */
 
-                $siteId = $this->getSiteIdByPageId($pageId);
+        $googleAPIService = $this->getServiceLocator()->get('GoogleAnalyticsAPIService');
+        $response = $googleAPIService->setAnalyticsReportingService($siteId);
+        if ($response) {
+            $tokenInfo = base64_encode(json_encode($googleAPIService->getAccessToken()));
+        }
+        $analyticsViewId = $data->pads_settings->google_analytics_view_id;
 
-                if (!empty($pageData)) {
-                    $pageData = end($pageData);
-                    // check if the today
-                    if (!$this->isToday($pageData['ph_date_visit'])) {
+        if(empty($tokenInfo) || empty($analyticsViewId)) {
+            if (!empty($pageId)) {
+                /**
+                 * Check for the page's status: Only record views for active pages.
+                 * @var \MelisEngine\Model\Tables\MelisPagePublishedTable $pagePublished
+                 */
+                $pagePublished = $this->getServiceLocator()->get('MelisEngineTablePagePublished');
+                $pagePublished = current($pagePublished->getEntryById($pageId)->toArray());
+                if (!empty($pagePublished['page_status'])) {
+                    /** Page is active */
+                    $sessionCookie = isset($_COOKIE['PHPSESSID']) ? $_COOKIE['PHPSESSID'] : session_id();
+                    $currentDateTime = date("Y-m-d H:i:s");
+
+                    $pageAnalyticsTable = $this->getServiceLocator()->get('MelisCmsPageAnalyticsTable');
+                    $pageData = $pageAnalyticsTable->getDataBySessionAndPageId((int)$pageId, $sessionCookie)->toArray();
+
+                    $siteId = $this->getSiteIdByPageId($pageId);
+
+                    if (!empty($pageData)) {
+                        $pageData = end($pageData);
+                        // check if the today
+                        if (!$this->isToday($pageData['ph_date_visit'])) {
+                            $pageAnalyticsTable->save([
+                                'ph_page_id' => $pageId,
+                                'ph_session_id' => $sessionCookie,
+                                'ph_date_visit' => $currentDateTime,
+                                'ph_site_id' => $siteId
+                            ]);
+                        }
+                    } else {
                         $pageAnalyticsTable->save([
                             'ph_page_id' => $pageId,
                             'ph_session_id' => $sessionCookie,
@@ -48,13 +75,6 @@ class MelisCmsDefaultPageAnalyticsService extends MelisCoreGeneralService
                             'ph_site_id' => $siteId
                         ]);
                     }
-                } else {
-                    $pageAnalyticsTable->save([
-                        'ph_page_id' => $pageId,
-                        'ph_session_id' => $sessionCookie,
-                        'ph_date_visit' => $currentDateTime,
-                        'ph_site_id' => $siteId
-                    ]);
                 }
             }
         }
