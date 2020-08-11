@@ -313,8 +313,13 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
                         $analyticsSettings['google_analytics_private_key'] = realpath($dst);
                     } else {
                         /** retain the current private key file */
-                        $currentSetting = unserialize($analyticsSettingsData->pads_settings);
-                        $analyticsSettings['google_analytics_private_key'] = $currentSetting['google_analytics_private_key'];
+                        $privateKey = '';
+                        if (!empty($analyticsSettingsData)) {
+                            $currentSetting = unserialize($analyticsSettingsData->pads_settings);
+                            $privateKey = $currentSetting['google_analytics_private_key'];
+                        }
+
+                        $analyticsSettings['google_analytics_private_key'] = $privateKey;
                     }
                     $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
                 }
