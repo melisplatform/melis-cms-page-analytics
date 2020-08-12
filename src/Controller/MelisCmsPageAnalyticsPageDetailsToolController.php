@@ -118,7 +118,7 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends MelisAbstractAction
         $success = 0;
         $error   = array();
         $data    = array();
-        $analytics = $this->serviceLocator()->get("MelisPageAnalytics");
+        $analytics = $this->getServiceManager()->get("MelisPageAnalytics");
         $data      = $analytics->getAnalyticsBySiteId($siteId);
         $data      = array();
         return $data;

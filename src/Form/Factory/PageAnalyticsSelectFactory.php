@@ -8,15 +8,14 @@
  */
 
 namespace MelisCmsPageAnalytics\Form\Factory;
-use Laminas\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\ServiceManager;
 use MelisCore\Form\Factory\MelisSelectFactory;
 
 
 class PageAnalyticsSelectFactory extends MelisSelectFactory
 {
-    protected function loadValueOptions(ServiceLocatorInterface $formElementManager)
+    protected function loadValueOptions(ServiceManager $serviceManager)
     {
-        $serviceManager   = $formElementManager->getServiceLocator();
         $config = $serviceManager->get('MelisCoreConfig');
         $pageAnalyticsCfg = $config->getItem('meliscms/datas/page_analytics');
 
