@@ -3,19 +3,24 @@
 namespace MelisCmsPageAnalytics\Model\Tables;
 
 use MelisEngine\Model\Tables\MelisGenericTable;
-use Zend\Db\Sql\Expression;
-use Zend\Db\Sql\Where;
-use Zend\Db\TableGateway\TableGateway;
+use Laminas\Db\Sql\Expression;
+use Laminas\Db\Sql\Where;
 
 class MelisCmsPageAnalyticsTable extends MelisGenericTable
 {
-    protected $tableGateway;
-    protected $idField;
+    /**
+     * Model table
+     */
+    const TABLE = 'melis_cms_page_analytics';
 
-    public function __construct(TableGateway $tableGateway)
+    /**
+     * Table primary key
+     */
+    const PRIMARY_KEY = 'ph_id';
+
+    public function __construct()
     {
-        parent::__construct($tableGateway);
-        $this->idField = 'ph_id';
+        $this->idField = self::PRIMARY_KEY;
     }
 
     /**
@@ -30,7 +35,7 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
      */
     public function getData($search = '', $searchableColumns = [], $orderBy = '', $orderDirection = 'DESC', $start = 0, $limit = null, $siteId = null)
     {
-        $select = $this->tableGateway->getSql()->select();
+        $select = $this->getTableGateway()->getSql()->select();
         $select->columns(array('*', 'count' => new Expression('Count(ph_page_id)'), 'last_date_visited' => new Expression('max(ph_date_visit)')));
         $select->join('melis_cms_page_published', 'melis_cms_page_analytics.ph_page_id = melis_cms_page_published.page_id',
             array('page_name'), $select::JOIN_LEFT);
@@ -46,7 +51,7 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
             $select->where->equalTo('ph_site_id', $siteId);
         }
 
-        $getCount = $this->tableGateway->selectWith($select);
+        $getCount = $this->getTableGateway()->selectWith($select);
         // set current data count for pagination
         $this->setCurrentDataCount((int)$getCount->count());
 
@@ -62,14 +67,14 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
             $select->order($orderBy . ' ' . $orderDirection);
         }
 
-        $resultSet = $this->tableGateway->selectWith($select);
+        $resultSet = $this->getTableGateway()->selectWith($select);
 
         return $resultSet;
     }
 
     public function getDataByPageId($pageId, $search = '', $searchableColumns = [], $orderBy = 'ph_id', $orderDirection = 'DESC', $start = 0, $limit = null)
     {
-        $select = $this->tableGateway->getSql()->select();
+        $select = $this->getTableGateway()->getSql()->select();
         $select->columns(array('*'));
 
         $where = new Where();
@@ -85,7 +90,7 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
         }
         $select->where($where);
 
-        $getCount = $this->tableGateway->selectWith($select);
+        $getCount = $this->getTableGateway()->selectWith($select);
         // set current data count for pagination
         $this->setCurrentDataCount((int)$getCount->count());
 
@@ -101,18 +106,18 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
             $select->order($orderBy . ' ' . $orderDirection);
         }
 
-        $resultSet = $this->tableGateway->selectWith($select);
+        $resultSet = $this->getTableGateway()->selectWith($select);
         return $resultSet;
 
     }
 
     public function getDataBySessionAndPageId($pageId, $sessionCookie)
     {
-        $select = $this->tableGateway->getSql()->select();
+        $select = $this->getTableGateway()->getSql()->select();
 
         $select->where->equalTo('ph_page_id', $pageId)->and->equalTo('ph_session_id', $sessionCookie);
 
-        $resultSet = $this->tableGateway->selectWith($select);
+        $resultSet = $this->getTableGateway()->selectWith($select);
 
         return $resultSet;
     }

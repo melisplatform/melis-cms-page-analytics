@@ -10,13 +10,12 @@
 namespace MelisCmsPageAnalytics\Form\Factory;
 
 use MelisCore\Form\Factory\MelisSelectFactory;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\ServiceManager\ServiceManager;
 
 class PageAnalyticsSiteSelectFactory extends MelisSelectFactory
 {
-    protected function loadValueOptions(ServiceLocatorInterface $formElementManager){
+    protected function loadValueOptions(ServiceManager $serviceManager){
         $valueoptions   = array();
-        $serviceManager = $formElementManager->getServiceLocator();
         $tableSites     = $serviceManager->get('MelisEngineTableSite');
         $sites          = $tableSites->getSites();
 

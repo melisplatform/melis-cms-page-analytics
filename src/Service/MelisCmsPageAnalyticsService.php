@@ -2,10 +2,10 @@
 
 namespace MelisCmsPageAnalytics\Service;
 
-use MelisCore\Service\MelisCoreGeneralService;
+use MelisEngine\Service\MelisEngineGeneralService;
 use MelisCmsPageAnalytics\Service\MelisCmsPageAnalyticsServiceInterface;
 
-class MelisCmsPageAnalyticsService extends MelisCoreGeneralService implements MelisCmsPageAnalyticsServiceInterface
+class MelisCmsPageAnalyticsService extends MelisEngineGeneralService implements MelisCmsPageAnalyticsServiceInterface
 {	
 
 	public function getAnalytics($siteId)
@@ -17,7 +17,7 @@ class MelisCmsPageAnalyticsService extends MelisCoreGeneralService implements Me
 
         $siteId = (int) $arrayParameters['siteId'];
         $data   = null;
-        $table  = $this->getServiceLocator()->get('MelisCmsPageAnalyticsDataTable');
+        $table  = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
         $data   = $table->getAnalytics($siteId)->current();
 
         if($data) {

@@ -1,43 +1,36 @@
 {
-  "name": "melisplatform/melis-cms-page-analytics",
-  "description": "Melis Platform CMS Default Page Analytics",
-  "type": "melisplatform-module",
-  "license": "OSL-3.0",
-  "homepage": "https://github.com/melisplatform/melis-cms-page-analytics",
-  "support": {
-    "source": "https://github.com/melisplatform/melis-cms-page-analytics",
-    "issues": "https://github.com/melisplatform/melis-cms-page-analytics/issues"
-  },
-  "keywords": [
-    "cms",
-    "melis",
-    "zf2",
-    "module",
-    "analytics"
-  ],
-  "extra": {
-    "module-name": "MelisCmsPageAnalytics",
-    "dbdeploy": true,
-	  "melis-site": false,
-    "melis-module-category": "cms"
-  },
-  "require": {
-    "php": "^7.0",
-    "ext-openssl": "*",
-    "ext-json": "*",
-    "ext-pdo_mysql": "*",
-    "justinrainbow/json-schema": "5.2.1",
-    "melisplatform/melis-core": "^3.2",
-    "melisplatform/melis-engine": "^3.2",
-    "melisplatform/melis-front": "^3.2",
-    "melisplatform/melis-cms": "^3.2"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "~4.8"
-  },
-  "autoload": {
-    "psr-4": {
-      "MelisCmsPageAnalytics\\": "src/"
-    }
-  }
+	"name": "melisplatform/melis-cms-page-analytics",
+	"description": "Melis Platform CMS Default Page Analytics",
+	"type": "melisplatform-module",
+	"license": "OSL-3.0",
+	"homepage": "https://github.com/melisplatform/melis-cms-page-analytics",
+	"support": {
+		"source": "https://github.com/melisplatform/melis-cms-page-analytics",
+		"issues": "https://github.com/melisplatform/melis-cms-page-analytics/issues"
+	},
+	"keywords": [
+		"cms",
+		"melis",
+		"zf2",
+		"module",
+		"analytics"
+	],
+	"extra": {
+		"module-name": "MelisCmsPageAnalytics",
+		"dbdeploy": true,
+		"melis-site": false,
+		"melis-module-category": "cms"
+	},
+	"require": {
+		"php": "^7.1.3|^7.2|^7.3",
+		"melisplatform/melis-core": "^4.0",
+		"melisplatform/melis-engine": "^4.0",
+		"melisplatform/melis-front": "^4.0",
+		"melisplatform/melis-cms": "^4.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"MelisCmsPageAnalytics\\": "src/"
+		}
+	}
 }

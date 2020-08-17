@@ -1,134 +1,117 @@
 <?php
-return array(
-    'router' => array(
-        'routes' => array(
-            'melis-backoffice' => array(
+return [
+    'router' => [
+        'routes' => [
+            'melis-backoffice' => [
                 'type'    => 'Segment',
-                'options' => array(
+                'options' => [
                     'route'    => '/melis[/]',
-                ),
-                'child_routes' => array(
-                    'application-MelisCmsPageAnalytics' => array(
+                ],
+                'child_routes' => [
+                    'application-MelisCmsPageAnalytics' => [
                         'type'    => 'Literal',
-                        'options' => array(
+                        'options' => [
                             'route'    => 'MelisCmsPageAnalytics',
-                            'defaults' => array(
+                            'defaults' => [
                                 '__NAMESPACE__' => 'MelisCmsPageAnalytics\Controller',
                                 'controller'    => 'MelisCmsPageAnalyticsTool',
                                 'action'        => 'toolContainer',
-                            ),
-                        ),
+                            ],
+                        ],
                         // this route will be accessible in the browser by browsing
                         // www.domain.com/melis/MelisCmsPageAnalytics/controller/action
                         'may_terminate' => true,
-                        'child_routes' => array(
-                            'default' => array(
+                        'child_routes' => [
+                            'default' => [
                                 'type'    => 'Segment',
-                                'options' => array(
+                                'options' => [
                                     'route'    => '/[:controller[/:action]]',
-                                    'constraints' => array(
+                                    'constraints' => [
                                         'controller' => '[a-zA-Z][a-zA-Z0-9_-]*',
                                         'action'     => '[a-zA-Z][a-zA-Z0-9_-]*',
-                                    ),
-                                    'defaults' => array(
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
+                                    ],
+                                    'defaults' => [
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
             /*
           * This route will handle the
           * alone setup of a module
           */
-            'setup-melis-cms-page-analytics' => array(
+            'setup-melis-cms-page-analytics' => [
                 'type'    => 'Literal',
-                'options' => array(
+                'options' => [
                     'route'    => '/MelisCmsPageAnalytics',
-                    'defaults' => array(
+                    'defaults' => [
                         '__NAMESPACE__' => 'MelisCmsPageAnalytics\Controller',
                         'controller'    => 'MelisSetup',
                         'action'        => 'setup-form',
-                    ),
-                ),
+                    ],
+                ],
                 'may_terminate' => true,
-                'child_routes' => array(
-                    'default' => array(
+                'child_routes' => [
+                    'default' => [
                         'type'    => 'Segment',
-                        'options' => array(
+                        'options' => [
                             'route'    => '/[:controller[/:action]]',
-                            'constraints' => array(
+                            'constraints' => [
                                 'controller' => '[a-zA-Z][a-zA-Z0-9_-]*',
                                 'action'     => '[a-zA-Z][a-zA-Z0-9_-]*',
-                            ),
-                            'defaults' => array(
-//
-                            ),
-                        ),
-                    ),
-                    'setup' => array(
+                            ],
+                            'defaults' => [],
+                        ],
+                    ],
+                    'setup' => [
                         'type' => 'Segment',
-                        'options' => array(
+                        'options' => [
                             'route' => '/setup',
-                            'defaults' => array(
+                            'defaults' => [
                                 'controller' => 'MelisCmsPageAnalytics\Controller\MelisSetup',
                                 'action' => 'setup-form',
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-    ),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'service_manager' => [
+        'aliases' => [
+            // Tables
+            'MelisCmsPageAnalyticsTable'                => \MelisCmsPageAnalytics\Model\Tables\MelisCmsPageAnalyticsTable::class,
+            'MelisCmsPageAnalyticsDataTable'            => \MelisCmsPageAnalytics\Model\Tables\MelisCmsPageAnalyticsDataTable::class,
+            'MelisCmsPageAnalyticsDataSettingsTable'    => \MelisCmsPageAnalytics\Model\Tables\MelisCmsPageAnalyticsDataSettingsTable::class,
+            // Services
+            'MelisCmsPageAnalyticsService'              => \MelisCmsPageAnalytics\Service\MelisCmsPageAnalyticsService::class,
+            'MelisCmsDefaultPageAnalyticsService'       => \MelisCmsPageAnalytics\Service\MelisCmsDefaultPageAnalyticsService::class,
+        ]
+    ],
 
-    'translator' => array(
-        'locale' => 'en_EN',
-    ),
-
-    'service_manager' => array(
-        'invokables' => array(
-
-        ),
-        'aliases' => array(
-            'translator' => 'MvcTranslator',
-        ),
-        'factories' => array(
-            'MelisCmsPageAnalyticsTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsTableFactory',
-            'MelisCmsPageAnalyticsDataTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsDataTableFactory',
-            'MelisCmsPageAnalyticsDataSettingsTable' => 'MelisCmsPageAnalytics\Model\Tables\Factory\MelisCmsPageAnalyticsDataSettingsTableFactory',
-
-            'MelisCmsPageAnalyticsService' => 'MelisCmsPageAnalytics\Service\Factory\MelisCmsPageAnalyticsServiceFactory',
-            'MelisCmsDefaultPageAnalyticsService' => 'MelisCmsPageAnalytics\Service\Factory\MelisCmsDefaultPageAnalyticsServiceFactory',
-
-            'MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsListener' => 'MelisCmsPageAnalytics\Listener\Factory\MelisCmsPageAnalyticsListenerFactory'
-        ),
-    ),
-
-    'controllers' => array(
-        'invokables' => array(
+    'controllers' => [
+        'invokables' => [
             'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsTool' => 'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsToolController',
             'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsPageDetailsTool' => 'MelisCmsPageAnalytics\Controller\MelisCmsPageAnalyticsPageDetailsToolController',
             'MelisCmsPageAnalytics\Controller\MelisSetup' => 'MelisCmsPageAnalytics\Controller\MelisSetupController',
-        ),
-    ),
-    'form_elements' => array(
-        'factories' => array(
+        ],
+    ],
+    'form_elements' => [
+        'factories' => [
             'PageAnalyticsSelect' => 'MelisCmsPageAnalytics\Form\Factory\PageAnalyticsSelectFactory',
             'PageAnalyticsSiteSelect' => 'MelisCmsPageAnalytics\Form\Factory\PageAnalyticsSiteSelectFactory',
-        ),
-    ),
-    'view_manager' => array(
-        'display_not_found_reason' => true,
-        'display_exceptions'       => true,
+        ],
+    ],
+    'view_manager' => [
         'doctype'                  => 'HTML5',
-        'template_map' => array(
-        ),
-        'template_path_stack' => array(
+        'template_map' => [],
+        'template_path_stack' => [
             __DIR__ . '/../view',
-        ),
-        'strategies' => array(
+        ],
+        'strategies' => [
             'ViewJsonStrategy',
-        ),
-    ),
-);
+        ],
+    ],
+];

@@ -8,14 +8,15 @@
 
 namespace MelisCmsPageAnalytics;
 
-use Zend\Mvc\ModuleRouteListener;
-use Zend\Mvc\MvcEvent;
-use Zend\Stdlib\ArrayUtils;
-use Zend\Session\Container;
-use Zend\ModuleManager\ModuleManager;
-use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\EventInterface;
+use Laminas\Mvc\ModuleRouteListener;
+use Laminas\Mvc\MvcEvent;
+use Laminas\Stdlib\ArrayUtils;
+use Laminas\Session\Container;
+use Laminas\ModuleManager\ModuleManager;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\EventManager\EventInterface;
 use MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsFlashMessengerListener;
+use MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsListener;
 
 /**
  * Class Module
@@ -23,7 +24,7 @@ use MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsFlashMessengerListener;
  * @require melis-core|melis-cms
  */
 
- class Module
+class Module
 {
     public function onBootstrap(MvcEvent $e)
     {
@@ -31,27 +32,28 @@ use MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsFlashMessengerListener;
         $sm                  = $e->getApplication()->getServiceManager();
         $moduleRouteListener = new ModuleRouteListener();
         $moduleRouteListener->attach($eventManager);
-        $eventManager->attach($sm->get('MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsListener'));
-        $eventManager->attach(new MelisCmsPageAnalyticsFlashMessengerListener());
+        
+        (new MelisCmsPageAnalyticsListener())->attach($eventManager);
+        (new MelisCmsPageAnalyticsFlashMessengerListener())->attach($eventManager);
 
         $this->createTranslations($e);
     }
 
-     public function doEvent(EventInterface $event)
-     {
-         echo 'param id  = '.$event->getParam('id');
-     }
+    public function doEvent(EventInterface $event)
+    {
+        echo 'param id  = '.$event->getParam('id');
+    }
 
     public function getConfig()
     {
-        $config = array();
-        $configFiles = array(
+        $config = [];
+        $configFiles = [
             include __DIR__ . '/../config/module.config.php',
             include __DIR__ . '/../config/app.interface.php',
             include __DIR__ . '/../config/app.tools.php',
             include __DIR__ . '/../config/app.forms.php',
             include __DIR__ . '/../config/diagnostic.config.php',
-        );
+        ];
 
         foreach ($configFiles as $file) {
             $config = ArrayUtils::merge($config, $file);
@@ -62,13 +64,13 @@ use MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsFlashMessengerListener;
 
     public function getAutoloaderConfig()
     {
-        return array(
-            'Zend\Loader\StandardAutoloader' => array(
-                'namespaces' => array(
+        return [
+            'Laminas\Loader\StandardAutoloader' => [
+                'namespaces' => [
                     __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
     }
 
     public function createTranslations($e)
@@ -81,11 +83,11 @@ use MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsFlashMessengerListener;
 
         if (!empty($locale)){
             
-            $translationType = array(
+            $translationType = [
                 'interface',
-            );
+            ];
             
-            $translationList = array();
+            $translationList = [];
             if(file_exists($_SERVER['DOCUMENT_ROOT'].'/../module/MelisModuleConfig/config/translation.list.php')){
                 $translationList = include 'module/MelisModuleConfig/config/translation.list.php';
             }
@@ -110,5 +112,4 @@ use MelisCmsPageAnalytics\Listener\MelisCmsPageAnalyticsFlashMessengerListener;
             }
         }
     }
-
 }    

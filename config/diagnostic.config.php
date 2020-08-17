@@ -1,35 +1,32 @@
 <?php
 
-return array(
-
-    'plugins' => array(
-        'diagnostic' => array(
-            'conf' => array(
+return [
+    'plugins' => [
+        'diagnostic' => [
+            'conf' => [
                 // user rights exclusions
                 'rightsDisplay' => 'none',
-            ),
-            'MelisCmsPageAnalytics' => array(
+            ],
+            'MelisCmsPageAnalytics' => [
                 'testFolder' => 'test',
                 'moduleTestName' => 'MelisCmsPageAnalyticsTest',
-                'db' => array(
+                'db' => [
                     // the keys will used as the function name when generated,
-                    'getAnalyticsTable' => array(
+                    'getAnalyticsTable' => [
                         'model' => 'MelisCmsPageAnalytics\Model\MelisCmsPageAnalytics',
                         'model_table' => 'MelisCmsPageAnalytics\Model\Tables\MelisCmsPageAnalyticsTable',
                         'db_table_name' => 'melis_cms_page_analytics',
-                    ),
-                ),
-                'methods' => array(
-                    'testAddDataOnPage' => array(
-                        'payloads' => array(
+                    ],
+                ],
+                'methods' => [
+                    'testAddDataOnPage' => [
+                        'payloads' => [
                             'page_id' => 1
-                        )
-                    )
-                ),
-            ),
-        ),
-    ),
-
-
-);
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+];
 
