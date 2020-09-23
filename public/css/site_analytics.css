@@ -22,3 +22,14 @@ pre#pads_js_analytics{
     z-index: 999;
     cursor: progress;
 }
+
+#tool_line-chart-selector {
+    position: relative;
+    z-index: 1;
+    text-align: right;
+    top: 0;
+}
+
+#tool_line-chart-btn-group label input[type="radio"] {
+    display: none;
+}
