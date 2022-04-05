@@ -10,7 +10,7 @@ return [
                         'method' => 'POST',
                         'action' => null,
                     ],
-                    'hydrator' => 'Laminas\Hydrator\ArraySerializable',
+                    'hydrator' => 'Laminas\Hydrator\ArraySerializableHydrator',
                     'elements' => [
                         [
                             'spec' => [
