@@ -22,11 +22,11 @@
 		"melis-module-category": "cms"
 	},
 	"require": {
-		"php": "^7.1.3|^7.2|^7.3",
-		"melisplatform/melis-core": "*",
-		"melisplatform/melis-engine": "*",
-		"melisplatform/melis-front": "*",
-		"melisplatform/melis-cms": "*"
+		"php": "^7.3|^8.0",
+		"melisplatform/melis-core": "^4.0",
+		"melisplatform/melis-engine": "^4.0",
+		"melisplatform/melis-front": "^4.0",
+		"melisplatform/melis-cms": "^4.0"
 	},
 	"autoload": {
 		"psr-4": {
