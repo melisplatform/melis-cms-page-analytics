@@ -408,7 +408,7 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
      * @param $analyticsModule
      * @return array
      */
-    private function formatErrorMessage($errors = array(), $analyticsModule)
+    private function formatErrorMessage($errors, $analyticsModule)
     {
         $melisMelisCoreConfig = $this->getServiceManager()->get('MelisCoreConfig');
         $appConfigForm = $melisMelisCoreConfig->getItem('meliscms/forms/' . $analyticsModule . '_settings_form');
