@@ -321,7 +321,8 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
                         $analyticsSettings['google_analytics_private_key'] = $privateKey;
                     }
-                    $analyticsSettings['google_analytics_view_id'] = 'ga:' . $post['google_analytics_view_id'];
+                    $analyticsSettings['google_analytics_view_id'] = $post['google_analytics_view_id'] ?? null;
+                    $analyticsSettings['google_analytics_property_id'] = $post['google_analytics_property_id'];
                 }
 
                 $analyticsSettings = serialize($analyticsSettings);
@@ -495,7 +496,9 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
                         $viewIdStart = (int)strpos($data['google_analytics_view_id'], 'ga:');
                         $data['google_analytics_view_id'] = substr($data['google_analytics_view_id'], $viewIdStart + 3);
                     } else {
+                        $propertyId = $data['google_analytics_property_id'];
                         $data = [];
+                        $data['google_analytics_property_id'] = $propertyId;
                     }
 
                     /**
