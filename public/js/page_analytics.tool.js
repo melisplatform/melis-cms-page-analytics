@@ -16,19 +16,20 @@ $(function() {
 
       var $this = $(this),
         siteId = parseInt($this.val());
-
       if (!isNaN(siteId)) {
-        melisHelper.zoneReload(
-          "id_meliscms_page_analytics_site_analytics_tab_content",
-          "meliscms_page_analytics_site_analytics_tab_content",
-          { siteId: siteId },
-          function() {
-            $body
-              .find("div#id_meliscms_page_analytics_site_analytics_tab_content")
-              .addClass("active");
-            $body.find(".melis-cms-page-analytics-temp-overlay").remove(); // Removes overlay after content is loaded
-          }
-        );
+        setTimeout(function() {
+          melisHelper.zoneReload(
+            "id_meliscms_page_analytics_site_analytics_tab_content",
+            "meliscms_page_analytics_site_analytics_tab_content",
+            { siteId: siteId },
+            function() {
+              $body
+                .find("div#id_meliscms_page_analytics_site_analytics_tab_content")
+                .addClass("active");
+              $body.find(".melis-cms-page-analytics-temp-overlay").remove(); // Removes overlay after content is loaded
+            }
+          );
+        }, 1000);
       }
     }
   );
@@ -56,13 +57,13 @@ $(function() {
               $body
                 .find("form#select_page_analytic_form select#page_analytics_id")
                 .val("")
-                .change();
+                .trigger("change");
             } else if (data.response.activeAnalytics) {
               // when the set Page Analytics module for the selected site is active
               var selAnalytics = $body.find(
                 "form#select_page_analytic_form select#page_analytics_id"
               );
-              selAnalytics.val(data.response.page_analytics_id).change();
+              selAnalytics.val(data.response.page_analytics_id).trigger("change");
             } else {
               // The analytics module for this site is deactivated.
               $body.find("#page_analytics_id").append(

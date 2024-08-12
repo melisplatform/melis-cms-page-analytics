@@ -18,8 +18,9 @@ if (!empty($this->zoneconfig['conf']['id']))
         })();
     </script>
     <div class="widget widget-tabs widget-tabs-double-2 widget-tabs-responsive">
-        <div class="widget-head nav">
-            <ul class="tabs-label nav-tabs nav">
+        <!-- widget-head nav -->
+        <div class="widget-head">
+            <ul class="tabs-label nav nav-tabs">
 
                 <?php 
                 if (!empty($this->zoneconfig['interface']))
@@ -40,7 +41,7 @@ if (!empty($this->zoneconfig['conf']['id']))
                             $icon = $menuConfig['conf']['icon'];
                 ?>
                         <li class="nav-item">
-                            <a class="nav-link glyphicons <?= $icon; ?>" data-bs-toggle="tab" data-bs-target="#<?= $menuConfig['conf']['id']; ?>" href="#<?= $menuConfig['conf']['id']; ?>">
+                            <a class="nav-link glyphicons <?= $icon; ?>" data-bs-toggle="tab" href="#<?= $menuConfig['conf']['id']; ?>">
                                 <i> </i>
                                 <span><?= $tabname; ?></span>
                             </a>
