@@ -41,7 +41,7 @@ class MelisCmsDefaultPageAnalyticsService extends MelisEngineGeneralService
             }
 
             if ($data) {
-                $analyticsViewId = $data->pads_settings->google_analytics_view_id;
+                $analyticsViewId = $data->pads_settings->google_analytics_view_id ?? false;
             }
         }
 
