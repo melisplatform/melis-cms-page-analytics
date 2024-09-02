@@ -53,20 +53,21 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends MelisAbstractAction
                     $forward = $pageAnalyticsData['interface']['analytics_for_page']['forward'];
                     $display = $this->getTool()->getViewContent($forward);
 
-                    $display = str_replace(array(
-                        'sDom : "<', 'rip>>"', 'return "<div>',
-                        '<endaction/></div>";',
-                        '"<a class="btn btn-default melis-cms-page-analytics-refresh',
-                        'fa-refresh"></i></a>"',
-                        '.melis_cms_page_analytics_page_search input[type="search"]'
-                    ), array(
-                        "sDom : '<", "rip>>'",
-                        "return '<div>",
-                        "<endaction/></div>';",
-                        "'<a class=\"btn btn-default melis-cms-page-analytics-refresh",
-                        "fa-refresh\"></i></a>'",
-                        ".melis_cms_page_analytics_page_search input[type='search']"
-                    ), $display);
+                    // $display = str_replace(array(
+                    //     'sDom : "<', 'rip>>"', 'return "<div>',
+                    //     '<endaction/></div>";',
+                    //     '"<a class="btn btn-default melis-cms-page-analytics-refresh',
+                    //     'fa-refresh"></i></a>"',
+                    //     '.melis_cms_page_analytics_page_search input[type="search"]'
+                    // ), array(
+                    //     "sDom : '<", "rip>>'",
+                    //     "return '<div>",
+                    //     "<endaction/></div>';",
+                    //     "'<a class=\"btn btn-default melis-cms-page-analytics-refresh",
+                    //     "fa-refresh\"></i></a>'",
+                    //     ".melis_cms_page_analytics_page_search input[type='search']"
+                    // ), $display);
+
                     // get the url the page
                     $pageTree = $this->getServiceManager()->get('MelisEngineTree');
                     $pageUrl = $pageTree->getPageLink($pageHitId, true);
