@@ -3,27 +3,29 @@
     $id = empty($this->zoneconfig['conf']['id'])? $this->pageHitId.'_id_melis_cms_page_analytics_page_table': $this->pageHitId.'_'.$this->zoneconfig['conf']['id'];
 ?>
 
-<div id="<?= $id; ?>" data-melisKey="<?= $dataMelisKey; ?>" class="col-ms-12">
-    <br>
-    <?php
-        $this->melisGenericTable()->setTable(array(
-            'id' => $this->pageHitId . '_tableMelisCmsPageAnalyticsPageDetails',
-            'class' => 'table table-striped table-primary dt-responsive nowrap',
-            'cellspacing' => '0',
-            'width' => '100%'
-        ));
-        $columns = array();
-        $columnStyle = array();
-        foreach($this->tableColumns as $columnText)
-        {
-            $columns[] = $columnText['text'];
-        }
-        $this->melisGenericTable()->setColumns($columns);
-        echo $this->melisGenericTable()->renderTable();
-    ?>
-    <script type="text/javascript">
-        $(function() {
-            <?= $this->getToolDataTableConfig; ?>
-        });
-    </script>
+<div id="<?= $id; ?>" data-melisKey="<?= $dataMelisKey; ?>">
+    <div class="col-sm-12">
+        <br>
+        <?php
+            $this->melisGenericTable()->setTable(array(
+                'id' => $this->pageHitId . '_tableMelisCmsPageAnalyticsPageDetails',
+                'class' => 'table table-striped table-primary dt-responsive nowrap',
+                'cellspacing' => '0',
+                'width' => '100%'
+            ));
+            $columns = array();
+            $columnStyle = array();
+            foreach($this->tableColumns as $columnText)
+            {
+                $columns[] = $columnText['text'];
+            }
+            $this->melisGenericTable()->setColumns($columns);
+            echo $this->melisGenericTable()->renderTable();
+        ?>
+        <script type="text/javascript">
+            $(function() {
+                <?= $this->getToolDataTableConfig; ?>
+            });
+        </script>
+    </div>
 </div>

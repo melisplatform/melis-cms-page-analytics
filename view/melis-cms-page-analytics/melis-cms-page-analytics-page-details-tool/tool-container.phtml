@@ -4,6 +4,6 @@ $id = '';
 if (!empty($this->zoneconfig['conf']['id']))
     $id = ' id="' . ($this->pageHitId ? $this->pageHitId.'_' : '') . $this->zoneconfig['conf']['id'] . '"';
 ?>
-<div<?= $id; ?>  data-melisKey="<?= $this->melisKey; ?>" class="meliscms_center_tabs tab-pane clearfix">
+<div <?= $id; ?> data-melisKey="<?= $this->melisKey; ?>" class="meliscms_center_tabs tab-pane melisToolContainer clearfix">
     <?= $this->errMsg? '<h4 class="innerAll" style="margin-bottom: 0;">'.$this->errMsg.'</h4>': $this->display; ?>
 </div>
