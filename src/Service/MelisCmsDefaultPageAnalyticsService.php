@@ -23,6 +23,10 @@ class MelisCmsDefaultPageAnalyticsService extends MelisEngineGeneralService
 
         $pageTreeSvc = $this->getServiceManager()->get('MelisEngineTree');
         $siteData = $pageTreeSvc->getSiteByPageId($pageId);
+
+        if (empty($siteData))
+            return null;
+        
         $siteId = (int)$siteData->site_id;
         $table = $this->getServiceManager()->get('MelisCmsPageAnalyticsService');
         $data = $table->getAnalytics($siteId);
