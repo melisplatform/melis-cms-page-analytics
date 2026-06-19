@@ -1,0 +1,8 @@
+{
+  "id": "pageanalytics",
+  "route": "/melis-marketing/meliscms-page-analytics",
+  "label": "Page Analytics",
+  "forwardKey": "MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool",
+  "melisKey": "meliscms_page_analytics_display",
+  "entry": "brick.js"
+}
