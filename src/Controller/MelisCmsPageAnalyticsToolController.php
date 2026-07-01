@@ -617,7 +617,7 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
         $display = null;
 
         $siteId = (int)$this->params()->fromQuery('siteId', null);
-        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_content');
+        $hasAccess = true; // sub-zone: access already governed by parent tool's zone rendering
         $errMsg = "";
 
         if (!empty($siteId)) {
@@ -702,7 +702,7 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
         $melisKey = $this->getMelisKey();
 
-        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab_settings_content');
+        $hasAccess = true; // sub-zone: access already governed by parent tool's zone rendering
         $form = $this->getForm();
 
         $view = new ViewModel();

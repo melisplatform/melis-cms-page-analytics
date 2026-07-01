@@ -22,3 +22,17 @@ pre#pads_js_analytics{
     z-index: 999;
     cursor: progress;
 }
+
+/* Force horizontal tab layout: the admin theme stacks tabs vertically at ≤991px,
+   which always triggers inside the React shell iframe */
+@media (max-width: 991px) {
+    .widget.widget-tabs-double-2 > .widget-head ul {
+        display: inline-block !important;
+        height: 70px !important;
+    }
+    .widget.widget-tabs-double-2 > .widget-head ul li {
+        float: left !important;
+        display: block !important;
+        height: 70px !important;
+    }
+}

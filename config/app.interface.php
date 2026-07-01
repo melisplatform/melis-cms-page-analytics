@@ -152,7 +152,7 @@ return [
             ],
             'ressources' => [
                 'css' => [
-                    '/MelisCmsPageAnalytics/css/site_analytics.css',
+                    '/MelisCmsPageAnalytics/css/site_analytics.css?v=20260630',
                 ],
                 'js' => [
                     '/MelisCmsPageAnalytics/plugin/ace.js',

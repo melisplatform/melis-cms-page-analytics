@@ -24,11 +24,11 @@ if ($this->hasAccess): ?>
         <script type="text/javascript">
             (function () {
                 // Disable empty option
-                $body.find('select#analytics-content-side-id option:first-child').attr('disabled', 'true');
+                $('body').find('select#analytics-content-side-id option:first-child').attr('disabled', 'true');
                 if (pageAnalyticsSiteSelect) {
-                    var $firstSite = $body.find('select#analytics-content-side-id option:nth-child(2)');
+                    var $firstSite = $('body').find('select#analytics-content-side-id option:nth-child(2)');
                     if ($firstSite.length) {
-                        $body.find('select#analytics-content-side-id').val($firstSite.val()).trigger('change');
+                        $('body').find('select#analytics-content-side-id').val($firstSite.val()).trigger('change');
                         pageAnalyticsSiteSelect = false;
                     }
                 }
