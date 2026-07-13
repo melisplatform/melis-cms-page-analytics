@@ -4,5 +4,6 @@
   "label": "Page Analytics",
   "forwardKey": "MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool",
   "melisKey": "meliscms_page_analytics_display",
-  "entry": "brick.js"
+  "entry": "brick.js",
+  "persistent": true
 }
