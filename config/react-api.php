@@ -50,6 +50,18 @@ return [
                                     ],
                                 ],
                             ],
+                            // Onglet Analytics de l'éditeur de page CMS (résumé des visites d'UNE page)
+                            'cms-page-analytics' => [
+                                'type'    => 'Segment',
+                                'options' => [
+                                    'route'    => '/cms-page/analytics[/]',
+                                    'defaults' => [
+                                        '__NAMESPACE__' => 'MelisCmsPageAnalytics\Controller',
+                                        'controller'    => 'MelisReactApiPageAnalyticsTab',
+                                        'action'        => 'get',
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],
@@ -60,6 +72,8 @@ return [
         'invokables' => [
             'MelisCmsPageAnalytics\Controller\MelisReactApiPageAnalytics'
                 => \MelisCmsPageAnalytics\Controller\MelisReactApiPageAnalyticsController::class,
+            'MelisCmsPageAnalytics\Controller\MelisReactApiPageAnalyticsTab'
+                => \MelisCmsPageAnalytics\Controller\MelisReactApiPageAnalyticsTabController::class,
         ],
     ],
 ];
