@@ -303,6 +303,9 @@
 		flexDirection: "column",
 		gap: 2,
 		minHeight: 130,
+		maxHeight: "min(48vh, 320px)",
+		overflowY: "auto",
+		minWidth: 0,
 		borderRadius: 8,
 		border: "1px dashed var(--color-border)",
 		padding: 6
@@ -577,6 +580,9 @@
 		flexDirection: "column",
 		gap: 2,
 		minHeight: 100,
+		maxHeight: "min(48vh, 320px)",
+		overflowY: "auto",
+		minWidth: 0,
 		borderRadius: 8,
 		border: "1px dashed var(--color-border)",
 		padding: 6
