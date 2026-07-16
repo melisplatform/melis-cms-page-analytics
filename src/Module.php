@@ -54,6 +54,7 @@ class Module
             include __DIR__ . '/../config/app.forms.php',
             include __DIR__ . '/../config/diagnostic.config.php',
             include __DIR__ . '/../config/react-api.php',
+            include __DIR__ . '/../config/react.capabilities.php',
         ];
 
         foreach ($configFiles as $file) {
