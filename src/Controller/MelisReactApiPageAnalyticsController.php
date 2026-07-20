@@ -26,8 +26,13 @@ use MelisCore\Controller\MelisAbstractActionController;
  */
 class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
 {
-    /** melisKey de la zone rendable de l'outil — garde d'accès (cf. denyUnlessAccess). */
-    private const MELIS_KEY = 'meliscms_page_analytics_display';
+    /** melisKey of the RIGHTS-BEARING menu node — the access guard (cf. denyUnlessAccess).
+     *  NOT `meliscms_page_analytics_display`: that is the `conf.type` target, which stays the
+     *  renderable ZONE key (iframe react-tool-page?key=, PageAnalyticsPage.tsx). Since the rights key
+     *  moved onto the left-menu path, the target is no longer granted on its own — guarding on it
+     *  would 403 every request. This module declares no tool capabilities (its react.capabilities.php
+     *  only contributes a tab to `meliscms_page`), so there is nothing else to keep in sync. */
+    private const MELIS_KEY = 'meliscms_page_analytics_tools_section';
 
     /** Colonnes de tri autorisées (liste) → expression SQL (anti-injection). */
     private const SORT_MAP = [

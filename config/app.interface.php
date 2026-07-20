@@ -16,8 +16,32 @@ return [
                                     ],
                                     'interface' => [
                                         // this will be the configuration of the tool.
-                                        'meliscms_page_analytics_tool_config' => [
+                                        // Rights-bearing node of the Page Analytics menu entry, shaped
+                                        // like MelisCmsSlider / MelisCmsNews / MelisCmsSiteRobot.
+                                        //
+                                        // It used to carry ONLY the `conf.type` link, so the key it
+                                        // resolved to (`meliscms_page_analytics_display`) was declared on
+                                        // the target, in the `meliscms_page_analytics_tool_config` plugin
+                                        // root. A wrapper is inferred via configIsParentOf, which matches
+                                        // it against SEGMENTS OF THE GRANTED TOOL'S CONFIG PATH — and that
+                                        // target path never runs through `meliscms_site_tools_parent_menu`,
+                                        // so the wrapper stayed denied and TreeToolsController:73 dropped
+                                        // the subtree: invisible in the legacy menu for non-admins even
+                                        // when granted (admin bypass hides it), while React showed it.
+                                        //
+                                        // Declaring the melisKey HERE puts the rights key back on the
+                                        // left-menu path, which does run through the wrapper. Array key ==
+                                        // melisKey so getSectionParent resolves it (else a legacy save
+                                        // files the grant under <noparent>). The `conf.type` link still
+                                        // pulls in the target's forward, and the target keeps its own
+                                        // melisKey as the renderable ZONE key.
+                                        'meliscms_page_analytics_tools_section' => [
                                             'conf' => [
+                                                'id'   => 'id_meliscms_page_analytics_tools_section',
+                                                'name' => 'tr_meliscms_page_analytics_tool_display_title',
+                                                'icon' => 'fa-bar-chart',
+                                                'rights_checkbox_disable' => false,
+                                                'melisKey' => 'meliscms_page_analytics_tools_section',
                                                 'type' => '/meliscms_page_analytics_tool_config/interface/meliscms_page_analytics_tool_display',
                                             ],
                                         ],
