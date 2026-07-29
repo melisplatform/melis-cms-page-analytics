@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   fetchAnalytics, fetchAnalyticsStats, fetchAnalyticsSites,
   type AnalyticsRow, type AnalyticsStats, type SiteOption,
 } from './page-analytics-api'
+import { useKeysetList } from './use-keyset-list'
 import {
   useT, currentLang, fmtDate, card, inputCss, btnGhost, th, td,
   Kpi, GripIcon, ColManager, makeColStore, visibleCols, type ColDef,
@@ -21,6 +22,14 @@ import { ViewToggle, type ViewMode } from './ViewToggle'
  */
 
 const MELIS_KEY = 'meliscms_page_analytics_display' // zone legacy rendable (vue « Old »)
+
+/** Icône de tri unifiée — mêmes tracés que les icônes lucide ArrowUpDown/ArrowUp/ArrowDown du core. */
+function SortIcon({ dir }: { dir: 'asc' | 'desc' | null }) {
+  const p = { width: 12, height: 12, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, style: { flexShrink: 0, opacity: dir ? 1 : 0.3 } }
+  if (dir === 'asc')  return <svg {...p}><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></svg>
+  if (dir === 'desc') return <svg {...p}><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></svg>
+  return <svg {...p}><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4" /><path d="M7 4v16" /></svg>
+}
 
 export default function PageAnalyticsPage() {
   const t = useT()
@@ -70,24 +79,28 @@ const colStore = makeColStore('melis-page-analytics-cols-v1', DEFAULT_COLS)
 function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) => void }) {
   const t = useT()
   const lang = currentLang()
-  const [rows, setRows] = useState<AnalyticsRow[]>([])
   const [stats, setStats] = useState<AnalyticsStats | null>(null)
   const [sites, setSites] = useState<SiteOption[]>([])
-  const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
-  const [sortCol, setSortCol] = useState<string>('count')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [cols, setCols] = useState<ColDef[]>(colStore.load)
   const [showCols, setShowCols] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [tick, setTick] = useState(0)
 
+  // Liste keyset (scroll infini + tri server-side). Recherche = filtre SERVER-SIDE (buildWhere),
+  // capturée par la closure `fetcher` + déclencheur de rechargement via `deps`.
+  const { items, total, loading, hasMore, sentinelRef, sortCol, sortDir, toggleSort } =
+    useKeysetList<AnalyticsRow>({
+      fetcher: (a) => fetchAnalytics({
+        search, site, limit: a.limit, sort: a.sort, dir: a.dir, after: a.after ?? undefined,
+      }).then((r) => ({ items: r.items, total: r.total, nextCursor: r.nextCursor })),
+      deps: [search, site, tick],
+      defaultSort: 'count',
+      defaultDir: 'desc',
+    })
+
   useEffect(() => { fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null) }, [])
-  useEffect(() => { fetchAnalyticsStats({ site }).then(setStats).catch(() => null) }, [site, tick])
-  useEffect(() => {
-    setLoading(true)
-    fetchAnalytics({ site, limit: 9999 }).then((r) => setRows(r.items)).catch(() => null).finally(() => setLoading(false))
-  }, [site, tick])
+  useEffect(() => { fetchAnalyticsStats({ search, site }).then(setStats).catch(() => null) }, [search, site, tick])
 
   const cell = (r: AnalyticsRow, id: string): string => {
     switch (id) {
@@ -98,31 +111,18 @@ function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) =>
       default: return ''
     }
   }
-  const sortVal = (r: AnalyticsRow, id: string): number | string => {
-    switch (id) {
-      case 'pageId': return r.pageId
-      case 'count': return r.count
-      case 'lastVisit': return r.lastVisit ?? ''
-      default: return (r.pageName || '').toLowerCase()
+
+  // Export : parcours du curseur (lots de 100) jusqu'à épuisement (nextCursor null).
+  const fetchAll = async (): Promise<AnalyticsRow[]> => {
+    const acc: AnalyticsRow[] = []
+    let after: string | null = null
+    for (;;) {
+      const r = await fetchAnalytics({ search, site, sort: sortCol, dir: sortDir, limit: 100, after })
+      acc.push(...r.items)
+      if (!r.nextCursor) break
+      after = r.nextCursor
     }
-  }
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    let list = rows
-    if (q) list = rows.filter((r) => (r.pageName || '').toLowerCase().includes(q) || String(r.pageId).includes(q))
-    const dir = sortDir === 'asc' ? 1 : -1
-    return [...list].sort((a, b) => {
-      const va = sortVal(a, sortCol), vb = sortVal(b, sortCol)
-      if (va < vb) return -1 * dir
-      if (va > vb) return 1 * dir
-      return 0
-    })
-  }, [rows, search, sortCol, sortDir])
-
-  function toggleSort(id: string) {
-    if (sortCol === id) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-    else { setSortCol(id); setSortDir(id === 'pageName' ? 'asc' : 'desc') }
+    return acc
   }
 
   return (
@@ -157,16 +157,16 @@ function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) =>
           <thead style={{ background: 'var(--color-muted,rgba(0,0,0,.03))' }}>
             <tr>
               {visibleCols(cols).map(({ id }) => (
-                <th key={id} style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort(id)}>
-                  {t(COL_LABEL[id])}{sortCol === id ? ` ${sortDir === 'asc' ? '↑' : '↓'}` : ''}
+                <th key={id} style={{ ...th, cursor: 'pointer', ...(sortCol === id ? { color: 'var(--color-primary)' } : {}) }} onClick={() => toggleSort(id)}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{t(COL_LABEL[id])}<SortIcon dir={sortCol === id ? sortDir : null} /></span>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && !loading ? (
+            {items.length === 0 && !loading ? (
               <tr><td style={{ ...td, textAlign: 'center', color: 'var(--color-muted-foreground)', padding: '40px 16px' }} colSpan={visibleCols(cols).length}>{t('empty')}</td></tr>
-            ) : filtered.map((r) => (
+            ) : items.map((r) => (
               <tr key={r.pageId}>
                 {visibleCols(cols).map(({ id }) => (
                   <td key={id} style={{ ...td, ...(id === 'pageId' || id === 'count' ? { color: 'var(--color-muted-foreground)', fontVariantNumeric: 'tabular-nums' } : {}) }}>
@@ -179,8 +179,10 @@ function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) =>
             ))}
           </tbody>
         </table>
+        {/* Sentinel scroll infini : visible → charge le lot suivant. */}
+        <div ref={sentinelRef} style={{ height: 1 }} />
         <div style={{ padding: '10px 16px', textAlign: 'center', fontSize: 12, color: 'var(--color-muted-foreground)' }}>
-          {loading ? t('loading') : t('count', { n: filtered.length })}
+          {loading ? t('loading') : (!hasMore && items.length > 0 ? t('count', { n: total }) : '')}
         </div>
       </div>
 
@@ -188,9 +190,9 @@ function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) =>
         <ExportModal<AnalyticsRow>
           cols={cols}
           labelFor={(id) => t(COL_LABEL[id])}
-          fetchAll={async () => filtered}
+          fetchAll={fetchAll}
           getCell={(r, id) => cell(r, id)}
-          filename="page-analytics" sheetName={t('title')} total={filtered.length}
+          filename="page-analytics" sheetName={t('title')} total={total}
           onClose={() => setShowExport(false)} />
       )}
     </div>

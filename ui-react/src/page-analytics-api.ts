@@ -31,32 +31,32 @@ export interface SiteOption {
 }
 
 export interface ListParams {
-  page?: number
   limit?: number
   search?: string
   site?: number
   sort?: string
   dir?: 'asc' | 'desc'
+  after?: string | null
 }
 
 export interface ListResult<T> {
   items: T[]
   total: number
-  page: number
-  limit: number
+  nextCursor: string | null
 }
 
-function qs(params: Record<string, string | number | undefined>): string {
+function qs(params: Record<string, string | number | undefined | null>): string {
   const sp = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== '' && v !== 0) sp.set(k, String(v))
+    if (v !== undefined && v !== null && v !== '' && v !== 0) sp.set(k, String(v))
   }
   const s = sp.toString()
   return s ? `?${s}` : ''
 }
 
 export function fetchAnalytics(p: ListParams = {}): Promise<ListResult<AnalyticsRow>> {
-  return apiGet(`/melis/react-api/page-analytics${qs({ page: p.page, limit: p.limit, search: p.search, site: p.site, sort: p.sort, dir: p.dir })}`)
+  // `after` est une chaîne base64 non vide (jamais falsy quand un curseur existe) → qs() la conserve.
+  return apiGet(`/melis/react-api/page-analytics${qs({ limit: p.limit, search: p.search, site: p.site, sort: p.sort, dir: p.dir, after: p.after })}`)
 }
 
 export function fetchAnalyticsStats(p: { search?: string; site?: number } = {}): Promise<AnalyticsStats> {

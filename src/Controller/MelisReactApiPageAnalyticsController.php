@@ -34,12 +34,15 @@ class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
      *  only contributes a tab to `meliscms_page`), so there is nothing else to keep in sync. */
     private const MELIS_KEY = 'meliscms_page_analytics_tools_section';
 
-    /** Colonnes de tri autorisées (liste) → expression SQL (anti-injection). */
+    /** Colonnes de tri autorisées (liste) → expression SQL AGRÉGÉE utilisée en HAVING/ORDER BY.
+     *  ⚠️ Ce sont des agrégats (COUNT/MAX) ou la clé de GROUP BY : ils ne peuvent PAS aller
+     *  en WHERE → le keyset est en HAVING (cf. listAction). NON-NULL via COALESCE pour un
+     *  ordre stable du curseur opaque. Anti-injection : whitelist stricte. */
     private const SORT_MAP = [
         'pageId'    => 'a.ph_page_id',
-        'pageName'  => 'page_name',
-        'count'     => 'visit_count',
-        'lastVisit' => 'last_visit',
+        'pageName'  => "COALESCE(MAX(p.page_name),'')",
+        'count'     => 'COUNT(a.ph_page_id)',
+        'lastVisit' => "COALESCE(MAX(a.ph_date_visit),'1000-01-01 00:00:00')",
     ];
 
     // ─── GET /page-analytics ─────────────────────────────────────────────────────
@@ -49,21 +52,24 @@ class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
 
         try {
-            $page   = max(1, (int) $this->params()->fromQuery('page', 1));
             $limit  = min(9999, max(1, (int) $this->params()->fromQuery('limit', 25)));
             $search = trim((string) ($this->params()->fromQuery('search', '') ?? ''));
             $siteId = (int) $this->params()->fromQuery('site', 0) ?: null;
-            $offset = ($page - 1) * $limit;
 
-            $sortKey = (string) $this->params()->fromQuery('sort', 'count');
-            $sortCol = self::SORT_MAP[$sortKey] ?? 'visit_count';
-            $sortDir = strtoupper((string) $this->params()->fromQuery('dir', 'desc')) === 'ASC' ? 'ASC' : 'DESC';
+            $sortKey  = (string) $this->params()->fromQuery('sort', 'count');
+            $sortExpr = self::SORT_MAP[$sortKey] ?? self::SORT_MAP['count'];
+            $dirAsc   = strtoupper((string) $this->params()->fromQuery('dir', 'desc')) === 'ASC';
+            $sortDir  = $dirAsc ? 'ASC' : 'DESC';
+            $op       = $dirAsc ? '>' : '<';
+
+            // Curseur opaque : base64(json{v, id}) — même schéma que MelisReactKeysetListTrait.
+            $cursor = $this->decodeCursor((string) ($this->params()->fromQuery('after', '') ?? ''));
 
             $db = $this->getServiceManager()->get('Laminas\Db\Adapter\AdapterInterface');
 
-            [$whereClause, $params] = $this->buildWhere($search, $siteId);
+            [$whereClause, $whereParams] = $this->buildWhere($search, $siteId);
 
-            // Total = nombre de PAGES distinctes (groupes) après filtre.
+            // Total = nombre de PAGES distinctes (groupes) après filtre — indépendant du curseur.
             $countRow = iterator_to_array($db->query(
                 "SELECT COUNT(*) AS total FROM (
                      SELECT a.ph_page_id
@@ -72,36 +78,73 @@ class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
                      $whereClause
                      GROUP BY a.ph_page_id
                  ) t",
-                $params
+                $whereParams
             ));
             $total = (int) ($countRow[0]['total'] ?? 0);
+
+            // Keyset en HAVING (les colonnes de tri sont des agrégats + la clé de GROUP BY) :
+            //   (sortExpr op ? OR (sortExpr = ? AND a.ph_page_id op ?))  params [v, v, id]
+            $havingClause = '';
+            $dataParams   = $whereParams;
+            if ($cursor !== null) {
+                $havingClause = "HAVING ($sortExpr $op ? OR ($sortExpr = ? AND a.ph_page_id $op ?))";
+                $dataParams   = array_merge($dataParams, [$cursor['v'], $cursor['v'], $cursor['id']]);
+            }
+            $dataParams[] = $limit;
 
             $rows = $db->query(
                 "SELECT a.ph_page_id AS page_id,
                         MAX(p.page_name) AS page_name,
                         COUNT(a.ph_page_id) AS visit_count,
-                        MAX(a.ph_date_visit) AS last_visit
+                        MAX(a.ph_date_visit) AS last_visit,
+                        $sortExpr AS __sortval
                  FROM melis_cms_page_analytics a
                  LEFT JOIN melis_cms_page_published p ON p.page_id = a.ph_page_id
                  $whereClause
                  GROUP BY a.ph_page_id
-                 ORDER BY $sortCol $sortDir
-                 LIMIT ? OFFSET ?",
-                array_merge($params, [$limit, $offset])
+                 $havingClause
+                 ORDER BY $sortExpr $sortDir, a.ph_page_id $sortDir
+                 LIMIT ?",
+                $dataParams
             );
+
+            $rows = iterator_to_array($rows);
 
             $items = [];
             foreach ($rows as $row) {
                 $items[] = $this->formatRow((array) $row);
             }
 
+            // Curseur suivant : ssi le lot est plein (sinon fin de liste).
+            $nextCursor = null;
+            if (count($rows) === $limit && $limit > 0) {
+                $last = (array) $rows[count($rows) - 1];
+                $nextCursor = base64_encode(json_encode([
+                    'v'  => $last['__sortval'],
+                    'id' => (int) $last['page_id'],
+                ]));
+            }
+
             return $this->jsonResponse([
                 'success' => true,
-                'data'    => ['items' => $items, 'total' => $total, 'page' => $page, 'limit' => $limit],
+                'data'    => ['items' => $items, 'total' => $total, 'nextCursor' => $nextCursor],
             ]);
         } catch (\Throwable $e) {
             return $this->errorResponse($e);
         }
+    }
+
+    /** Décode le curseur opaque `after` (base64(json{v,id})) ; null si absent/invalide. */
+    private function decodeCursor(string $after): ?array
+    {
+        if ($after === '') { return null; }
+        $raw = base64_decode($after, true);
+        if ($raw === false) { return null; }
+        $data = json_decode($raw, true);
+        if (!is_array($data) || !array_key_exists('v', $data) || !array_key_exists('id', $data)) {
+            return null;
+        }
+        return ['v' => $data['v'], 'id' => (int) $data['id']];
     }
 
     // ─── GET /page-analytics/stats ────────────────────────────────────────────────

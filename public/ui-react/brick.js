@@ -12,18 +12,18 @@
 	}
 	function qs(params) {
 		const sp = new URLSearchParams();
-		for (const [k, v] of Object.entries(params)) if (v !== void 0 && v !== "" && v !== 0) sp.set(k, String(v));
+		for (const [k, v] of Object.entries(params)) if (v !== void 0 && v !== null && v !== "" && v !== 0) sp.set(k, String(v));
 		const s = sp.toString();
 		return s ? `?${s}` : "";
 	}
 	function fetchAnalytics(p = {}) {
 		return apiGet(`/melis/react-api/page-analytics${qs({
-			page: p.page,
 			limit: p.limit,
 			search: p.search,
 			site: p.site,
 			sort: p.sort,
-			dir: p.dir
+			dir: p.dir,
+			after: p.after
 		})}`);
 	}
 	function fetchAnalyticsStats(p = {}) {
@@ -34,6 +34,117 @@
 	}
 	function fetchAnalyticsSites() {
 		return apiGet("/melis/react-api/page-analytics/sites");
+	}
+	//#endregion
+	//#region src/use-keyset-list.ts
+	function useKeysetList(opts) {
+		const LIMIT = opts.limit ?? 25;
+		const [items, setItems] = (0, react.useState)(opts.initial?.items ?? []);
+		const [total, setTotal] = (0, react.useState)(opts.initial?.total ?? 0);
+		const [loading, setLoading] = (0, react.useState)(false);
+		const [hasMore, setHasMore] = (0, react.useState)(opts.initial?.hasMore ?? false);
+		const [sortCol, setSortCol] = (0, react.useState)(opts.initial?.sortCol ?? opts.defaultSort ?? "id");
+		const [sortDir, setSortDir] = (0, react.useState)(opts.initial?.sortDir ?? opts.defaultDir ?? "desc");
+		const cursorRef = (0, react.useRef)(opts.initial?.cursor ?? null);
+		const loadingRef = (0, react.useRef)(false);
+		const reqIdRef = (0, react.useRef)(0);
+		const sentinelRef = (0, react.useRef)(null);
+		const fetcherRef = (0, react.useRef)(opts.fetcher);
+		fetcherRef.current = opts.fetcher;
+		const runLoad = (0, react.useCallback)(async (reset) => {
+			if (!reset && loadingRef.current) return;
+			const myReq = ++reqIdRef.current;
+			loadingRef.current = true;
+			setLoading(true);
+			const after = reset ? void 0 : cursorRef.current ?? void 0;
+			try {
+				const res = await fetcherRef.current({
+					limit: LIMIT,
+					sort: sortCol,
+					dir: sortDir,
+					after
+				});
+				if (myReq !== reqIdRef.current) return;
+				cursorRef.current = res.nextCursor;
+				setHasMore(res.nextCursor !== null);
+				setTotal(res.total);
+				setItems((prev) => reset ? res.items : [...prev, ...res.items]);
+			} catch {} finally {
+				if (myReq === reqIdRef.current) {
+					setLoading(false);
+					loadingRef.current = false;
+				}
+			}
+		}, [
+			sortCol,
+			sortDir,
+			LIMIT
+		]);
+		const didInitRef = (0, react.useRef)(false);
+		(0, react.useEffect)(() => {
+			if (!didInitRef.current) {
+				didInitRef.current = true;
+				if (opts.skipInitial) return;
+			}
+			runLoad(true);
+		}, [
+			...opts.deps,
+			sortCol,
+			sortDir
+		]);
+		(0, react.useEffect)(() => {
+			if (!sentinelRef.current || !hasMore) return;
+			const obs = new IntersectionObserver(([entry]) => {
+				if (entry.isIntersecting) runLoad(false);
+			}, { rootMargin: "120px" });
+			obs.observe(sentinelRef.current);
+			return () => obs.disconnect();
+		}, [hasMore, runLoad]);
+		const toggleSort = (0, react.useCallback)((id) => {
+			setSortCol((cur) => {
+				if (cur === id) {
+					setSortDir((d) => d === "asc" ? "desc" : "asc");
+					return cur;
+				}
+				setSortDir(id === "id" ? "desc" : "asc");
+				return id;
+			});
+		}, []);
+		/** Force un rechargement depuis le début (refresh / reset filtres). */
+		const reload = (0, react.useCallback)(() => {
+			cursorRef.current = null;
+			runLoad(true);
+		}, [runLoad]);
+		/** Retire un élément localement (après delete) sans recharger. */
+		const removeLocal = (0, react.useCallback)((pred) => {
+			setItems((prev) => prev.filter((it) => !pred(it)));
+			setTotal((t) => Math.max(0, t - 1));
+		}, []);
+		/** Snapshot pour le cache module-level. */
+		const snapshot = () => ({
+			items,
+			total,
+			cursor: cursorRef.current,
+			hasMore,
+			sortCol,
+			sortDir
+		});
+		return {
+			items,
+			setItems,
+			total,
+			loading,
+			hasMore,
+			sentinelRef,
+			sortCol,
+			sortDir,
+			setSortCol,
+			setSortDir,
+			toggleSort,
+			reload,
+			removeLocal,
+			snapshot
+		};
 	}
 	//#endregion
 	//#region src/ui.tsx
@@ -1098,6 +1209,40 @@
 	* Brique `persistent` : état + iframe préservés en changeant d'onglet outil.
 	*/
 	var MELIS_KEY = "meliscms_page_analytics_display";
+	/** Icône de tri unifiée — mêmes tracés que les icônes lucide ArrowUpDown/ArrowUp/ArrowDown du core. */
+	function SortIcon({ dir }) {
+		const p = {
+			width: 12,
+			height: 12,
+			viewBox: "0 0 24 24",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: 2,
+			strokeLinecap: "round",
+			strokeLinejoin: "round",
+			style: {
+				flexShrink: 0,
+				opacity: dir ? 1 : .3
+			}
+		};
+		if (dir === "asc") return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+			...p,
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m5 12 7-7 7 7" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 19V5" })]
+		});
+		if (dir === "desc") return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+			...p,
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 5v14" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m19 12-7 7-7-7" })]
+		});
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+			...p,
+			children: [
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m21 16-4 4-4-4" }),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M17 20V4" }),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m3 8 4-4 4 4" }),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M7 4v16" })
+			]
+		});
+	}
 	function PageAnalyticsPage() {
 		const t = useT();
 		const [mode, setMode] = (0, react.useState)("react");
@@ -1203,30 +1348,47 @@
 	function AnalyticsList({ site, onSite }) {
 		const t = useT();
 		const lang = currentLang$1();
-		const [rows, setRows] = (0, react.useState)([]);
 		const [stats, setStats] = (0, react.useState)(null);
 		const [sites, setSites] = (0, react.useState)([]);
-		const [loading, setLoading] = (0, react.useState)(false);
 		const [search, setSearch] = (0, react.useState)("");
-		const [sortCol, setSortCol] = (0, react.useState)("count");
-		const [sortDir, setSortDir] = (0, react.useState)("desc");
 		const [cols, setCols] = (0, react.useState)(colStore.load);
 		const [showCols, setShowCols] = (0, react.useState)(false);
 		const [showExport, setShowExport] = (0, react.useState)(false);
 		const [tick, setTick] = (0, react.useState)(0);
+		const { items, total, loading, hasMore, sentinelRef, sortCol, sortDir, toggleSort } = useKeysetList({
+			fetcher: (a) => fetchAnalytics({
+				search,
+				site,
+				limit: a.limit,
+				sort: a.sort,
+				dir: a.dir,
+				after: a.after ?? void 0
+			}).then((r) => ({
+				items: r.items,
+				total: r.total,
+				nextCursor: r.nextCursor
+			})),
+			deps: [
+				search,
+				site,
+				tick
+			],
+			defaultSort: "count",
+			defaultDir: "desc"
+		});
 		(0, react.useEffect)(() => {
 			fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null);
 		}, []);
 		(0, react.useEffect)(() => {
-			fetchAnalyticsStats({ site }).then(setStats).catch(() => null);
-		}, [site, tick]);
-		(0, react.useEffect)(() => {
-			setLoading(true);
-			fetchAnalytics({
-				site,
-				limit: 9999
-			}).then((r) => setRows(r.items)).catch(() => null).finally(() => setLoading(false));
-		}, [site, tick]);
+			fetchAnalyticsStats({
+				search,
+				site
+			}).then(setStats).catch(() => null);
+		}, [
+			search,
+			site,
+			tick
+		]);
 		const cell = (r, id) => {
 			switch (id) {
 				case "pageId": return String(r.pageId);
@@ -1236,38 +1398,24 @@
 				default: return "";
 			}
 		};
-		const sortVal = (r, id) => {
-			switch (id) {
-				case "pageId": return r.pageId;
-				case "count": return r.count;
-				case "lastVisit": return r.lastVisit ?? "";
-				default: return (r.pageName || "").toLowerCase();
+		const fetchAll = async () => {
+			const acc = [];
+			let after = null;
+			for (;;) {
+				const r = await fetchAnalytics({
+					search,
+					site,
+					sort: sortCol,
+					dir: sortDir,
+					limit: 100,
+					after
+				});
+				acc.push(...r.items);
+				if (!r.nextCursor) break;
+				after = r.nextCursor;
 			}
+			return acc;
 		};
-		const filtered = (0, react.useMemo)(() => {
-			const q = search.trim().toLowerCase();
-			let list = rows;
-			if (q) list = rows.filter((r) => (r.pageName || "").toLowerCase().includes(q) || String(r.pageId).includes(q));
-			const dir = sortDir === "asc" ? 1 : -1;
-			return [...list].sort((a, b) => {
-				const va = sortVal(a, sortCol), vb = sortVal(b, sortCol);
-				if (va < vb) return -1 * dir;
-				if (va > vb) return 1 * dir;
-				return 0;
-			});
-		}, [
-			rows,
-			search,
-			sortCol,
-			sortDir
-		]);
-		function toggleSort(id) {
-			if (sortCol === id) setSortDir((d) => d === "asc" ? "desc" : "asc");
-			else {
-				setSortCol(id);
-				setSortDir(id === "pageName" ? "asc" : "desc");
-			}
-		}
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				display: "flex",
@@ -1385,65 +1533,80 @@
 						...card$1,
 						overflow: "hidden"
 					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
-						style: {
-							width: "100%",
-							borderCollapse: "collapse",
-							minWidth: 560
-						},
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
-							style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
-							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("th", {
-								style: {
-									...th,
-									cursor: "pointer"
-								},
-								onClick: () => toggleSort(id),
-								children: [t(COL_LABEL[id]), sortCol === id ? ` ${sortDir === "asc" ? "↑" : "↓"}` : ""]
-							}, id)) })
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: filtered.length === 0 && !loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
 							style: {
-								...td,
-								textAlign: "center",
-								color: "var(--color-muted-foreground)",
-								padding: "40px 16px"
+								width: "100%",
+								borderCollapse: "collapse",
+								minWidth: 560
 							},
-							colSpan: visibleCols(cols).length,
-							children: t("empty")
-						}) }) : filtered.map((r) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-							style: {
-								...td,
-								...id === "pageId" || id === "count" ? {
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
+								style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
+									style: {
+										...th,
+										cursor: "pointer",
+										...sortCol === id ? { color: "var(--color-primary)" } : {}
+									},
+									onClick: () => toggleSort(id),
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+										style: {
+											display: "inline-flex",
+											alignItems: "center",
+											gap: 4
+										},
+										children: [t(COL_LABEL[id]), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SortIcon, { dir: sortCol === id ? sortDir : null })]
+									})
+								}, id)) })
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: items.length === 0 && !loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+								style: {
+									...td,
+									textAlign: "center",
 									color: "var(--color-muted-foreground)",
-									fontVariantNumeric: "tabular-nums"
-								} : {}
-							},
-							children: id === "pageName" && !r.pageName ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								style: {
-									fontStyle: "italic",
-									color: "var(--color-muted-foreground)"
+									padding: "40px 16px"
 								},
-								children: t("deleted")
-							}) : cell(r, id)
-						}, id)) }, r.pageId)) })]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						style: {
-							padding: "10px 16px",
-							textAlign: "center",
-							fontSize: 12,
-							color: "var(--color-muted-foreground)"
-						},
-						children: loading ? t("loading") : t("count", { n: filtered.length })
-					})]
+								colSpan: visibleCols(cols).length,
+								children: t("empty")
+							}) }) : items.map((r) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+								style: {
+									...td,
+									...id === "pageId" || id === "count" ? {
+										color: "var(--color-muted-foreground)",
+										fontVariantNumeric: "tabular-nums"
+									} : {}
+								},
+								children: id === "pageName" && !r.pageName ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									style: {
+										fontStyle: "italic",
+										color: "var(--color-muted-foreground)"
+									},
+									children: t("deleted")
+								}) : cell(r, id)
+							}, id)) }, r.pageId)) })]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							ref: sentinelRef,
+							style: { height: 1 }
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							style: {
+								padding: "10px 16px",
+								textAlign: "center",
+								fontSize: 12,
+								color: "var(--color-muted-foreground)"
+							},
+							children: loading ? t("loading") : !hasMore && items.length > 0 ? t("count", { n: total }) : ""
+						})
+					]
 				}),
 				showExport && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ExportModal, {
 					cols,
 					labelFor: (id) => t(COL_LABEL[id]),
-					fetchAll: async () => filtered,
+					fetchAll,
 					getCell: (r, id) => cell(r, id),
 					filename: "page-analytics",
 					sheetName: t("title"),
-					total: filtered.length,
+					total,
 					onClose: () => setShowExport(false)
 				})
 			]
