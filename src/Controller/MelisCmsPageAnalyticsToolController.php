@@ -187,7 +187,9 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
             $columns = array_keys($this->getTool()->getColumns());
             $draw = (int)$post['draw'];
             $selColOrder = $columns[(int)$post['order'][0]['column']];
-            $orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
+            $orderDirection = isset($post['order']['0']['dir']) ? $post['order']['0']['dir'] : 'DESC';
+            // Coerce the order direction to a strict whitelist to prevent SQL injection via ORDER BY.
+            $orderDirection = strtoupper((string)$orderDirection) === 'ASC' ? 'ASC' : 'DESC';
             $searchValue = isset($post['search']['value']) ? $post['search']['value'] : null;
             $searchableCols = $this->getTool()->getSearchableColumns();
             $start = (int)$post['start'];
@@ -245,6 +247,50 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
             $analayticsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
             $analayticsSettingsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataSettingsTable');
+
+            /**
+             * Security: the "pads_js_analytics" field holds raw, unsanitized JavaScript that is
+             * injected site-wide into every front page <head> by MelisCmsPageAnalyticsListener.
+             * Only a platform admin (usr_admin) is allowed to set or change this field.
+             * Non-admins can still save the other analytics settings, but any attempt to set/change
+             * the raw JS is rejected (and the JS field is dropped so it is never persisted).
+             */
+            $isPlatformAdmin = false;
+            $melisCoreAuth = $this->getServiceManager()->get('MelisCoreAuth');
+            $identity = $melisCoreAuth->getIdentity();
+            if (!empty($identity) && !empty($identity->usr_admin)) {
+                $isPlatformAdmin = true;
+            }
+
+            $postedJsAnalytics = isset($post['pads_js_analytics']) ? (string)$post['pads_js_analytics'] : '';
+            if (!$isPlatformAdmin && $postedJsAnalytics !== '') {
+                // Determine the currently stored JS for this site to detect an actual change.
+                $currentJsAnalytics = '';
+                $postedSiteId = isset($post['pad_site_id']) ? (int)$post['pad_site_id'] : 0;
+                if ($postedSiteId) {
+                    $currentSettingsData = $analayticsSettingsTable->getEntryByField('pads_site_id', $postedSiteId)->current();
+                    if (!empty($currentSettingsData) && isset($currentSettingsData->pads_js_analytics)) {
+                        $currentJsAnalytics = (string)$currentSettingsData->pads_js_analytics;
+                    }
+                }
+
+                if ($postedJsAnalytics !== $currentJsAnalytics) {
+                    // Non-admin tried to set/change the raw JS: reject the save and never persist the field.
+                    unset($post['pads_js_analytics']);
+                    $response = [
+                        'success' => 0,
+                        'textTitle' => $this->getTool()->getTranslation($title),
+                        'textMessage' => $this->getTool()->getTranslation('tr_meliscms_page_analytics_settings_select_save_ko'),
+                        'errors' => [
+                            'pads_js_analytics' => [
+                                'admin_required' => $this->getTool()->getTranslation('tr_meliscms_page_analytics_js_admin_only')
+                            ]
+                        ]
+                    ];
+                    $this->getEventManager()->trigger('melis_cms_page_analytics_flash_messenger', $this, $response);
+                    return new JsonModel($response);
+                }
+            }
 
             /**
              * Checking for google analytics settings form errors.

@@ -188,7 +188,9 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends MelisAbstractAction
             $columns = array_keys($this->getTool()->getColumns());
             $draw           = (int) $post['draw'];
             $selColOrder    = $columns[(int) $post['order'][0]['column']];
-            $orderDirection = isset($post['order']['0']['dir']) ? strtoupper($post['order']['0']['dir']) : 'DESC';
+            $orderDirection = isset($post['order']['0']['dir']) ? $post['order']['0']['dir'] : 'DESC';
+            // Coerce the order direction to a strict whitelist to prevent SQL injection via ORDER BY.
+            $orderDirection = strtoupper((string)$orderDirection) === 'ASC' ? 'ASC' : 'DESC';
             $searchValue    = isset($post['search']['value']) ? $post['search']['value'] : null;
             $searchableCols = $this->getTool()->getSearchableColumns();
             $start          = (int) $post['start'];

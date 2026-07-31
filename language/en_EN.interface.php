@@ -50,6 +50,7 @@ return [
     'tr_meliscms_page_analytics_settings_no_analytics' => 'No analytics module',
     'tr_meliscms_page_analytics_settings_select_save_ok' => 'The settings have been saved successfully.',
     'tr_meliscms_page_analytics_settings_select_save_ko' => 'Unable to change analytics module',
+    'tr_meliscms_page_analytics_js_admin_only' => 'Only a platform administrator can set or change the custom analytics JavaScript.',
 
     // Interface
     'tr_meliscms_page_analytics_tab_display' => 'Cms page analytics',
