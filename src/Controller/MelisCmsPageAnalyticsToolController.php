@@ -126,7 +126,19 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
     {
         $siteId = (int)$this->params()->fromQuery('siteId', null);
         $melisKey = $this->getMelisKey();
-        $hasAccess = $this->hasAccess('meliscms_page_analytics_site_analytics_tab');
+        // Sub-zone: access already governed by the parent tool's zone rendering.
+        //
+        // This used to be `hasAccess('meliscms_page_analytics_site_analytics_tab')`, but that
+        // melisKey is declared NOWHERE in app.interface.php (the real keys are
+        // `..._site_analytics_tab_content` / `..._site_analytics_tab_settings_content`).
+        // MelisCoreRightsService::isAccessible() falls through to `return false` for a key it
+        // cannot find, and — unlike the menu — it has NO usr_admin bypass. So as soon as a user
+        // has a non-empty usr_rights XML (which every converted install now has), this returned
+        // false even for a platform admin, and tool-default-page-analytics-table.phtml rendered
+        // an EMPTY container: the Analytics tab showed the site selector and nothing under it.
+        // The gate was cosmetic anyway — getMelisCmsPageAnalyticsDataAction(), which serves the
+        // actual rows to the DataTable, performs no rights check.
+        $hasAccess = true;
         $columns = $this->getTool()->getColumns();
         // Setting first column's (ID) default Order to descending
         $getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#tableMelisCmsPageAnalytics', true, false, array('order' => '[[0, "desc"]]'));

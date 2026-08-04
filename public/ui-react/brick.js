@@ -35,6 +35,21 @@
 	function fetchAnalyticsSites() {
 		return apiGet("/melis/react-api/page-analytics/sites");
 	}
+	function fetchAnalyticsSettings(siteId, key) {
+		return apiGet(`/melis/react-api/page-analytics/settings${qs({
+			site: siteId,
+			key
+		})}`);
+	}
+	var LEGACY_SAVE_URL = "/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/save";
+	async function saveAnalyticsSettings(form) {
+		return await (await fetch(LEGACY_SAVE_URL, {
+			method: "POST",
+			headers: { ...XHR_HEADER },
+			credentials: "include",
+			body: form
+		})).json();
+	}
 	//#endregion
 	//#region src/use-keyset-list.ts
 	function useKeysetList(opts) {
@@ -189,7 +204,25 @@
 			d_col_session: "Session",
 			d_search: "Rechercher une visite…",
 			detail_empty: "Aucune visite",
-			detail_count: "{n} visites — fin de la liste"
+			detail_count: "{n} visites — fin de la liste",
+			tab_analytics: "Analytics",
+			tab_settings: "Paramètres",
+			set_subtitle: "Affecter un module analytics à un site et régler ses paramètres",
+			set_site: "Site",
+			set_site_ph: "Sélectionner un site",
+			set_module: "Module analytics",
+			set_module_ph: "Sélectionner un module analytics",
+			set_module_help: "Le module choisi fournit l’affichage de l’onglet Analytics pour ce site.",
+			set_js: "Script analytics personnalisé",
+			set_js_help: "JavaScript injecté dans le <head> de toutes les pages du front de ce site.",
+			set_js_admin: "Seul un administrateur de la plateforme peut modifier ce script.",
+			set_save: "Enregistrer",
+			set_saving: "Enregistrement…",
+			set_pick_site: "Sélectionnez un site pour afficher ses paramètres.",
+			set_no_settings: "Ce module n’a pas de paramètre supplémentaire.",
+			set_file_legacy: "L’envoi de fichier se fait ici comme dans l’outil classique.",
+			set_current_file: "Fichier actuel : {n}",
+			set_error: "Échec de l’enregistrement."
 		},
 		en: {
 			title: "Site analytics",
@@ -228,7 +261,25 @@
 			d_col_session: "Session",
 			d_search: "Search a visit…",
 			detail_empty: "No visit",
-			detail_count: "{n} visits — end of list"
+			detail_count: "{n} visits — end of list",
+			tab_analytics: "Analytics",
+			tab_settings: "Settings",
+			set_subtitle: "Assign an analytics module to a site and configure its parameters",
+			set_site: "Site",
+			set_site_ph: "Select a site",
+			set_module: "Analytics module",
+			set_module_ph: "Select an analytics module",
+			set_module_help: "The selected module provides the Analytics tab display for this site.",
+			set_js: "Custom analytics script",
+			set_js_help: "JavaScript injected into the <head> of every front page of this site.",
+			set_js_admin: "Only a platform administrator can change this script.",
+			set_save: "Save",
+			set_saving: "Saving…",
+			set_pick_site: "Select a site to display its settings.",
+			set_no_settings: "This module has no additional parameter.",
+			set_file_legacy: "File upload works here just like in the classic tool.",
+			set_current_file: "Current file: {n}",
+			set_error: "Save failed."
 		}
 	};
 	function useT() {
@@ -268,6 +319,20 @@
 		padding: "0 12px",
 		fontSize: 14,
 		outline: "none"
+	};
+	var btnPrimary$1 = {
+		display: "inline-flex",
+		alignItems: "center",
+		gap: 6,
+		height: 36,
+		padding: "0 14px",
+		borderRadius: 8,
+		border: 0,
+		background: "var(--color-primary)",
+		color: "var(--color-primary-foreground,#fff)",
+		fontSize: 14,
+		fontWeight: 500,
+		cursor: "pointer"
 	};
 	var btnGhost$1 = {
 		display: "inline-flex",
@@ -1198,16 +1263,324 @@
 		});
 	}
 	//#endregion
-	//#region src/PageAnalyticsPage.tsx
+	//#region src/SettingsPanel.tsx
 	/**
-	* Outil Site Analytics (brique MelisCmsPageAnalytics).
-	* En-tête PERSISTANT (titre + toggle New/Old) → le toggle reste toujours accessible.
-	*  • « New » : table React native des visites par page (sélecteur de site, KPI, recherche,
-	*    colonnes, export). Lecture seule, sans drill-down (fidèle au legacy).
-	*  • « Old » : outil legacy complet en iframe — onglets « Analytics » + « Paramètres »
-	*    (affectation du module analytics aux sites, config GA/JS). Non migré, géré en legacy.
-	* Brique `persistent` : état + iframe préservés en changeant d'onglet outil.
+	* Onglet « Paramètres » natif React de l'outil Site Analytics.
+	*
+	* Équivalent de la vue legacy `tool-content-container-analytics-settings-tab-content.phtml` :
+	*   Site → Module analytics → (réglages propres au module) → script JS personnalisé → Enregistrer.
+	*
+	* Deux principes (cf. ai-skills / melis-migrate-module-to-react) :
+	*  • ZÉRO logique métier ici. L'enregistrement poste sur l'action LEGACY `.../save`, qui garde la
+	*    validation Laminas, l'upload de clé privée, la sérialisation de pads_settings, la garde admin
+	*    sur le JS brut et le flash messenger. Les vues New et Old restent donc rigoureusement alignées.
+	*  • DATA-DRIVEN. Les modules ET leurs champs viennent de la config plateforme
+	*    (meliscms/datas/page_analytics + meliscms/forms/<key>_settings_form) : un module analytics
+	*    tiers (ex. MelisCmsGoogleAnalytics) apparaît sans toucher à cette brique.
 	*/
+	var label = {
+		display: "block",
+		fontSize: 13,
+		fontWeight: 600,
+		marginBottom: 6
+	};
+	var help = {
+		fontSize: 12,
+		color: "var(--color-muted-foreground)",
+		margin: "6px 0 0"
+	};
+	var errCss = {
+		fontSize: 12,
+		color: "var(--color-destructive,#dc2626)",
+		margin: "6px 0 0"
+	};
+	function SettingsPanel() {
+		const t = useT();
+		const [sites, setSites] = (0, react.useState)([]);
+		const [site, setSite] = (0, react.useState)(0);
+		const [state, setState] = (0, react.useState)(null);
+		const [moduleKey, setModuleKey] = (0, react.useState)("");
+		const [values, setValues] = (0, react.useState)({});
+		const [files, setFiles] = (0, react.useState)({});
+		const [js, setJs] = (0, react.useState)("");
+		const [saving, setSaving] = (0, react.useState)(false);
+		const [errors, setErrors] = (0, react.useState)({});
+		const [flash, setFlash] = (0, react.useState)(null);
+		(0, react.useEffect)(() => {
+			fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null);
+		}, []);
+		const load = (siteId, key) => {
+			if (!siteId) {
+				setState(null);
+				return;
+			}
+			fetchAnalyticsSettings(siteId, key).then((s) => {
+				setState(s);
+				setModuleKey(s.selectedKey);
+				setValues(Object.fromEntries(Object.entries(s.values ?? {}).map(([k, v]) => [k, String(v ?? "")])));
+				setJs(s.jsAnalytics);
+				setFiles({});
+				setErrors({});
+			}).catch(() => setState(null));
+		};
+		(0, react.useEffect)(() => {
+			load(site);
+		}, [site]);
+		const onModule = (key) => {
+			setModuleKey(key);
+			setErrors({});
+			if (site && key) load(site, key);
+		};
+		const selected = state?.modules.find((m) => m.key === moduleKey);
+		const fields = state?.fields ?? [];
+		const showJs = !!selected?.settings;
+		async function submit(e) {
+			e.preventDefault();
+			if (!site || !moduleKey) return;
+			setSaving(true);
+			setErrors({});
+			setFlash(null);
+			const fd = new FormData();
+			fd.append("pad_site_id", String(site));
+			fd.append("pad_analytics_key", moduleKey);
+			for (const f of fields) {
+				if (f.type === "file") continue;
+				fd.append(f.name, values[f.name] ?? "");
+			}
+			for (const [name, file] of Object.entries(files)) fd.append(name, file);
+			fd.append("pads_js_analytics", showJs ? js : "");
+			fd.append("fileChanged", Object.keys(files).length > 0 ? "true" : "false");
+			try {
+				const r = await saveAnalyticsSettings(fd);
+				if (r.success) {
+					setFlash({
+						ok: true,
+						msg: r.textMessage
+					});
+					load(site, moduleKey);
+				} else {
+					const flat = {};
+					for (const [name, msgs] of Object.entries(r.errors ?? {})) {
+						const first = Object.entries(msgs ?? {}).find(([k]) => k !== "label");
+						if (first) flat[name] = String(first[1]);
+					}
+					setErrors(flat);
+					setFlash({
+						ok: false,
+						msg: r.textMessage || t("set_error")
+					});
+				}
+			} catch {
+				setFlash({
+					ok: false,
+					msg: t("set_error")
+				});
+			} finally {
+				setSaving(false);
+			}
+		}
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("form", {
+			onSubmit: submit,
+			style: {
+				display: "flex",
+				flexDirection: "column",
+				gap: 20,
+				padding: 24,
+				boxSizing: "border-box",
+				maxWidth: 760
+			},
+			children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				style: {
+					...card$1,
+					display: "flex",
+					flexDirection: "column",
+					gap: 18,
+					padding: 20
+				},
+				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+						style: label,
+						htmlFor: "mcpa-site",
+						children: t("set_site")
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+						id: "mcpa-site",
+						style: inputCss,
+						value: site,
+						onChange: (e) => setSite(Number(e.target.value)),
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+							value: 0,
+							children: t("set_site_ph")
+						}), sites.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+							value: s.id,
+							children: s.name
+						}, s.id))]
+					})] }),
+					!site && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						style: help,
+						children: t("set_pick_site")
+					}),
+					site > 0 && state && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+								style: label,
+								htmlFor: "mcpa-module",
+								children: t("set_module")
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+								id: "mcpa-module",
+								style: inputCss,
+								value: moduleKey,
+								onChange: (e) => onModule(e.target.value),
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+									value: "",
+									children: t("set_module_ph")
+								}), state.modules.map((m) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+									value: m.key,
+									children: m.label
+								}, m.key))]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								style: help,
+								children: t("set_module_help")
+							}),
+							errors.pad_analytics_key && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								style: errCss,
+								children: errors.pad_analytics_key
+							})
+						] }),
+						fields.map((f) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+								style: label,
+								htmlFor: `mcpa-${f.name}`,
+								children: [f.label, f.required ? " *" : ""]
+							}),
+							f.type === "textarea" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+								id: `mcpa-${f.name}`,
+								style: {
+									...inputCss,
+									height: 100,
+									padding: 10,
+									fontFamily: "inherit"
+								},
+								value: values[f.name] ?? "",
+								onChange: (e) => setValues((v) => ({
+									...v,
+									[f.name]: e.target.value
+								}))
+							}) : f.type === "select" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+								id: `mcpa-${f.name}`,
+								style: inputCss,
+								value: values[f.name] ?? "",
+								onChange: (e) => setValues((v) => ({
+									...v,
+									[f.name]: e.target.value
+								})),
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", { value: "" }), f.options.map((o) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+									value: o.value,
+									children: o.label
+								}, o.value))]
+							}) : f.type === "file" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								id: `mcpa-${f.name}`,
+								type: "file",
+								style: {
+									...inputCss,
+									height: "auto",
+									padding: 8
+								},
+								onChange: (e) => {
+									const file = e.target.files?.[0];
+									setFiles((prev) => {
+										const next = { ...prev };
+										if (file) next[f.name] = file;
+										else delete next[f.name];
+										return next;
+									});
+								}
+							}), values[f.name] && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								style: help,
+								children: t("set_current_file", { n: values[f.name] })
+							})] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								id: `mcpa-${f.name}`,
+								type: f.type === "password" ? "password" : "text",
+								style: inputCss,
+								value: values[f.name] ?? "",
+								onChange: (e) => setValues((v) => ({
+									...v,
+									[f.name]: e.target.value
+								}))
+							}),
+							f.tooltip && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								style: help,
+								children: f.tooltip
+							}),
+							errors[f.name] && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								style: errCss,
+								children: errors[f.name]
+							})
+						] }, f.name)),
+						moduleKey && moduleKey !== "melis_cms_no_analytics" && fields.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							style: help,
+							children: t("set_no_settings")
+						}),
+						showJs && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+								style: label,
+								htmlFor: "mcpa-js",
+								children: t("set_js")
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+								id: "mcpa-js",
+								style: {
+									...inputCss,
+									height: 160,
+									padding: 10,
+									fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace",
+									fontSize: 13,
+									lineHeight: 1.5
+								},
+								spellCheck: false,
+								value: js,
+								disabled: !state.jsEditable,
+								onChange: (e) => setJs(e.target.value)
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								style: help,
+								children: state.jsEditable ? t("set_js_help") : t("set_js_admin")
+							}),
+							errors.pads_js_analytics && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								style: errCss,
+								children: errors.pads_js_analytics
+							})
+						] }),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							style: {
+								display: "flex",
+								alignItems: "center",
+								gap: 12
+							},
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								type: "submit",
+								style: {
+									...btnPrimary$1,
+									opacity: saving || !moduleKey ? .6 : 1
+								},
+								disabled: saving || !moduleKey,
+								children: saving ? t("set_saving") : t("set_save")
+							}), flash && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								style: {
+									fontSize: 13,
+									color: flash.ok ? "var(--color-success,#16a34a)" : "var(--color-destructive,#dc2626)"
+								},
+								children: flash.msg
+							})]
+						})
+					] })
+				]
+			})
+		});
+	}
+	//#endregion
+	//#region src/PageAnalyticsPage.tsx
 	var MELIS_KEY = "meliscms_page_analytics_display";
 	/** Icône de tri unifiée — mêmes tracés que les icônes lucide ArrowUpDown/ArrowUp/ArrowDown du core. */
 	function SortIcon({ dir }) {
@@ -1243,82 +1616,132 @@
 			]
 		});
 	}
+	/** Onglets natifs « Analytics » / « Paramètres » — même découpage que l'outil legacy. */
+	function TabBar({ tab, onChange }) {
+		const t = useT();
+		const item = (id, text) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+			type: "button",
+			onClick: () => onChange(id),
+			style: {
+				appearance: "none",
+				border: 0,
+				background: "transparent",
+				cursor: "pointer",
+				padding: "10px 4px",
+				fontSize: 14,
+				fontWeight: tab === id ? 600 : 500,
+				color: tab === id ? "var(--color-foreground)" : "var(--color-muted-foreground)",
+				borderBottom: `2px solid ${tab === id ? "var(--color-primary)" : "transparent"}`
+			},
+			children: text
+		}, id);
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			style: {
+				display: "flex",
+				gap: 20,
+				padding: "0 24px",
+				borderBottom: "1px solid var(--color-border)",
+				flexShrink: 0
+			},
+			children: [item("analytics", t("tab_analytics")), item("settings", t("tab_settings"))]
+		});
+	}
 	function PageAnalyticsPage() {
 		const t = useT();
 		const [mode, setMode] = (0, react.useState)("react");
+		const [tab, setTab] = (0, react.useState)("analytics");
 		const [frameLoaded, setFrameLoaded] = (0, react.useState)(false);
 		const [site, setSite] = (0, react.useState)(0);
+		const subtitle = mode === "iframe" ? t("old_hint") : tab === "settings" ? t("set_subtitle") : t("subtitle");
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				display: "flex",
 				flexDirection: "column",
 				height: "100%"
 			},
-			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				style: {
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-					gap: 16,
-					flexWrap: "wrap",
-					padding: "20px 24px 12px",
-					flexShrink: 0
-				},
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", {
+			children: [
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
-						fontSize: 20,
-						fontWeight: 700,
-						margin: 0
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						gap: 16,
+						flexWrap: "wrap",
+						padding: "20px 24px 12px",
+						flexShrink: 0
 					},
-					children: t("title")
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-					style: {
-						fontSize: 14,
-						color: "var(--color-muted-foreground)",
-						margin: "2px 0 0"
-					},
-					children: mode === "iframe" ? t("old_hint") : t("subtitle")
-				})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViewToggle, {
-					mode,
-					onChange: (m) => {
-						setMode(m);
-						if (m === "iframe") setFrameLoaded(true);
-					}
-				})]
-			}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				style: {
-					flex: 1,
-					minHeight: 0,
-					position: "relative"
-				},
-				children: [frameLoaded && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					style: {
-						position: "absolute",
-						inset: 0,
-						display: mode === "iframe" ? "block" : "none"
-					},
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("iframe", {
-						src: `/melis/react-tool-page?key=${encodeURIComponent(MELIS_KEY)}`,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", {
 						style: {
-							width: "100%",
-							height: "100%",
-							border: 0
+							fontSize: 20,
+							fontWeight: 700,
+							margin: 0
 						},
-						title: `${t("title")} — Vue Melis`
-					})
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						children: t("title")
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						style: {
+							fontSize: 14,
+							color: "var(--color-muted-foreground)",
+							margin: "2px 0 0"
+						},
+						children: subtitle
+					})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViewToggle, {
+						mode,
+						onChange: (m) => {
+							setMode(m);
+							if (m === "iframe") setFrameLoaded(true);
+						}
+					})]
+				}),
+				mode === "react" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TabBar, {
+					tab,
+					onChange: setTab
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
-						position: "absolute",
-						inset: 0,
-						overflow: "auto",
-						display: mode === "react" ? "block" : "none"
+						flex: 1,
+						minHeight: 0,
+						position: "relative"
 					},
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AnalyticsList, {
-						site,
-						onSite: setSite
-					})
-				})]
-			})]
+					children: [
+						frameLoaded && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							style: {
+								position: "absolute",
+								inset: 0,
+								display: mode === "iframe" ? "block" : "none"
+							},
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("iframe", {
+								src: `/melis/react-tool-page?key=${encodeURIComponent(MELIS_KEY)}`,
+								style: {
+									width: "100%",
+									height: "100%",
+									border: 0
+								},
+								title: `${t("title")} — Vue Melis`
+							})
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							style: {
+								position: "absolute",
+								inset: 0,
+								overflow: "auto",
+								display: mode === "react" && tab === "analytics" ? "block" : "none"
+							},
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AnalyticsList, {
+								site,
+								onSite: setSite
+							})
+						}),
+						mode === "react" && tab === "settings" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							style: {
+								position: "absolute",
+								inset: 0,
+								overflow: "auto"
+							},
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SettingsPanel, {})
+						})
+					]
+				})
+			]
 		});
 	}
 	var COL_LABEL = {

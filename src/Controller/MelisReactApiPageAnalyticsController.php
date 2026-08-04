@@ -38,6 +38,10 @@ class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
      *  ⚠️ Ce sont des agrégats (COUNT/MAX) ou la clé de GROUP BY : ils ne peuvent PAS aller
      *  en WHERE → le keyset est en HAVING (cf. listAction). NON-NULL via COALESCE pour un
      *  ordre stable du curseur opaque. Anti-injection : whitelist stricte. */
+    /** Champs du formulaire de l'OUTIL (les deux sélecteurs), rendus nativement par la brique :
+     *  jamais présentés comme des « réglages du module » (cf. settingsFieldSpec). */
+    private const TOOL_OWN_FIELDS = ['pad_site_id', 'pad_analytics_key'];
+
     private const SORT_MAP = [
         'pageId'    => 'a.ph_page_id',
         'pageName'  => "COALESCE(MAX(p.page_name),'')",
@@ -206,6 +210,173 @@ class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
         } catch (\Throwable $e) {
             return $this->errorResponse($e);
         }
+    }
+
+    // ─── GET /page-analytics/settings ─────────────────────────────────────────────
+
+    /**
+     * État de l'onglet « Paramètres » pour un site (LECTURE seule).
+     *
+     * L'ÉCRITURE reste l'action legacy `/melis/MelisCmsPageAnalytics/MelisCmsPageAnalyticsTool/save`
+     * (POST FormData) : elle porte toute la logique métier (validation Laminas, upload de la clé
+     * privée GA, sérialisation de pads_settings, garde admin sur pads_js_analytics, flash messenger)
+     * et renvoie déjà du JSON propre `{success, textTitle, textMessage, errors}`. La dupliquer ici
+     * ferait diverger les deux vues — la brique React poste donc sur la MÊME action.
+     *
+     * Paramètres : `site` (obligatoire), `key` (optionnel — module dont on veut le schéma/valeurs ;
+     * défaut = le module actuellement affecté au site).
+     */
+    public function settingsAction(): HttpResponse
+    {
+        if ($deny = $this->denyUnlessAccess()) { return $deny; }
+
+        try {
+            $siteId = (int) $this->params()->fromQuery('site', 0);
+            $config = $this->getServiceManager()->get('MelisCoreConfig');
+
+            // Modules analytics disponibles — même source que PageAnalyticsSelectFactory :
+            // l'option pseudo « aucun module » + tout ce que les modules ACTIFS déclarent sous
+            // meliscms/datas/page_analytics. 100% data-driven : aucun module codé en dur.
+            $translator = $this->getServiceManager()->get('translator');
+            $modules    = [[
+                'key'      => 'melis_cms_no_analytics',
+                'label'    => $translator->translate('tr_meliscms_page_analytics_settings_no_analytics'),
+                'settings' => false,
+            ]];
+            foreach ((array) $config->getItem('meliscms/datas/page_analytics') as $key => $cfg) {
+                $modules[] = [
+                    'key'      => (string) $key,
+                    'label'    => $translator->translate($cfg['conf']['name'] ?? $key),
+                    // Un module n'a des réglages propres que si son formulaire déclare des champs
+                    // AUTRES que les deux sélecteurs de l'outil (cf. settingsFieldSpec).
+                    'settings' => $this->settingsFieldSpec($config, (string) $key) !== [],
+                ];
+            }
+
+            // Module actuellement affecté au site.
+            $dataTable     = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable');
+            $currentKey    = '';
+            $jsAnalytics   = '';
+            if ($siteId) {
+                $current = $dataTable->getEntryByField('pad_site_id', $siteId)->current();
+                if (!empty($current)) {
+                    $currentKey = (string) $current->pad_analytics_key;
+                }
+            }
+
+            // Module dont on renvoie le schéma + les valeurs (défaut : celui du site).
+            $selectedKey = trim((string) ($this->params()->fromQuery('key', '') ?? '')) ?: $currentKey;
+
+            $fields = [];
+            $values = [];
+            if ($siteId && $selectedKey !== '' && $selectedKey !== 'melis_cms_no_analytics') {
+                $fields = $this->settingsFieldSpec($config, $selectedKey);
+
+                $row = $dataTable->getAnalytics($siteId, $selectedKey)->current();
+                if (!empty($row)) {
+                    $stored = @unserialize((string) $row->pads_settings);
+                    if (is_array($stored)) {
+                        foreach ($stored as $name => $value) {
+                            // Une clé privée est un CHEMIN serveur : on n'expose que le nom de fichier.
+                            $values[$name] = is_string($value) && $this->looksLikePath($name)
+                                ? basename($value)
+                                : $value;
+                        }
+                    }
+                    $jsAnalytics = (string) ($row->pads_js_analytics ?? '');
+                }
+            }
+
+            // pads_js_analytics = JS brut injecté dans le <head> de TOUTES les pages front
+            // (MelisCmsPageAnalyticsListener) → réservé aux admins plateforme, comme saveAction().
+            $identity  = $this->getServiceManager()->get('MelisCoreAuth')->getIdentity();
+            $jsEditable = !empty($identity) && !empty($identity->usr_admin);
+
+            return $this->jsonResponse([
+                'success' => true,
+                'data'    => [
+                    'siteId'      => $siteId,
+                    'modules'     => $modules,
+                    'analyticsKey' => $currentKey,
+                    'selectedKey' => $selectedKey,
+                    'fields'      => $fields,
+                    'values'      => (object) $values, // objet JSON même vide ({} et non [])
+                    'jsAnalytics' => $jsAnalytics,
+                    'jsEditable'  => $jsEditable,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return $this->errorResponse($e);
+        }
+    }
+
+    /**
+     * Traduit le formulaire Laminas d'un module analytics en schéma JSON rendable par la brique.
+     * Source : `meliscms/forms/<key>_settings_form` (le même que getSettingsFormAction), donc un
+     * module tiers (ex. MelisCmsGoogleAnalytics) est pris en charge sans changement de code ici.
+     *
+     * ⚠️ Collision de nommage : le module intégré s'appelle `melis_cms_page_analytics` et le
+     * formulaire de l'OUTIL lui-même est `melis_cms_page_analytics_settings_form` — la convention
+     * `<key>_settings_form` y résout donc le formulaire de l'outil (les deux sélecteurs Site +
+     * Module). Le legacy ne s'en aperçoit pas car son JS n'appelle getSettingsForm que pour Google
+     * Analytics. On filtre donc les champs propres à l'outil : ce qui reste est bien l'éventuel
+     * formulaire de réglages du module (vide pour le module intégré).
+     */
+    private function settingsFieldSpec($config, string $analyticsKey): array
+    {
+        $formConfig = $config->getItem('meliscms/forms/' . $analyticsKey . '_settings_form');
+        if (empty($formConfig['elements'])) {
+            return [];
+        }
+
+        $translator = $this->getServiceManager()->get('translator');
+        $required   = [];
+        foreach ((array) ($formConfig['input_filter'] ?? []) as $name => $filter) {
+            if (!empty($filter['required'])) {
+                $required[(string) ($filter['name'] ?? $name)] = true;
+            }
+        }
+
+        $fields = [];
+        foreach ($formConfig['elements'] as $element) {
+            $spec = $element['spec'] ?? null;
+            if (empty($spec['name'])) { continue; }
+
+            $name = (string) $spec['name'];
+            if (in_array($name, self::TOOL_OWN_FIELDS, true)) { continue; }
+
+            $type = strtolower((string) ($spec['type'] ?? 'text'));
+
+            $kind = 'text';
+            if (str_contains($type, 'file'))           { $kind = 'file'; }
+            elseif (str_contains($type, 'textarea'))   { $kind = 'textarea'; }
+            elseif (str_contains($type, 'select'))     { $kind = 'select'; }
+            elseif (str_contains($type, 'password'))   { $kind = 'password'; }
+
+            $options = [];
+            foreach ((array) ($spec['options']['value_options'] ?? []) as $value => $label) {
+                $options[] = ['value' => (string) $value, 'label' => $translator->translate((string) $label)];
+            }
+
+            $fields[] = [
+                'name'     => $name,
+                'label'    => $translator->translate((string) ($spec['options']['label'] ?? $name)),
+                'tooltip'  => isset($spec['options']['tooltip'])
+                    ? $translator->translate((string) $spec['options']['tooltip'])
+                    : '',
+                'type'     => $kind,
+                'required' => !empty($required[$name]),
+                'options'  => $options,
+            ];
+        }
+
+        return $fields;
+    }
+
+    /** Champ dont la valeur stockée est un chemin serveur (clé privée GA) → n'exposer que le basename. */
+    private function looksLikePath(string $fieldName): bool
+    {
+        return str_contains($fieldName, 'private_key');
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────

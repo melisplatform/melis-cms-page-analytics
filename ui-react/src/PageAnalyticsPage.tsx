@@ -10,16 +10,21 @@ import {
 } from './ui'
 import { ExportModal, DownloadIcon } from './ExportModal'
 import { ViewToggle, type ViewMode } from './ViewToggle'
+import SettingsPanel from './SettingsPanel'
 
 /**
  * Outil Site Analytics (brique MelisCmsPageAnalytics).
  * En-tête PERSISTANT (titre + toggle New/Old) → le toggle reste toujours accessible.
- *  • « New » : table React native des visites par page (sélecteur de site, KPI, recherche,
- *    colonnes, export). Lecture seule, sans drill-down (fidèle au legacy).
- *  • « Old » : outil legacy complet en iframe — onglets « Analytics » + « Paramètres »
- *    (affectation du module analytics aux sites, config GA/JS). Non migré, géré en legacy.
+ *  • « New » : vue React native à DEUX onglets, miroir du legacy —
+ *      · « Analytics »  : table des visites par page (sélecteur de site, KPI, recherche,
+ *                         colonnes, export). Lecture seule, sans drill-down (fidèle au legacy).
+ *      · « Paramètres » : affectation d'un module analytics à un site + réglages du module
+ *                         + script JS personnalisé (cf. SettingsPanel).
+ *  • « Old » : le même outil legacy complet en iframe, pour comparaison.
  * Brique `persistent` : état + iframe préservés en changeant d'onglet outil.
  */
+
+type Tab = 'analytics' | 'settings'
 
 const MELIS_KEY = 'meliscms_page_analytics_display' // zone legacy rendable (vue « Old »)
 
@@ -31,11 +36,34 @@ function SortIcon({ dir }: { dir: 'asc' | 'desc' | null }) {
   return <svg {...p}><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4" /><path d="M7 4v16" /></svg>
 }
 
+/** Onglets natifs « Analytics » / « Paramètres » — même découpage que l'outil legacy. */
+function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
+  const t = useT()
+  const item = (id: Tab, text: string) => (
+    <button key={id} type="button" onClick={() => onChange(id)}
+      style={{
+        appearance: 'none', border: 0, background: 'transparent', cursor: 'pointer',
+        padding: '10px 4px', fontSize: 14, fontWeight: tab === id ? 600 : 500,
+        color: tab === id ? 'var(--color-foreground)' : 'var(--color-muted-foreground)',
+        borderBottom: `2px solid ${tab === id ? 'var(--color-primary)' : 'transparent'}`,
+      }}>{text}</button>
+  )
+  return (
+    <div style={{ display: 'flex', gap: 20, padding: '0 24px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
+      {item('analytics', t('tab_analytics'))}
+      {item('settings', t('tab_settings'))}
+    </div>
+  )
+}
+
 export default function PageAnalyticsPage() {
   const t = useT()
   const [mode, setMode] = useState<ViewMode>('react')
+  const [tab, setTab] = useState<Tab>('analytics')
   const [frameLoaded, setFrameLoaded] = useState(false)
   const [site, setSite] = useState(0) // 0 = tous les sites
+
+  const subtitle = mode === 'iframe' ? t('old_hint') : (tab === 'settings' ? t('set_subtitle') : t('subtitle'))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -43,14 +71,15 @@ export default function PageAnalyticsPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', padding: '20px 24px 12px', flexShrink: 0 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{t('title')}</h1>
-          <p style={{ fontSize: 14, color: 'var(--color-muted-foreground)', margin: '2px 0 0' }}>
-            {mode === 'iframe' ? t('old_hint') : t('subtitle')}
-          </p>
+          <p style={{ fontSize: 14, color: 'var(--color-muted-foreground)', margin: '2px 0 0' }}>{subtitle}</p>
         </div>
         <ViewToggle mode={mode} onChange={(m) => { setMode(m); if (m === 'iframe') setFrameLoaded(true) }} />
       </div>
 
-      {/* Corps : la table native OU l'outil legacy, tous deux remplissant l'espace restant */}
+      {/* Onglets natifs — uniquement en vue React (l'outil legacy a déjà les siens) */}
+      {mode === 'react' && <TabBar tab={tab} onChange={setTab} />}
+
+      {/* Corps : les vues natives OU l'outil legacy, tous remplissant l'espace restant */}
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         {frameLoaded && (
           <div style={{ position: 'absolute', inset: 0, display: mode === 'iframe' ? 'block' : 'none' }}>
@@ -58,9 +87,15 @@ export default function PageAnalyticsPage() {
               style={{ width: '100%', height: '100%', border: 0 }} title={`${t('title')} — Vue Melis`} />
           </div>
         )}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'auto', display: mode === 'react' ? 'block' : 'none' }}>
+        {/* La liste reste MONTÉE quand on passe aux paramètres (scroll infini + colonnes préservés). */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'auto', display: mode === 'react' && tab === 'analytics' ? 'block' : 'none' }}>
           <AnalyticsList site={site} onSite={setSite} />
         </div>
+        {mode === 'react' && tab === 'settings' && (
+          <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
+            <SettingsPanel />
+          </div>
+        )}
       </div>
     </div>
   )

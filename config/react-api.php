@@ -50,6 +50,20 @@ return [
                                     ],
                                 ],
                             ],
+                            // Onglet « Paramètres » (lecture) : modules analytics disponibles,
+                            // module affecté au site, schéma + valeurs du formulaire du module, JS custom.
+                            // L'écriture passe par l'action legacy .../MelisCmsPageAnalyticsTool/save.
+                            'page-analytics-settings' => [
+                                'type'    => 'Segment',
+                                'options' => [
+                                    'route'    => '/page-analytics/settings[/]',
+                                    'defaults' => [
+                                        '__NAMESPACE__' => 'MelisCmsPageAnalytics\Controller',
+                                        'controller'    => 'MelisReactApiPageAnalytics',
+                                        'action'        => 'settings',
+                                    ],
+                                ],
+                            ],
                             // Onglet Analytics de l'éditeur de page CMS (résumé des visites d'UNE page)
                             'cms-page-analytics' => [
                                 'type'    => 'Segment',
