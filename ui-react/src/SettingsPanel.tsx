@@ -4,6 +4,8 @@ import {
   type AnalyticsSettings, type SettingsField, type SiteOption,
 } from './page-analytics-api'
 import { useT, card, inputCss, btnPrimary } from './ui'
+import { FormErrorBanner, collectIssues, okNotify, koNotify } from './shared/melis-form-errors'
+import { useIsNarrow } from './shared/useIsNarrow'
 
 /**
  * Onglet « Paramètres » natif React de l'outil Site Analytics.
@@ -26,6 +28,7 @@ const errCss: CSSProperties = { fontSize: 12, color: 'var(--color-destructive,#d
 
 export default function SettingsPanel() {
   const t = useT()
+  const narrow = useIsNarrow()
   const [sites, setSites] = useState<SiteOption[]>([])
   const [site, setSite] = useState(0)
   const [state, setState] = useState<AnalyticsSettings | null>(null)
@@ -35,6 +38,9 @@ export default function SettingsPanel() {
   const [js, setJs] = useState('')
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  // Message d'en-tête de la bannière d'erreur (au sommet du formulaire) ; les champs fautifs sont
+  // listés dessous via `errors`. `flash` ne sert plus qu'au succès (message vert près du bouton).
+  const [formError, setFormError] = useState<string | null>(null)
   const [flash, setFlash] = useState<{ ok: boolean; msg: string } | null>(null)
 
   useEffect(() => { fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null) }, [])
@@ -51,6 +57,7 @@ export default function SettingsPanel() {
         setJs(s.jsAnalytics)
         setFiles({})
         setErrors({})
+        setFormError(null)
       })
       .catch(() => setState(null))
   }
@@ -60,6 +67,7 @@ export default function SettingsPanel() {
   const onModule = (key: string) => {
     setModuleKey(key)
     setErrors({})
+    setFormError(null)
     // Recharge le schéma + les valeurs STOCKÉES pour ce module (le legacy fait de même via
     // getSettingsForm quand on change le sélecteur).
     if (site && key) load(site, key)
@@ -77,6 +85,7 @@ export default function SettingsPanel() {
     if (!site || !moduleKey) return
     setSaving(true)
     setErrors({})
+    setFormError(null)
     setFlash(null)
 
     const fd = new FormData()
@@ -95,6 +104,7 @@ export default function SettingsPanel() {
       const r = await saveAnalyticsSettings(fd)
       if (r.success) {
         setFlash({ ok: true, msg: r.textMessage })
+        okNotify(t('set_save'), r.textMessage)
         load(site, moduleKey)
       } else {
         // `errors` legacy : { champ: { validateur: message, label?: … } } → 1 message par champ.
@@ -104,18 +114,32 @@ export default function SettingsPanel() {
           if (first) flat[name] = String(first[1])
         }
         setErrors(flat)
-        setFlash({ ok: false, msg: r.textMessage || t('set_error') })
+        setFormError(r.textMessage || t('set_check_fields'))
+        koNotify(t('set_error'), r.textMessage || '')
       }
     } catch {
-      setFlash({ ok: false, msg: t('set_error') })
+      setFormError(t('set_error'))
+      koNotify(t('set_error'))
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: 24, boxSizing: 'border-box', maxWidth: 760 }}>
-      <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 18, padding: 20 }}>
+    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: narrow ? 16 : 24, boxSizing: 'border-box', maxWidth: 760 }}>
+      <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: narrow ? 16 : 18, padding: narrow ? 14 : 20 }}>
+        {/* Bannière d'erreur unifiée : au sommet du formulaire, énonce le problème ET liste chaque
+            champ invalide (les champs restent aussi surlignés en rouge sous chacun via errCss). */}
+        {(formError || Object.keys(errors).length > 0) && (
+          <FormErrorBanner
+            title={formError ?? t('set_check_fields')}
+            issues={collectIssues(errors, {
+              pad_analytics_key: t('set_module'),
+              pads_js_analytics: t('set_js'),
+              ...Object.fromEntries(fields.map((f) => [f.name, f.label])),
+            })}
+          />
+        )}
         {/* Site */}
         <div>
           <label style={label} htmlFor="mcpa-site">{t('set_site')}</label>
@@ -189,8 +213,9 @@ export default function SettingsPanel() {
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button type="submit" style={{ ...btnPrimary, opacity: saving || !moduleKey ? 0.6 : 1 }} disabled={saving || !moduleKey}>
+            {/* Étroit : le bouton prend la ligne, le message de succès passe dessous. */}
+            <div style={{ display: 'flex', alignItems: narrow ? 'stretch' : 'center', flexDirection: narrow ? 'column' : 'row', gap: 12 }}>
+              <button type="submit" style={{ ...btnPrimary, ...(narrow ? { justifyContent: 'center' } : {}), opacity: saving || !moduleKey ? 0.6 : 1 }} disabled={saving || !moduleKey}>
                 {saving ? t('set_saving') : t('set_save')}
               </button>
               {/* Succès en VERT : --color-primary est le rouge Melis, un succès s'y lirait comme une erreur. */}

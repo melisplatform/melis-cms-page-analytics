@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useLayoutEffect, useState, type CSSProperties, type RefObject } from 'react'
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Briques partagées de l'outil Page Analytics (brique MelisCmsPageAnalytics) :
@@ -42,6 +42,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     set_file_legacy: 'L’envoi de fichier se fait ici comme dans l’outil classique.',
     set_current_file: 'Fichier actuel : {n}',
     set_error: 'Échec de l’enregistrement.',
+    set_check_fields: 'Veuillez vérifier les champs obligatoires.',
   },
   en: {
     title: 'Site analytics', subtitle: 'Visits per page (Melis built-in tracking)',
@@ -71,6 +72,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     set_file_legacy: 'File upload works here just like in the classic tool.',
     set_current_file: 'Current file: {n}',
     set_error: 'Save failed.',
+    set_check_fields: 'Please check the required fields.',
   },
 }
 export function useT() {
@@ -109,11 +111,13 @@ export const GripIcon = () => <svg style={{ width: 13, height: 13, flexShrink: 0
 export const ChartIcon = () => <svg style={{ width: 16, height: 16, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><rect x="7" y="10" width="3" height="7" /><rect x="12" y="6" width="3" height="11" /><rect x="17" y="13" width="3" height="4" /></svg>
 
 // ── KPI ──
-export function Kpi({ label: lbl, value }: { label: string; value: string | number | null }) {
+export function Kpi({ label: lbl, value, narrow = false }: { label: string; value: string | number | null; narrow?: boolean }) {
   return (
-    <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 2, padding: 16, flex: 1, minWidth: 140 }}>
+    // Étroit : 2 KPI par ligne (minWidth 140 forcerait sinon un débordement horizontal sur 360px).
+    <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 2, padding: narrow ? 12 : 16, ...(narrow ? { flex: '1 1 calc(50% - 6px)', minWidth: 0 } : { flex: 1, minWidth: 140 }) }}>
       <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{lbl}</span>
-      <span style={{ fontSize: 22, fontWeight: 700 }}>{value == null ? '…' : value}</span>
+      {/* « Dernière visite » est une date : à 2 KPI par ligne elle déborderait en 22px. */}
+      <span style={{ fontSize: narrow ? 16 : 22, fontWeight: 700, minWidth: 0, overflowWrap: 'break-word' }}>{value == null ? '…' : value}</span>
     </div>
   )
 }
@@ -139,15 +143,37 @@ export function makeColStore(key: string, defaults: ColDef[]) {
 const panelCss: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 2, minHeight: 130, maxHeight: 'min(48vh, 320px)', overflowY: 'auto', minWidth: 0, borderRadius: 8, border: '1px dashed var(--color-border)', padding: 6 }
 const panelTitle: CSSProperties = { padding: '0 6px 4px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--color-muted-foreground)' }
 
-export function ColManager({ cols, labelFor, onChange, onSave, defaults, onClose }: {
+export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaults, onClose }: {
+  anchorRef: RefObject<HTMLElement | null>
   cols: ColDef[]; labelFor: (id: string) => string; onChange: (c: ColDef[]) => void
   onSave: (c: ColDef[]) => void; defaults: ColDef[]; onClose: () => void
 }) {
   const t = useT()
   const [dragId, setDragId] = useState<string | null>(null)
   const [over, setOver] = useState<{ id: string; panel: 'visible' | 'hidden' } | null>(null)
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number } | null>(null)
   const shown = cols.filter((c) => c.visible)
   const hidden = cols.filter((c) => !c.visible)
+
+  // Alignement à droite sur le bouton PAR DÉFAUT, mais avec un `left` explicite CLAMPÉ : le bord
+  // droit de l'ancre n'est pas forcément celui du viewport (padding de page, bouton au milieu d'une
+  // ligne de boutons), donc un simple `right: 0` laissait le bord GAUCHE du panneau passer en
+  // négatif sur mobile → l'en-tête « Colonnes » se retrouvait rogné. No-op sur desktop.
+  useLayoutEffect(() => {
+    const anchor = anchorRef.current
+    if (!anchor) return
+    const rect = anchor.getBoundingClientRect()
+    const margin = 8
+    const spaceBelow = window.innerHeight - rect.bottom - margin
+    const spaceAbove = rect.top - margin
+    const width = Math.min(380, window.innerWidth - margin * 2)
+    const left = Math.min(Math.max(margin, rect.right - width), window.innerWidth - width - margin)
+    if (spaceBelow >= 200 || spaceBelow >= spaceAbove) {
+      setPos({ top: rect.bottom + 6, left, width, maxHeight: Math.max(160, spaceBelow - 6) })
+    } else {
+      setPos({ bottom: window.innerHeight - rect.top + 6, left, width, maxHeight: Math.max(160, spaceAbove - 6) })
+    }
+  }, [anchorRef])
 
   function drop(panel: 'visible' | 'hidden') {
     if (!dragId) return
@@ -177,8 +203,13 @@ export function ColManager({ cols, labelFor, onChange, onSave, defaults, onClose
     )
   }
 
+  if (!pos) return null
   return (
-    <div style={{ ...card, position: 'absolute', right: 0, top: '100%', marginTop: 6, zIndex: 50, width: 380, maxWidth: 'calc(100vw - 1rem)' }}>
+    <div style={{
+      ...card, position: 'fixed', left: pos.left, width: pos.width, zIndex: 50,
+      maxHeight: pos.maxHeight, overflowY: 'auto', display: 'flex', flexDirection: 'column',
+      ...(pos.top != null ? { top: pos.top } : { bottom: pos.bottom }),
+    }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderBottom: '1px solid var(--color-border)' }}>
         <span style={{ fontSize: 14, fontWeight: 600 }}>{t('columns')}</span>
         <button style={{ ...iconBtn, width: 22, height: 22 }} onClick={onClose}>✕</button>

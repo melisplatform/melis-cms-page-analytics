@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react'
+import { useIsNarrow } from './shared/useIsNarrow'
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Modale d'export partagée par les briques Melis (Redirections, Slider…).
@@ -64,6 +65,7 @@ export function ExportModal<T>({ cols, labelFor, fetchAll, getCell, filename, sh
   onClose: () => void
 }) {
   const xlsx = getXLSX()
+  const narrow = useIsNarrow()
   const [included, setIncluded] = useState<ExportCol[]>(() => cols.filter(c => c.visible))
   const [excluded, setExcluded] = useState<ExportCol[]>(() => cols.filter(c => !c.visible))
   const [format, setFormat] = useState<'csv' | 'xlsx'>(xlsx ? 'xlsx' : 'csv')
@@ -128,9 +130,9 @@ export function ExportModal<T>({ cols, labelFor, fetchAll, getCell, filename, sh
   const tab = (active: boolean): CSSProperties => ({ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 36, borderRadius: 6, border: 0, fontSize: 14, fontWeight: 500, cursor: 'pointer', background: active ? 'var(--color-card)' : 'transparent', color: active ? 'var(--color-foreground)' : 'var(--color-muted-foreground)', boxShadow: active ? '0 1px 2px rgba(0,0,0,.06)' : 'none' })
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)' }}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)', ...(narrow ? { padding: 12 } : {}) }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div style={{ ...card, width: '100%', maxWidth: 480 }}>
+      <div style={{ ...card, width: '100%', maxWidth: 480, ...(narrow ? { maxHeight: 'calc(100vh - 24px)', overflowY: 'auto', boxSizing: 'border-box' } : {}) }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>
           <div>
             <h2 style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{tr('title')}</h2>
@@ -143,7 +145,9 @@ export function ExportModal<T>({ cols, labelFor, fetchAll, getCell, filename, sh
             <button style={tab(format === 'xlsx')} disabled={!xlsx} onClick={() => xlsx && setFormat('xlsx')} title={xlsx ? '' : 'XLSX indisponible'}><ExcelIcon />Excel (.xlsx)</button>
             <button style={tab(format === 'csv')} onClick={() => setFormat('csv')}><CsvIcon />CSV (.csv)</button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {/* Étroit : panneaux empilés — côte à côte, chacun tombe sous ~140px et les libellés
+              de colonnes deviennent illisibles. */}
+          <div style={{ display: 'grid', gridTemplateColumns: narrow ? 'minmax(0, 1fr)' : '1fr 1fr', gap: 8 }}>
             <div style={panelCss}
               onDragOver={(e) => { e.preventDefault(); if (over?.id !== '__panel__' || over?.panel !== 'excluded') setOver({ id: '__panel__', panel: 'excluded' }) }}
               onDrop={(e) => { e.preventDefault(); drop('excluded') }}>

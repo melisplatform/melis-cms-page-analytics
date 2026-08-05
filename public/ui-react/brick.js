@@ -222,7 +222,8 @@
 			set_no_settings: "Ce module n’a pas de paramètre supplémentaire.",
 			set_file_legacy: "L’envoi de fichier se fait ici comme dans l’outil classique.",
 			set_current_file: "Fichier actuel : {n}",
-			set_error: "Échec de l’enregistrement."
+			set_error: "Échec de l’enregistrement.",
+			set_check_fields: "Veuillez vérifier les champs obligatoires."
 		},
 		en: {
 			title: "Site analytics",
@@ -279,7 +280,8 @@
 			set_no_settings: "This module has no additional parameter.",
 			set_file_legacy: "File upload works here just like in the classic tool.",
 			set_current_file: "Current file: {n}",
-			set_error: "Save failed."
+			set_error: "Save failed.",
+			set_check_fields: "Please check the required fields."
 		}
 	};
 	function useT() {
@@ -417,16 +419,21 @@
 			})
 		]
 	});
-	function Kpi({ label: lbl, value }) {
+	function Kpi({ label: lbl, value, narrow = false }) {
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				...card$1,
 				display: "flex",
 				flexDirection: "column",
 				gap: 2,
-				padding: 16,
-				flex: 1,
-				minWidth: 140
+				padding: narrow ? 12 : 16,
+				...narrow ? {
+					flex: "1 1 calc(50% - 6px)",
+					minWidth: 0
+				} : {
+					flex: 1,
+					minWidth: 140
+				}
 			},
 			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 				style: {
@@ -436,8 +443,10 @@
 				children: lbl
 			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 				style: {
-					fontSize: 22,
-					fontWeight: 700
+					fontSize: narrow ? 16 : 22,
+					fontWeight: 700,
+					minWidth: 0,
+					overflowWrap: "break-word"
 				},
 				children: value == null ? "…" : value
 			})]
@@ -494,12 +503,35 @@
 		letterSpacing: ".06em",
 		color: "var(--color-muted-foreground)"
 	};
-	function ColManager({ cols, labelFor, onChange, onSave, defaults, onClose }) {
+	function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaults, onClose }) {
 		const t = useT();
 		const [dragId, setDragId] = (0, react.useState)(null);
 		const [over, setOver] = (0, react.useState)(null);
+		const [pos, setPos] = (0, react.useState)(null);
 		const shown = cols.filter((c) => c.visible);
 		const hidden = cols.filter((c) => !c.visible);
+		(0, react.useLayoutEffect)(() => {
+			const anchor = anchorRef.current;
+			if (!anchor) return;
+			const rect = anchor.getBoundingClientRect();
+			const margin = 8;
+			const spaceBelow = window.innerHeight - rect.bottom - margin;
+			const spaceAbove = rect.top - margin;
+			const width = Math.min(380, window.innerWidth - margin * 2);
+			const left = Math.min(Math.max(margin, rect.right - width), window.innerWidth - width - margin);
+			if (spaceBelow >= 200 || spaceBelow >= spaceAbove) setPos({
+				top: rect.bottom + 6,
+				left,
+				width,
+				maxHeight: Math.max(160, spaceBelow - 6)
+			});
+			else setPos({
+				bottom: window.innerHeight - rect.top + 6,
+				left,
+				width,
+				maxHeight: Math.max(160, spaceAbove - 6)
+			});
+		}, [anchorRef]);
 		function drop(panel) {
 			if (!dragId) return;
 			const upd = {
@@ -579,16 +611,19 @@
 				})]
 			}, col.id);
 		}
+		if (!pos) return null;
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				...card$1,
-				position: "absolute",
-				right: 0,
-				top: "100%",
-				marginTop: 6,
+				position: "fixed",
+				left: pos.left,
+				width: pos.width,
 				zIndex: 50,
-				width: 380,
-				maxWidth: "calc(100vw - 1rem)"
+				maxHeight: pos.maxHeight,
+				overflowY: "auto",
+				display: "flex",
+				flexDirection: "column",
+				...pos.top != null ? { top: pos.top } : { bottom: pos.bottom }
 			},
 			children: [
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -705,6 +740,22 @@
 				})
 			]
 		});
+	}
+	//#endregion
+	//#region src/shared/useIsNarrow.ts
+	/**
+	* True when the viewport is narrower than `breakpoint`. Drives every responsive decision on
+	* this brick as a JS ternary (inline styles) instead of a CSS media query — see the
+	* `melis-react-mobile-responsive` skill for why.
+	*/
+	function useIsNarrow(breakpoint = 640) {
+		const [narrow, setNarrow] = (0, react.useState)(() => window.innerWidth < breakpoint);
+		(0, react.useEffect)(() => {
+			const onResize = () => setNarrow(window.innerWidth < breakpoint);
+			window.addEventListener("resize", onResize);
+			return () => window.removeEventListener("resize", onResize);
+		}, [breakpoint]);
+		return narrow;
 	}
 	//#endregion
 	//#region src/ExportModal.tsx
@@ -907,6 +958,7 @@
 	});
 	function ExportModal({ cols, labelFor, fetchAll, getCell, filename, sheetName, total, onClose }) {
 		const xlsx = getXLSX();
+		const narrow = useIsNarrow();
 		const [included, setIncluded] = (0, react.useState)(() => cols.filter((c) => c.visible));
 		const [excluded, setExcluded] = (0, react.useState)(() => cols.filter((c) => !c.visible));
 		const [format, setFormat] = (0, react.useState)(xlsx ? "xlsx" : "csv");
@@ -1050,7 +1102,8 @@
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
-				background: "rgba(0,0,0,.5)"
+				background: "rgba(0,0,0,.5)",
+				...narrow ? { padding: 12 } : {}
 			},
 			onClick: (e) => {
 				if (e.target === e.currentTarget) onClose();
@@ -1059,7 +1112,12 @@
 				style: {
 					...card,
 					width: "100%",
-					maxWidth: 480
+					maxWidth: 480,
+					...narrow ? {
+						maxHeight: "calc(100vh - 24px)",
+						overflowY: "auto",
+						boxSizing: "border-box"
+					} : {}
 				},
 				children: [
 					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -1126,7 +1184,7 @@
 						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							style: {
 								display: "grid",
-								gridTemplateColumns: "1fr 1fr",
+								gridTemplateColumns: narrow ? "minmax(0, 1fr)" : "1fr 1fr",
 								gap: 8
 							},
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -1195,13 +1253,13 @@
 	}
 	//#endregion
 	//#region src/ViewToggle.tsx
-	var sIcon = {
+	var sIcon$1 = {
 		width: 15,
 		height: 15,
 		flexShrink: 0
 	};
 	var SparkIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
-		style: sIcon,
+		style: sIcon$1,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -1211,7 +1269,7 @@
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" })
 	});
 	var LayoutIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
-		style: sIcon,
+		style: sIcon$1,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -1226,13 +1284,15 @@
 			rx: "2"
 		}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M3 9h18M9 21V9" })]
 	});
-	function ViewToggle({ mode, onChange }) {
+	/** `compact` (opt-in, défaut `false`) : icônes seules — pour les viewports étroits. Le toggle
+	*  n'est JAMAIS masqué, il est seulement resserré (cf. skill melis-react-mobile-responsive). */
+	function ViewToggle({ mode, onChange, compact = false }) {
 		const tab = (active) => ({
 			display: "inline-flex",
 			alignItems: "center",
 			gap: 6,
 			height: 30,
-			padding: "0 12px",
+			padding: compact ? "0 8px" : "0 12px",
 			borderRadius: 6,
 			border: 0,
 			fontSize: 12,
@@ -1254,12 +1314,159 @@
 			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				style: tab(mode === "react"),
 				onClick: () => onChange("react"),
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SparkIcon, {}), "New"]
+				title: compact ? "New" : void 0,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SparkIcon, {}), !compact && "New"]
 			}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				style: tab(mode === "iframe"),
 				onClick: () => onChange("iframe"),
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayoutIcon, {}), "Old"]
+				title: compact ? "Old" : void 0,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayoutIcon, {}), !compact && "Old"]
 			})]
+		});
+	}
+	//#endregion
+	//#region src/shared/melis-form-errors.tsx
+	function postNotif(kind, title, message, issues) {
+		try {
+			const fields = (issues ?? []).filter((i) => i && i.label).map((i) => ({
+				label: i.label,
+				messages: [i.message]
+			}));
+			window.postMessage({
+				__melisNotif: true,
+				kind,
+				title,
+				message,
+				fields
+			}, "*");
+		} catch {}
+	}
+	function okNotify(title, message = "") {
+		postNotif("ok", title, message);
+	}
+	/** Error toast. Pass `issues` to list offending fields inside the toast (host renders them). */
+	function koNotify(title, message = "", issues) {
+		postNotif("ko", title, message, issues);
+	}
+	function firstMessage(entry) {
+		if (entry == null) return "";
+		if (typeof entry === "string") return entry;
+		if (Array.isArray(entry)) return firstMessage(entry[0]);
+		if (typeof entry === "object") {
+			const hit = Object.entries(entry).find(([k]) => k !== "label" && k !== "form");
+			return hit ? firstMessage(hit[1]) : "";
+		}
+		return String(entry);
+	}
+	/**
+	* Normalise an error payload into FormIssue[]. Accepts:
+	*  - a plain string            → [{ message }]
+	*  - a string[]                → one issue each
+	*  - a FormIssue[]             → passthrough (already normalised)
+	*  - `{ field: "message" }`    → [{ label: field, message }]   (e.g. newsletter `errors`)
+	*  - MelisCore formatErrors    → `{ massd_text: { isEmpty: "…", label: "Input Label" } }`
+	*                                → [{ label: "Input Label", message: "…" }]
+	* The optional `labels` map renames a raw field key to a display label (server key → UI label).
+	*/
+	function collectIssues(input, labels = {}) {
+		if (input == null || input === "") return [];
+		if (typeof input === "string") return [{ message: input }];
+		if (Array.isArray(input)) return input.map((v) => typeof v === "string" ? { message: v } : v).filter((i) => i && (i.message || i.label));
+		if (typeof input === "object") {
+			const out = [];
+			for (const [field, entry] of Object.entries(input)) {
+				if (field === "label" || field === "form" || entry == null) continue;
+				const message = firstMessage(entry);
+				if (!message) continue;
+				const entryLabel = entry && typeof entry === "object" ? entry.label : void 0;
+				out.push({
+					label: labels[field] ?? entryLabel ?? field,
+					message
+				});
+			}
+			return out;
+		}
+		return [];
+	}
+	var box = {
+		border: "1px solid color-mix(in srgb, #ef4444 45%, var(--color-border,#e5e7eb))",
+		background: "color-mix(in srgb, #ef4444 10%, var(--color-card,#fff))",
+		color: "#dc2626",
+		borderRadius: 8,
+		padding: "10px 14px",
+		fontSize: 14,
+		lineHeight: 1.45
+	};
+	var listCss = {
+		margin: "6px 0 0",
+		padding: "0 0 0 18px",
+		display: "flex",
+		flexDirection: "column",
+		gap: 2
+	};
+	/**
+	* Standard form-error banner. Show it above a form/modal on a failed save/submit.
+	*  - `title`   headline (caller-provided → i18n stays with the caller). Defaults to a generic English
+	*              line; every real caller should pass its own translated string.
+	*  - `issues`  the missing/invalid fields to list. Pass anything `collectIssues` accepts OR a
+	*              ready FormIssue[]; a bare string is treated as a single message.
+	*  - `icon`    optional leading node (e.g. an alert glyph).
+	*  - `html`    when set, the caller vouches that `title` and each issue `message` carry TRUSTED
+	*              HTML (e.g. Melis service messages that embed `<b>path</b>`) → the markup is rendered
+	*              instead of escaped. Default false (safe text). Labels are our own i18n and are always
+	*              rendered as text. Only pass `html` for server/legacy messages you know are trusted —
+	*              it is a dangerouslySetInnerHTML sink; never enable it for free user input.
+	* When there are no issues and no title, renders nothing.
+	*/
+	function FormErrorBanner({ title, issues, icon, html, style }) {
+		const list = collectIssues(issues);
+		if (!title && list.length === 0) return null;
+		const headline = title ?? "Please check the required fields.";
+		const renderText = (value, s) => html ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+			style: s,
+			dangerouslySetInnerHTML: { __html: value }
+		}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+			style: s,
+			children: value
+		});
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+			role: "alert",
+			style: {
+				...box,
+				...style
+			},
+			children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				style: {
+					display: "flex",
+					alignItems: "flex-start",
+					gap: 8
+				},
+				children: [icon != null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					style: {
+						flexShrink: 0,
+						lineHeight: 1.4
+					},
+					children: icon
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						flex: 1,
+						minWidth: 0
+					},
+					children: [headline && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						style: { fontWeight: 600 },
+						children: renderText(headline)
+					}), list.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
+						style: listCss,
+						children: list.map((it, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("li", {
+							style: { fontSize: 13 },
+							children: [it.label && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+								style: { fontWeight: 600 },
+								children: [it.label, it.message ? " — " : ""]
+							}), it.message && renderText(it.message)]
+						}, i))
+					})]
+				})]
+			})
 		});
 	}
 	//#endregion
@@ -1296,6 +1503,7 @@
 	};
 	function SettingsPanel() {
 		const t = useT();
+		const narrow = useIsNarrow();
 		const [sites, setSites] = (0, react.useState)([]);
 		const [site, setSite] = (0, react.useState)(0);
 		const [state, setState] = (0, react.useState)(null);
@@ -1305,6 +1513,7 @@
 		const [js, setJs] = (0, react.useState)("");
 		const [saving, setSaving] = (0, react.useState)(false);
 		const [errors, setErrors] = (0, react.useState)({});
+		const [formError, setFormError] = (0, react.useState)(null);
 		const [flash, setFlash] = (0, react.useState)(null);
 		(0, react.useEffect)(() => {
 			fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null);
@@ -1321,6 +1530,7 @@
 				setJs(s.jsAnalytics);
 				setFiles({});
 				setErrors({});
+				setFormError(null);
 			}).catch(() => setState(null));
 		};
 		(0, react.useEffect)(() => {
@@ -1329,6 +1539,7 @@
 		const onModule = (key) => {
 			setModuleKey(key);
 			setErrors({});
+			setFormError(null);
 			if (site && key) load(site, key);
 		};
 		const selected = state?.modules.find((m) => m.key === moduleKey);
@@ -1339,6 +1550,7 @@
 			if (!site || !moduleKey) return;
 			setSaving(true);
 			setErrors({});
+			setFormError(null);
 			setFlash(null);
 			const fd = new FormData();
 			fd.append("pad_site_id", String(site));
@@ -1357,6 +1569,7 @@
 						ok: true,
 						msg: r.textMessage
 					});
+					okNotify(t("set_save"), r.textMessage);
 					load(site, moduleKey);
 				} else {
 					const flat = {};
@@ -1365,16 +1578,12 @@
 						if (first) flat[name] = String(first[1]);
 					}
 					setErrors(flat);
-					setFlash({
-						ok: false,
-						msg: r.textMessage || t("set_error")
-					});
+					setFormError(r.textMessage || t("set_check_fields"));
+					koNotify(t("set_error"), r.textMessage || "");
 				}
 			} catch {
-				setFlash({
-					ok: false,
-					msg: t("set_error")
-				});
+				setFormError(t("set_error"));
+				koNotify(t("set_error"));
 			} finally {
 				setSaving(false);
 			}
@@ -1385,7 +1594,7 @@
 				display: "flex",
 				flexDirection: "column",
 				gap: 20,
-				padding: 24,
+				padding: narrow ? 16 : 24,
 				boxSizing: "border-box",
 				maxWidth: 760
 			},
@@ -1394,10 +1603,18 @@
 					...card$1,
 					display: "flex",
 					flexDirection: "column",
-					gap: 18,
-					padding: 20
+					gap: narrow ? 16 : 18,
+					padding: narrow ? 14 : 20
 				},
 				children: [
+					(formError || Object.keys(errors).length > 0) && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(FormErrorBanner, {
+						title: formError ?? t("set_check_fields"),
+						issues: collectIssues(errors, {
+							pad_analytics_key: t("set_module"),
+							pads_js_analytics: t("set_js"),
+							...Object.fromEntries(fields.map((f) => [f.name, f.label]))
+						})
+					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
 						style: label,
 						htmlFor: "mcpa-site",
@@ -1555,13 +1772,15 @@
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							style: {
 								display: "flex",
-								alignItems: "center",
+								alignItems: narrow ? "stretch" : "center",
+								flexDirection: narrow ? "column" : "row",
 								gap: 12
 							},
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								type: "submit",
 								style: {
 									...btnPrimary$1,
+									...narrow ? { justifyContent: "center" } : {},
 									opacity: saving || !moduleKey ? .6 : 1
 								},
 								disabled: saving || !moduleKey,
@@ -1578,6 +1797,116 @@
 				]
 			})
 		});
+	}
+	//#endregion
+	//#region src/shared/ExpandableRow.tsx
+	/**
+	* Per-row "+" toggle (leftmost column of a table) that reveals the columns currently hidden
+	* via column collapse on narrow viewports — same visibility source as the desktop ColManager,
+	* just surfaced per-row. Pair with <HiddenColsRow>. Inline styles only — a brick can't use the
+	* host's Tailwind classes.
+	*/
+	var sIcon = {
+		width: 13,
+		height: 13,
+		flexShrink: 0
+	};
+	var PlusIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+		style: sIcon,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 5v14M5 12h14" })
+	});
+	var MinusIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+		style: sIcon,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M5 12h14" })
+	});
+	function ExpandToggle({ expanded, onClick }) {
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+			type: "button",
+			onClick,
+			"aria-expanded": expanded,
+			style: {
+				display: "inline-flex",
+				alignItems: "center",
+				justifyContent: "center",
+				width: 24,
+				height: 24,
+				borderRadius: 6,
+				border: "1px solid var(--color-border)",
+				background: "transparent",
+				color: "var(--color-muted-foreground)",
+				cursor: "pointer",
+				padding: 0
+			},
+			children: expanded ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MinusIcon, {}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon, {})
+		});
+	}
+	/**
+	* Detail row shown under an expanded row — one label/value pair per hidden column.
+	* Two columns side by side on desktop; a single stacked column on narrow viewports (a 2-col
+	* grid there fights for width against wrapped long values).
+	*/
+	function HiddenColsRow({ cols, labelFor, renderValue, colSpan, narrow }) {
+		const hidden = cols.filter((c) => !c.visible);
+		if (hidden.length === 0) return null;
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+			colSpan,
+			style: {
+				padding: "10px 16px",
+				borderTop: "1px solid var(--color-border)",
+				background: "var(--color-muted,rgba(0,0,0,.02))",
+				width: 0
+			},
+			children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				style: {
+					display: "grid",
+					gridTemplateColumns: !narrow && hidden.length > 1 ? "repeat(2, minmax(0, 1fr))" : "minmax(0, 1fr)",
+					columnGap: 24,
+					rowGap: 10
+				},
+				children: hidden.map((c) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						display: "grid",
+						gridTemplateColumns: "auto minmax(0, 1fr)",
+						alignItems: "baseline",
+						gap: 8,
+						fontSize: 13
+					},
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+						style: {
+							fontSize: 11,
+							fontWeight: 600,
+							textTransform: "uppercase",
+							letterSpacing: ".04em",
+							color: "var(--color-muted-foreground)"
+						},
+						children: [labelFor(c.id), ":"]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						style: {
+							minWidth: 0,
+							maxWidth: 220,
+							overflowWrap: "break-word",
+							display: "-webkit-box",
+							WebkitLineClamp: 2,
+							WebkitBoxOrient: "vertical",
+							overflow: "hidden"
+						},
+						children: renderValue(c.id)
+					})]
+				}, c.id))
+			})
+		}) });
 	}
 	//#endregion
 	//#region src/PageAnalyticsPage.tsx
@@ -1617,7 +1946,7 @@
 		});
 	}
 	/** Onglets natifs « Analytics » / « Paramètres » — même découpage que l'outil legacy. */
-	function TabBar({ tab, onChange }) {
+	function TabBar({ tab, onChange, narrow }) {
 		const t = useT();
 		const item = (id, text) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 			type: "button",
@@ -1638,8 +1967,9 @@
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				display: "flex",
-				gap: 20,
-				padding: "0 24px",
+				gap: narrow ? 16 : 20,
+				flexWrap: narrow ? "wrap" : "nowrap",
+				padding: narrow ? "0 16px" : "0 24px",
 				borderBottom: "1px solid var(--color-border)",
 				flexShrink: 0
 			},
@@ -1648,6 +1978,7 @@
 	}
 	function PageAnalyticsPage() {
 		const t = useT();
+		const narrow = useIsNarrow();
 		const [mode, setMode] = (0, react.useState)("react");
 		const [tab, setTab] = (0, react.useState)("analytics");
 		const [frameLoaded, setFrameLoaded] = (0, react.useState)(false);
@@ -1665,36 +1996,54 @@
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "space-between",
-						gap: 16,
-						flexWrap: "wrap",
-						padding: "20px 24px 12px",
+						gap: narrow ? 8 : 16,
+						flexWrap: narrow ? "nowrap" : "wrap",
+						padding: narrow ? "16px 16px 10px" : "20px 24px 12px",
 						flexShrink: 0
 					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", {
-						style: {
-							fontSize: 20,
-							fontWeight: 700,
-							margin: 0
-						},
-						children: t("title")
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-						style: {
-							fontSize: 14,
-							color: "var(--color-muted-foreground)",
-							margin: "2px 0 0"
-						},
-						children: subtitle
-					})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViewToggle, {
-						mode,
-						onChange: (m) => {
-							setMode(m);
-							if (m === "iframe") setFrameLoaded(true);
-						}
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						style: narrow ? { minWidth: 0 } : void 0,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", {
+							style: {
+								fontSize: narrow ? 17 : 20,
+								fontWeight: 700,
+								margin: 0,
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
+							},
+							children: t("title")
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							style: {
+								fontSize: narrow ? 12 : 14,
+								color: "var(--color-muted-foreground)",
+								margin: "2px 0 0",
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
+							},
+							children: subtitle
+						})]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						style: { flexShrink: 0 },
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViewToggle, {
+							mode,
+							compact: narrow,
+							onChange: (m) => {
+								setMode(m);
+								if (m === "iframe") setFrameLoaded(true);
+							}
+						})
 					})]
 				}),
 				mode === "react" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TabBar, {
 					tab,
-					onChange: setTab
+					onChange: setTab,
+					narrow
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
@@ -1728,7 +2077,8 @@
 							},
 							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AnalyticsList, {
 								site,
-								onSite: setSite
+								onSite: setSite,
+								narrow
 							})
 						}),
 						mode === "react" && tab === "settings" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -1768,7 +2118,11 @@
 			visible: true
 		}
 	]);
-	function AnalyticsList({ site, onSite }) {
+	/** Colonnes conservées sur viewport étroit ; les autres passent dans la ligne dépliable « + ».
+	*  Pas de colonne d'actions ici → deux essentielles tiennent (la page ET son nombre de visites,
+	*  sinon la table ne dit plus rien). */
+	var ESSENTIAL_COLS = new Set(["pageName", "count"]);
+	function AnalyticsList({ site, onSite, narrow }) {
 		const t = useT();
 		const lang = currentLang$1();
 		const [stats, setStats] = (0, react.useState)(null);
@@ -1778,6 +2132,14 @@
 		const [showCols, setShowCols] = (0, react.useState)(false);
 		const [showExport, setShowExport] = (0, react.useState)(false);
 		const [tick, setTick] = (0, react.useState)(0);
+		const [expanded, setExpanded] = (0, react.useState)(() => /* @__PURE__ */ new Set());
+		const colsAnchorRef = (0, react.useRef)(null);
+		const displayCols = narrow ? cols.map((c) => ({
+			...c,
+			visible: ESSENTIAL_COLS.has(c.id)
+		})) : cols;
+		const hasHidden = narrow;
+		const shownCols = visibleCols(displayCols);
 		const { items, total, loading, hasMore, sentinelRef, sortCol, sortDir, toggleSort } = useKeysetList({
 			fetcher: (a) => fetchAnalytics({
 				search,
@@ -1843,8 +2205,8 @@
 			style: {
 				display: "flex",
 				flexDirection: "column",
-				gap: 20,
-				padding: 24,
+				gap: narrow ? 16 : 20,
+				padding: narrow ? 16 : 24,
 				boxSizing: "border-box"
 			},
 			children: [
@@ -1857,19 +2219,23 @@
 					children: [
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Kpi, {
 							label: t("kpi_hits"),
-							value: stats?.hits ?? null
+							value: stats?.hits ?? null,
+							narrow
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Kpi, {
 							label: t("kpi_pages"),
-							value: stats?.pages ?? null
+							value: stats?.pages ?? null,
+							narrow
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Kpi, {
 							label: t("kpi_sites"),
-							value: stats?.sites ?? null
+							value: stats?.sites ?? null,
+							narrow
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Kpi, {
 							label: t("kpi_last"),
-							value: stats ? fmtDate(stats.lastVisit, lang) : null
+							value: stats ? fmtDate(stats.lastVisit, lang) : null,
+							narrow
 						})
 					]
 				}),
@@ -1885,8 +2251,10 @@
 							style: {
 								...inputCss,
 								height: 36,
-								width: "auto",
-								minWidth: 180
+								...narrow ? { width: "100%" } : {
+									width: "auto",
+									minWidth: 180
+								}
 							},
 							value: site,
 							onChange: (e) => onSite(Number(e.target.value)),
@@ -1907,47 +2275,77 @@
 							style: {
 								...inputCss,
 								height: 36,
-								flex: 1,
-								minWidth: 200
+								...narrow ? { width: "100%" } : {
+									flex: 1,
+									minWidth: 200
+								}
 							},
 							value: search,
 							onChange: (e) => setSearch(e.target.value),
 							placeholder: t("search")
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							style: { position: "relative" },
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-								style: {
-									...btnGhost$1,
-									height: 36
-								},
-								onClick: () => setShowCols((v) => !v),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
-							}), showCols && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColManager, {
-								cols,
-								labelFor: (id) => t(COL_LABEL[id]),
-								onChange: setCols,
-								onSave: colStore.save,
-								defaults: colStore.defaults,
-								onClose: () => setShowCols(false)
-							})]
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 							style: {
-								...btnGhost$1,
-								height: 36
+								display: "flex",
+								gap: 8,
+								alignItems: "center",
+								...narrow ? { width: "100%" } : {}
 							},
-							onClick: () => setShowExport(true),
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(DownloadIcon, {}), t("export")]
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							style: {
-								...btnGhost$1,
-								height: 36
-							},
-							onClick: () => setTick((x) => x + 1),
-							title: t("refresh"),
-							children: "↻"
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									ref: colsAnchorRef,
+									style: {
+										position: "relative",
+										...narrow ? {
+											flex: "1 1 0",
+											minWidth: 0
+										} : {}
+									},
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+										style: {
+											...btnGhost$1,
+											height: 36,
+											...narrow ? {
+												width: "100%",
+												justifyContent: "center"
+											} : {}
+										},
+										onClick: () => setShowCols((v) => !v),
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
+									}), showCols && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColManager, {
+										anchorRef: colsAnchorRef,
+										cols,
+										labelFor: (id) => t(COL_LABEL[id]),
+										onChange: setCols,
+										onSave: colStore.save,
+										defaults: colStore.defaults,
+										onClose: () => setShowCols(false)
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+									style: {
+										...btnGhost$1,
+										height: 36,
+										...narrow ? {
+											flex: "1 1 0",
+											minWidth: 0,
+											justifyContent: "center"
+										} : {}
+									},
+									onClick: () => setShowExport(true),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(DownloadIcon, {}), t("export")]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									style: {
+										...btnGhost$1,
+										height: 36,
+										flexShrink: 0
+									},
+									onClick: () => setTick((x) => x + 1),
+									title: t("refresh"),
+									children: "↻"
+								})
+							]
 						})
 					]
 				}),
@@ -1961,11 +2359,15 @@
 							style: {
 								width: "100%",
 								borderCollapse: "collapse",
-								minWidth: 560
+								...narrow ? {} : { minWidth: 560 }
 							},
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
 								style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
+									...th,
+									width: 40,
+									padding: "10px 8px 10px 12px"
+								} }), shownCols.map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
 									style: {
 										...th,
 										cursor: "pointer",
@@ -1980,7 +2382,7 @@
 										},
 										children: [t(COL_LABEL[id]), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SortIcon, { dir: sortCol === id ? sortDir : null })]
 									})
-								}, id)) })
+								}, id))] })
 							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: items.length === 0 && !loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
 								style: {
 									...td,
@@ -1988,9 +2390,23 @@
 									color: "var(--color-muted-foreground)",
 									padding: "40px 16px"
 								},
-								colSpan: visibleCols(cols).length,
+								colSpan: shownCols.length + (hasHidden ? 1 : 0),
 								children: t("empty")
-							}) }) : items.map((r) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+							}) }) : items.map((r) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+								style: {
+									...td,
+									width: 40,
+									padding: "10px 8px 10px 12px"
+								},
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ExpandToggle, {
+									expanded: expanded.has(r.pageId),
+									onClick: () => setExpanded((prev) => {
+										const next = new Set(prev);
+										if (!next.delete(r.pageId)) next.add(r.pageId);
+										return next;
+									})
+								})
+							}), shownCols.map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
 								style: {
 									...td,
 									...id === "pageId" || id === "count" ? {
@@ -2005,7 +2421,19 @@
 									},
 									children: t("deleted")
 								}) : cell(r, id)
-							}, id)) }, r.pageId)) })]
+							}, id))] }), hasHidden && expanded.has(r.pageId) && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(HiddenColsRow, {
+								cols: displayCols,
+								labelFor: (id) => t(COL_LABEL[id]),
+								narrow,
+								colSpan: shownCols.length + 1,
+								renderValue: (id) => id === "pageName" && !r.pageName ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									style: {
+										fontStyle: "italic",
+										color: "var(--color-muted-foreground)"
+									},
+									children: t("deleted")
+								}) : cell(r, id)
+							})] }, r.pageId)) })]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 							ref: sentinelRef,

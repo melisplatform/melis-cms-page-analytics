@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import {
   fetchAnalytics, fetchAnalyticsStats, fetchAnalyticsSites,
   type AnalyticsRow, type AnalyticsStats, type SiteOption,
@@ -11,6 +11,8 @@ import {
 import { ExportModal, DownloadIcon } from './ExportModal'
 import { ViewToggle, type ViewMode } from './ViewToggle'
 import SettingsPanel from './SettingsPanel'
+import { useIsNarrow } from './shared/useIsNarrow'
+import { ExpandToggle, HiddenColsRow } from './shared/ExpandableRow'
 
 /**
  * Outil Site Analytics (brique MelisCmsPageAnalytics).
@@ -37,7 +39,7 @@ function SortIcon({ dir }: { dir: 'asc' | 'desc' | null }) {
 }
 
 /** Onglets natifs « Analytics » / « Paramètres » — même découpage que l'outil legacy. */
-function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
+function TabBar({ tab, onChange, narrow }: { tab: Tab; onChange: (t: Tab) => void; narrow: boolean }) {
   const t = useT()
   const item = (id: Tab, text: string) => (
     <button key={id} type="button" onClick={() => onChange(id)}
@@ -49,7 +51,7 @@ function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
       }}>{text}</button>
   )
   return (
-    <div style={{ display: 'flex', gap: 20, padding: '0 24px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
+    <div style={{ display: 'flex', gap: narrow ? 16 : 20, flexWrap: narrow ? 'wrap' : 'nowrap', padding: narrow ? '0 16px' : '0 24px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
       {item('analytics', t('tab_analytics'))}
       {item('settings', t('tab_settings'))}
     </div>
@@ -58,6 +60,7 @@ function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
 
 export default function PageAnalyticsPage() {
   const t = useT()
+  const narrow = useIsNarrow()
   const [mode, setMode] = useState<ViewMode>('react')
   const [tab, setTab] = useState<Tab>('analytics')
   const [frameLoaded, setFrameLoaded] = useState(false)
@@ -68,16 +71,20 @@ export default function PageAnalyticsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* En-tête PERSISTANT (titre + toggle) — visible dans les deux modes */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', padding: '20px 24px 12px', flexShrink: 0 }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{t('title')}</h1>
-          <p style={{ fontSize: 14, color: 'var(--color-muted-foreground)', margin: '2px 0 0' }}>{subtitle}</p>
+      {/* Étroit : titre + toggle restent sur UNE ligne (le titre rétrécit via minWidth 0), plutôt
+          que d'empiler deux barres pleine largeur — le toggle passe en mode `compact` (icônes). */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: narrow ? 8 : 16, flexWrap: narrow ? 'nowrap' : 'wrap', padding: narrow ? '16px 16px 10px' : '20px 24px 12px', flexShrink: 0 }}>
+        <div style={narrow ? { minWidth: 0 } : undefined}>
+          <h1 style={{ fontSize: narrow ? 17 : 20, fontWeight: 700, margin: 0, ...(narrow ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}) }}>{t('title')}</h1>
+          <p style={{ fontSize: narrow ? 12 : 14, color: 'var(--color-muted-foreground)', margin: '2px 0 0', ...(narrow ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}) }}>{subtitle}</p>
         </div>
-        <ViewToggle mode={mode} onChange={(m) => { setMode(m); if (m === 'iframe') setFrameLoaded(true) }} />
+        <div style={{ flexShrink: 0 }}>
+          <ViewToggle mode={mode} compact={narrow} onChange={(m) => { setMode(m); if (m === 'iframe') setFrameLoaded(true) }} />
+        </div>
       </div>
 
       {/* Onglets natifs — uniquement en vue React (l'outil legacy a déjà les siens) */}
-      {mode === 'react' && <TabBar tab={tab} onChange={setTab} />}
+      {mode === 'react' && <TabBar tab={tab} onChange={setTab} narrow={narrow} />}
 
       {/* Corps : les vues natives OU l'outil legacy, tous remplissant l'espace restant */}
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
@@ -89,7 +96,7 @@ export default function PageAnalyticsPage() {
         )}
         {/* La liste reste MONTÉE quand on passe aux paramètres (scroll infini + colonnes préservés). */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'auto', display: mode === 'react' && tab === 'analytics' ? 'block' : 'none' }}>
-          <AnalyticsList site={site} onSite={setSite} />
+          <AnalyticsList site={site} onSite={setSite} narrow={narrow} />
         </div>
         {mode === 'react' && tab === 'settings' && (
           <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
@@ -110,8 +117,12 @@ const DEFAULT_COLS: ColDef[] = [
   { id: 'count', visible: true }, { id: 'lastVisit', visible: true },
 ]
 const colStore = makeColStore('melis-page-analytics-cols-v1', DEFAULT_COLS)
+/** Colonnes conservées sur viewport étroit ; les autres passent dans la ligne dépliable « + ».
+ *  Pas de colonne d'actions ici → deux essentielles tiennent (la page ET son nombre de visites,
+ *  sinon la table ne dit plus rien). */
+const ESSENTIAL_COLS = new Set(['pageName', 'count'])
 
-function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) => void }) {
+function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: number) => void; narrow: boolean }) {
   const t = useT()
   const lang = currentLang()
   const [stats, setStats] = useState<AnalyticsStats | null>(null)
@@ -121,6 +132,16 @@ function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) =>
   const [showCols, setShowCols] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [tick, setTick] = useState(0)
+  const [expanded, setExpanded] = useState<Set<number>>(() => new Set())
+  const colsAnchorRef = useRef<HTMLDivElement>(null)
+
+  // Repli des colonnes non essentielles sur viewport étroit — écrase la préférence desktop de
+  // l'utilisateur SANS la modifier (`cols` reste la source persistée, `displayCols` est dérivé).
+  const displayCols = narrow ? cols.map((c) => ({ ...c, visible: ESSENTIAL_COLS.has(c.id) })) : cols
+  // Le « + » n'apparaît QUE sur viewport étroit : le lier aux colonnes masquées par l'utilisateur
+  // ferait surgir une colonne inédite sur desktop pour qui a masqué une colonne lui-même.
+  const hasHidden = narrow
+  const shownCols = visibleCols(displayCols)
 
   // Liste keyset (scroll infini + tri server-side). Recherche = filtre SERVER-SIDE (buildWhere),
   // capturée par la closure `fetcher` + déclencheur de rechargement via `deps`.
@@ -161,37 +182,43 @@ function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) =>
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: 24, boxSizing: 'border-box' }}>
-      {/* KPI */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 16 : 20, padding: narrow ? 16 : 24, boxSizing: 'border-box' }}>
+      {/* KPI — 2 par ligne sur viewport étroit (cf. flag `narrow` du composant Kpi) */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <Kpi label={t('kpi_hits')} value={stats?.hits ?? null} />
-        <Kpi label={t('kpi_pages')} value={stats?.pages ?? null} />
-        <Kpi label={t('kpi_sites')} value={stats?.sites ?? null} />
-        <Kpi label={t('kpi_last')} value={stats ? fmtDate(stats.lastVisit, lang) : null} />
+        <Kpi label={t('kpi_hits')} value={stats?.hits ?? null} narrow={narrow} />
+        <Kpi label={t('kpi_pages')} value={stats?.pages ?? null} narrow={narrow} />
+        <Kpi label={t('kpi_sites')} value={stats?.sites ?? null} narrow={narrow} />
+        <Kpi label={t('kpi_last')} value={stats ? fmtDate(stats.lastVisit, lang) : null} narrow={narrow} />
       </div>
 
-      {/* Barre d'outils : site + recherche + colonnes + export + refresh */}
+      {/* Barre d'outils : site + recherche + colonnes + export + refresh.
+          Étroit : sélecteur et recherche pleine largeur, puis les 3 boutons sur une ligne
+          (Colonnes/Exporter se partagent la place, le refresh garde sa largeur d'icône). */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <select style={{ ...inputCss, height: 36, width: 'auto', minWidth: 180 }} value={site} onChange={(e) => onSite(Number(e.target.value))}>
+        <select style={{ ...inputCss, height: 36, ...(narrow ? { width: '100%' } : { width: 'auto', minWidth: 180 }) }} value={site} onChange={(e) => onSite(Number(e.target.value))}>
           <option value={0}>{t('site_all')}</option>
           {sites.map((s) => <option key={s.id} value={s.id}>{s.name} (#{s.id})</option>)}
         </select>
-        <input style={{ ...inputCss, height: 36, flex: 1, minWidth: 200 }} value={search}
+        <input style={{ ...inputCss, height: 36, ...(narrow ? { width: '100%' } : { flex: 1, minWidth: 200 }) }} value={search}
           onChange={(e) => setSearch(e.target.value)} placeholder={t('search')} />
-        <div style={{ position: 'relative' }}>
-          <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowCols((v) => !v)}><GripIcon />{t('columns')}</button>
-          {showCols && <ColManager cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', ...(narrow ? { width: '100%' } : {}) }}>
+          <div ref={colsAnchorRef} style={{ position: 'relative', ...(narrow ? { flex: '1 1 0', minWidth: 0 } : {}) }}>
+            <button style={{ ...btnGhost, height: 36, ...(narrow ? { width: '100%', justifyContent: 'center' } : {}) }} onClick={() => setShowCols((v) => !v)}><GripIcon />{t('columns')}</button>
+            {showCols && <ColManager anchorRef={colsAnchorRef} cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
+          </div>
+          <button style={{ ...btnGhost, height: 36, ...(narrow ? { flex: '1 1 0', minWidth: 0, justifyContent: 'center' } : {}) }} onClick={() => setShowExport(true)}><DownloadIcon />{t('export')}</button>
+          <button style={{ ...btnGhost, height: 36, flexShrink: 0 }} onClick={() => setTick((x) => x + 1)} title={t('refresh')}>↻</button>
         </div>
-        <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowExport(true)}><DownloadIcon />{t('export')}</button>
-        <button style={{ ...btnGhost, height: 36 }} onClick={() => setTick((x) => x + 1)} title={t('refresh')}>↻</button>
       </div>
 
       {/* Table */}
       <div style={{ ...card, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
+        {/* Étroit : on retire le minWidth, sinon le repli des colonnes ne sert à rien (scroll H). */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', ...(narrow ? {} : { minWidth: 560 }) }}>
           <thead style={{ background: 'var(--color-muted,rgba(0,0,0,.03))' }}>
             <tr>
-              {visibleCols(cols).map(({ id }) => (
+              {hasHidden && <th style={{ ...th, width: 40, padding: '10px 8px 10px 12px' }} />}
+              {shownCols.map(({ id }) => (
                 <th key={id} style={{ ...th, cursor: 'pointer', ...(sortCol === id ? { color: 'var(--color-primary)' } : {}) }} onClick={() => toggleSort(id)}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{t(COL_LABEL[id])}<SortIcon dir={sortCol === id ? sortDir : null} /></span>
                 </th>
@@ -200,17 +227,37 @@ function AnalyticsList({ site, onSite }: { site: number; onSite: (id: number) =>
           </thead>
           <tbody>
             {items.length === 0 && !loading ? (
-              <tr><td style={{ ...td, textAlign: 'center', color: 'var(--color-muted-foreground)', padding: '40px 16px' }} colSpan={visibleCols(cols).length}>{t('empty')}</td></tr>
+              <tr><td style={{ ...td, textAlign: 'center', color: 'var(--color-muted-foreground)', padding: '40px 16px' }} colSpan={shownCols.length + (hasHidden ? 1 : 0)}>{t('empty')}</td></tr>
             ) : items.map((r) => (
-              <tr key={r.pageId}>
-                {visibleCols(cols).map(({ id }) => (
-                  <td key={id} style={{ ...td, ...(id === 'pageId' || id === 'count' ? { color: 'var(--color-muted-foreground)', fontVariantNumeric: 'tabular-nums' } : {}) }}>
-                    {id === 'pageName' && !r.pageName
+              <Fragment key={r.pageId}>
+                <tr>
+                  {/* Bascule « + » en colonne la PLUS À GAUCHE : c'est là qu'elle se lit comme
+                      « déplier cette ligne » (noyée à droite, personne ne la trouve). */}
+                  {hasHidden && (
+                    <td style={{ ...td, width: 40, padding: '10px 8px 10px 12px' }}>
+                      <ExpandToggle expanded={expanded.has(r.pageId)} onClick={() => setExpanded((prev) => {
+                        const next = new Set(prev)
+                        if (!next.delete(r.pageId)) next.add(r.pageId)
+                        return next
+                      })} />
+                    </td>
+                  )}
+                  {shownCols.map(({ id }) => (
+                    <td key={id} style={{ ...td, ...(id === 'pageId' || id === 'count' ? { color: 'var(--color-muted-foreground)', fontVariantNumeric: 'tabular-nums' } : {}) }}>
+                      {id === 'pageName' && !r.pageName
+                        ? <span style={{ fontStyle: 'italic', color: 'var(--color-muted-foreground)' }}>{t('deleted')}</span>
+                        : cell(r, id)}
+                    </td>
+                  ))}
+                </tr>
+                {hasHidden && expanded.has(r.pageId) && (
+                  <HiddenColsRow cols={displayCols} labelFor={(id) => t(COL_LABEL[id])} narrow={narrow}
+                    colSpan={shownCols.length + 1}
+                    renderValue={(id) => (id === 'pageName' && !r.pageName
                       ? <span style={{ fontStyle: 'italic', color: 'var(--color-muted-foreground)' }}>{t('deleted')}</span>
-                      : cell(r, id)}
-                  </td>
-                ))}
-              </tr>
+                      : cell(r, id))} />
+                )}
+              </Fragment>
             ))}
           </tbody>
         </table>
