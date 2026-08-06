@@ -7,6 +7,7 @@ import { useKeysetList } from './use-keyset-list'
 import {
   useT, currentLang, fmtDate, card, inputCss, btnGhost, th, td,
   Kpi, GripIcon, ColManager, makeColStore, visibleCols, type ColDef,
+  IconEye, IconFileText, IconGlobe, IconClock,
 } from './ui'
 import { ExportModal, DownloadIcon } from './ExportModal'
 import { ViewToggle, type ViewMode } from './ViewToggle'
@@ -79,7 +80,7 @@ export default function PageAnalyticsPage() {
           <p style={{ fontSize: narrow ? 12 : 14, color: 'var(--color-muted-foreground)', margin: '2px 0 0', ...(narrow ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}) }}>{subtitle}</p>
         </div>
         <div style={{ flexShrink: 0 }}>
-          <ViewToggle mode={mode} compact={narrow} onChange={(m) => { setMode(m); if (m === 'iframe') setFrameLoaded(true) }} />
+          <ViewToggle mode={mode} compact={narrow} onChange={(m) => { setMode(m); if (m === 'iframe') setFrameLoaded(true) }} labels={{ react: t('view_new'), iframe: t('view_old') }} />
         </div>
       </div>
 
@@ -117,10 +118,6 @@ const DEFAULT_COLS: ColDef[] = [
   { id: 'count', visible: true }, { id: 'lastVisit', visible: true },
 ]
 const colStore = makeColStore('melis-page-analytics-cols-v1', DEFAULT_COLS)
-/** Colonnes conservées sur viewport étroit ; les autres passent dans la ligne dépliable « + ».
- *  Pas de colonne d'actions ici → deux essentielles tiennent (la page ET son nombre de visites,
- *  sinon la table ne dit plus rien). */
-const ESSENTIAL_COLS = new Set(['pageName', 'count'])
 
 function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: number) => void; narrow: boolean }) {
   const t = useT()
@@ -135,12 +132,13 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
   const [expanded, setExpanded] = useState<Set<number>>(() => new Set())
   const colsAnchorRef = useRef<HTMLDivElement>(null)
 
-  // Repli des colonnes non essentielles sur viewport étroit — écrase la préférence desktop de
-  // l'utilisateur SANS la modifier (`cols` reste la source persistée, `displayCols` est dérivé).
-  const displayCols = narrow ? cols.map((c) => ({ ...c, visible: ESSENTIAL_COLS.has(c.id) })) : cols
-  // Le « + » n'apparaît QUE sur viewport étroit : le lier aux colonnes masquées par l'utilisateur
-  // ferait surgir une colonne inédite sur desktop pour qui a masqué une colonne lui-même.
-  const hasHidden = narrow
+  // A Hidden column disappears entirely on both desktop and mobile — same rule everywhere, no "+"
+  // peek at Hidden ones. Desktop shows every Visible column inline. Mobile can't fit many columns,
+  // so only the FIRST Visible column (by the user's dragged order in ColManager) anchors inline;
+  // every OTHER Visible column surfaces behind the per-row "+" instead, in that same order.
+  const shownColsList = cols.filter((c) => c.visible)
+  const displayCols = narrow ? shownColsList.map((c, i) => ({ ...c, visible: i === 0 })) : shownColsList
+  const hasHidden = narrow && shownColsList.length > 1
   const shownCols = visibleCols(displayCols)
 
   // Liste keyset (scroll infini + tri server-side). Recherche = filtre SERVER-SIDE (buildWhere),
@@ -185,10 +183,10 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
     <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 16 : 20, padding: narrow ? 16 : 24, boxSizing: 'border-box' }}>
       {/* KPI — 2 par ligne sur viewport étroit (cf. flag `narrow` du composant Kpi) */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <Kpi label={t('kpi_hits')} value={stats?.hits ?? null} narrow={narrow} />
-        <Kpi label={t('kpi_pages')} value={stats?.pages ?? null} narrow={narrow} />
-        <Kpi label={t('kpi_sites')} value={stats?.sites ?? null} narrow={narrow} />
-        <Kpi label={t('kpi_last')} value={stats ? fmtDate(stats.lastVisit, lang) : null} narrow={narrow} />
+        <Kpi label={t('kpi_hits')} value={stats?.hits ?? null} narrow={narrow} icon={<IconEye />} tint="#2563eb" />
+        <Kpi label={t('kpi_pages')} value={stats?.pages ?? null} narrow={narrow} icon={<IconFileText />} tint="var(--color-primary)" />
+        <Kpi label={t('kpi_sites')} value={stats?.sites ?? null} narrow={narrow} icon={<IconGlobe />} tint="#7c3aed" />
+        <Kpi label={t('kpi_last')} value={stats ? fmtDate(stats.lastVisit, lang) : null} narrow={narrow} icon={<IconClock />} tint="#d97706" />
       </div>
 
       {/* Barre d'outils : site + recherche + colonnes + export + refresh.
