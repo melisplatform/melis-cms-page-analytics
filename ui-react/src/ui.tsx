@@ -1,4 +1,5 @@
-import { useLayoutEffect, useState, type CSSProperties, type RefObject } from 'react'
+import { useLayoutEffect, useState, type CSSProperties, type ReactNode, type RefObject } from 'react'
+import { useDragReorder } from './shared/use-drag-reorder'
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Briques partagées de l'outil Page Analytics (brique MelisCmsPageAnalytics) :
@@ -43,6 +44,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     set_current_file: 'Fichier actuel : {n}',
     set_error: 'Échec de l’enregistrement.',
     set_check_fields: 'Veuillez vérifier les champs obligatoires.',
+    view_new: 'Nouveau', view_old: 'Ancien',
   },
   en: {
     title: 'Site analytics', subtitle: 'Visits per page (Melis built-in tracking)',
@@ -73,6 +75,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     set_current_file: 'Current file: {n}',
     set_error: 'Save failed.',
     set_check_fields: 'Please check the required fields.',
+    view_new: 'New', view_old: 'Old',
   },
 }
 export function useT() {
@@ -110,14 +113,57 @@ export const EyeIcon = () => <svg style={sIcon} viewBox="0 0 24 24" fill="none" 
 export const GripIcon = () => <svg style={{ width: 13, height: 13, flexShrink: 0, color: 'var(--color-muted-foreground)' }} viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
 export const ChartIcon = () => <svg style={{ width: 16, height: 16, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><rect x="7" y="10" width="3" height="7" /><rect x="12" y="6" width="3" height="11" /><rect x="17" y="13" width="3" height="4" /></svg>
 
+// ── Icônes des cartes KPI — répliques inline lucide-react (Eye / FileText / Globe / Clock),
+// même patron que les icônes ci-dessus (taille configurable via `size`).
+export function IconEye({ size = 18 }: { size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+export function IconFileText({ size = 18 }: { size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" />
+    </svg>
+  )
+}
+export function IconGlobe({ size = 18 }: { size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  )
+}
+export function IconClock({ size = 18 }: { size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  )
+}
+
 // ── KPI ──
-export function Kpi({ label: lbl, value, narrow = false }: { label: string; value: string | number | null; narrow?: boolean }) {
+export function Kpi({ label: lbl, value, narrow = false, icon, tint }: { label: string; value: string | number | null; narrow?: boolean; icon?: ReactNode; tint?: string }) {
+  const color = tint ?? 'var(--color-primary)'
   return (
     // Étroit : 2 KPI par ligne (minWidth 140 forcerait sinon un débordement horizontal sur 360px).
-    <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 2, padding: narrow ? 12 : 16, ...(narrow ? { flex: '1 1 calc(50% - 6px)', minWidth: 0 } : { flex: 1, minWidth: 140 }) }}>
-      <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{lbl}</span>
-      {/* « Dernière visite » est une date : à 2 KPI par ligne elle déborderait en 22px. */}
-      <span style={{ fontSize: narrow ? 16 : 22, fontWeight: 700, minWidth: 0, overflowWrap: 'break-word' }}>{value == null ? '…' : value}</span>
+    <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, padding: narrow ? 12 : 16, ...(narrow ? { flex: '1 1 calc(50% - 6px)', minWidth: 0 } : { flex: 1, minWidth: 140 }) }}>
+      {icon && (
+        <div style={{ width: 38, height: 38, borderRadius: 10, display: 'grid', placeItems: 'center', flexShrink: 0, color, background: `color-mix(in srgb, ${color} 14%, transparent)` }}>
+          {icon}
+        </div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+        <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{lbl}</span>
+        {/* « Dernière visite » est une date : à 2 KPI par ligne elle déborderait en 22px. */}
+        <span style={{ fontSize: narrow ? 16 : 22, fontWeight: 700, minWidth: 0, overflowWrap: 'break-word' }}>{value == null ? '…' : value}</span>
+      </div>
     </div>
   )
 }
@@ -149,8 +195,11 @@ export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaul
   onSave: (c: ColDef[]) => void; defaults: ColDef[]; onClose: () => void
 }) {
   const t = useT()
-  const [dragId, setDragId] = useState<string | null>(null)
-  const [over, setOver] = useState<{ id: string; panel: 'visible' | 'hidden' } | null>(null)
+  // Touch-compatible drag (mouse + touch events, not native HTML5 draggable — that API never
+  // fires from touch input) — see shared/use-drag-reorder.ts.
+  const { draggingId: dragId, overTarget: over, dragPos, startDragMouse, startDragTouch } = useDragReorder({
+    cols, onChange: (next) => { onChange(next); onSave(next) },
+  })
   const [pos, setPos] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number } | null>(null)
   const shown = cols.filter((c) => c.visible)
   const hidden = cols.filter((c) => !c.visible)
@@ -175,29 +224,11 @@ export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaul
     }
   }, [anchorRef])
 
-  function drop(panel: 'visible' | 'hidden') {
-    if (!dragId) return
-    const src = cols.find((c) => c.id === dragId)!
-    const upd = { ...src, visible: panel === 'visible' }
-    let vList = shown.filter((c) => c.id !== dragId)
-    const hList = hidden.filter((c) => c.id !== dragId)
-    if (panel === 'visible') {
-      const dst = over?.id
-      if (!dst || dst === '__panel__') vList = [...vList, upd]
-      else { const i = vList.findIndex((c) => c.id === dst); vList = i === -1 ? [...vList, upd] : [...vList.slice(0, i), upd, ...vList.slice(i)] }
-      const next = [...vList, ...hList]; onChange(next); onSave(next)
-    } else { const next = [...vList, ...hList, upd]; onChange(next); onSave(next) }
-    setDragId(null); setOver(null)
-  }
-
   function item(col: ColDef, panel: 'visible' | 'hidden') {
     const isOver = over?.id === col.id && over?.panel === panel
     return (
-      <div key={col.id} draggable
-        onDragStart={() => setDragId(col.id)} onDragEnd={() => { setDragId(null); setOver(null) }}
-        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (over?.id !== col.id || over?.panel !== panel) setOver({ id: col.id, panel }) }}
-        onDrop={(e) => { e.preventDefault(); drop(panel) }}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 8, padding: '6px 8px', fontSize: 14, cursor: 'grab', userSelect: 'none', opacity: dragId === col.id ? 0.4 : 1, background: isOver ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)' : 'transparent', boxShadow: isOver ? '0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent)' : 'none' }}>
+      <div key={col.id} data-col-item={col.id} onMouseDown={startDragMouse(col.id)} onTouchStart={startDragTouch(col.id)}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 8, padding: '6px 8px', fontSize: 14, cursor: 'grab', userSelect: 'none', touchAction: 'none', opacity: dragId === col.id ? 0.4 : 1, background: isOver ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)' : 'transparent', boxShadow: isOver ? '0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent)' : 'none' }}>
         <GripIcon /><span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{labelFor(col.id)}</span>
       </div>
     )
@@ -205,6 +236,7 @@ export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaul
 
   if (!pos) return null
   return (
+    <>
     <div style={{
       ...card, position: 'fixed', left: pos.left, width: pos.width, zIndex: 50,
       maxHeight: pos.maxHeight, overflowY: 'auto', display: 'flex', flexDirection: 'column',
@@ -215,15 +247,11 @@ export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaul
         <button style={{ ...iconBtn, width: 22, height: 22 }} onClick={onClose}>✕</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, padding: 12 }}>
-        <div style={panelCss}
-          onDragOver={(e) => { e.preventDefault(); if (over?.id !== '__panel__' || over?.panel !== 'hidden') setOver({ id: '__panel__', panel: 'hidden' }) }}
-          onDrop={(e) => { e.preventDefault(); drop('hidden') }}>
+        <div data-col-panel="hidden" style={{ ...panelCss, ...(over?.id === '__panel__' && over.panel === 'hidden' ? { borderColor: 'color-mix(in srgb, var(--color-primary) 40%, transparent)', background: 'color-mix(in srgb, var(--color-primary) 5%, transparent)' } : {}) }}>
           <p style={panelTitle}>{t('cols_hidden')}</p>
           {hidden.length === 0 ? <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--color-muted-foreground)', opacity: 0.5, padding: '16px 0' }}>{t('drag_here')}</div> : hidden.map((c) => item(c, 'hidden'))}
         </div>
-        <div style={panelCss}
-          onDragOver={(e) => { e.preventDefault(); if (over?.id !== '__panel__' || over?.panel !== 'visible') setOver({ id: '__panel__', panel: 'visible' }) }}
-          onDrop={(e) => { e.preventDefault(); drop('visible') }}>
+        <div data-col-panel="visible" style={{ ...panelCss, ...(over?.id === '__panel__' && over.panel === 'visible' ? { borderColor: 'color-mix(in srgb, var(--color-primary) 40%, transparent)', background: 'color-mix(in srgb, var(--color-primary) 5%, transparent)' } : {}) }}>
           <p style={panelTitle}>{t('cols_visible')}</p>
           {shown.length === 0 ? <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--color-muted-foreground)', opacity: 0.5, padding: '16px 0' }}>{t('drag_here')}</div> : shown.map((c) => item(c, 'visible'))}
         </div>
@@ -233,5 +261,11 @@ export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaul
           onClick={() => { onChange(defaults); onSave(defaults) }}>{t('reset')}</button>
       </div>
     </div>
+    {dragId && dragPos && (
+      <div style={{ position: 'fixed', zIndex: 60, left: dragPos.x, top: dragPos.y, transform: 'translate(-50%, -50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 8, borderRadius: 8, padding: '6px 10px', fontSize: 14, fontWeight: 500, background: 'var(--color-card)', border: '1px solid color-mix(in srgb, var(--color-primary) 40%, transparent)', boxShadow: '0 4px 16px rgba(0,0,0,.25)' }}>
+        <GripIcon />{labelFor(dragId)}
+      </div>
+    )}
+    </>
   )
 }
