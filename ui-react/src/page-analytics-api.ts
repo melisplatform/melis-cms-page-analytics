@@ -79,6 +79,12 @@ export interface AnalyticsModuleOption {
   label: string
   /** le module déclare un formulaire de réglages propre (hors sélecteurs de l'outil) */
   settings: boolean
+  /**
+   * melisKey résoluble (react-tool-page) de l'affichage SITE-LEVEL propre au module, pour l'onglet
+   * « Analytics ». null (ex. module natif melis_cms_page_analytics) → l'outil rend sa table native.
+   * Rendu via `react-tool-page?key=<displayKey>&siteId=<site>` (modularité de l'affichage).
+   */
+  displayKey?: string | null
 }
 
 export interface SettingsField {

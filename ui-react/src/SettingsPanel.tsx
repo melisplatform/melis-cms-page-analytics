@@ -45,10 +45,13 @@ export default function SettingsPanel() {
 
   useEffect(() => { fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null) }, [])
 
-  // Chargement de l'état d'un site. `key` force le schéma d'un AUTRE module que celui affecté
+  // Chargement de l'état. `key` force le schéma d'un AUTRE module que celui affecté
   // (l'utilisateur vient de changer le sélecteur) — sinon on prend celui du site.
+  // NB : on charge AUSSI avec siteId=0 (aucun site) — l'API renvoie alors la liste des modules
+  // (indépendante du site) → le champ « Module analytics » reste affiché en permanence, comme en
+  // legacy (les deux champs Site + Module visibles d'emblée). Les réglages propres au module et le
+  // bouton Enregistrer, eux, ne s'affichent/activent qu'une fois un site choisi.
   const load = (siteId: number, key?: string) => {
-    if (!siteId) { setState(null); return }
     fetchAnalyticsSettings(siteId, key)
       .then((s) => {
         setState(s)
@@ -126,7 +129,7 @@ export default function SettingsPanel() {
   }
 
   return (
-    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: narrow ? 16 : 24, boxSizing: 'border-box', maxWidth: 760 }}>
+    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: narrow ? 16 : 24, boxSizing: 'border-box', width: '100%' }}>
       <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: narrow ? 16 : 18, padding: narrow ? 14 : 20 }}>
         {/* Bannière d'erreur unifiée : au sommet du formulaire, énonce le problème ET liste chaque
             champ invalide (les champs restent aussi surlignés en rouge sous chacun via errCss). */}
@@ -149,11 +152,11 @@ export default function SettingsPanel() {
           </select>
         </div>
 
-        {!site && <p style={help}>{t('set_pick_site')}</p>}
-
-        {/* `site > 0` et non `site &&` : `site` est un NOMBRE — avec 0 le court-circuit renvoie 0,
-            que React rend littéralement comme un « 0 » parasite sous le sélecteur. */}
-        {site > 0 && state && (
+        {/* Champ « Module analytics » TOUJOURS visible (parité legacy) : les deux sélecteurs Site +
+            Module s'affichent d'emblée. `state` (et donc la liste des modules) est chargé même sans
+            site (siteId=0). Les réglages propres au module + le bouton Enregistrer restent gated sur
+            un site choisi (`site > 0`, pas `site &&` : `site` est un NOMBRE, 0 rendrait un « 0 »). */}
+        {state && (
           <>
             {/* Module analytics */}
             <div>
@@ -166,6 +169,11 @@ export default function SettingsPanel() {
               {errors.pad_analytics_key && <p style={errCss}>{errors.pad_analytics_key}</p>}
             </div>
 
+            {!site && <p style={help}>{t('set_pick_site')}</p>}
+
+            {/* Réglages du module + script + Enregistrer : une fois un site sélectionné. */}
+            {site > 0 && (
+              <>
             {/* Réglages propres au module (schéma renvoyé par l'API) */}
             {fields.map((f) => (
               <div key={f.name}>
@@ -225,6 +233,8 @@ export default function SettingsPanel() {
                 </span>
               )}
             </div>
+              </>
+            )}
           </>
         )}
       </div>
