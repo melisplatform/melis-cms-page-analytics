@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import {
-  fetchAnalytics, fetchAnalyticsStats, fetchAnalyticsSites,
+  fetchAnalytics, fetchAnalyticsStats, fetchAnalyticsSites, fetchAnalyticsSettings,
   type AnalyticsRow, type AnalyticsStats, type SiteOption,
 } from './page-analytics-api'
 import { useKeysetList } from './use-keyset-list'
@@ -132,6 +132,21 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
   const [expanded, setExpanded] = useState<Set<number>>(() => new Set())
   const colsAnchorRef = useRef<HTMLDivElement>(null)
 
+  // Affichage MODULAIRE : si le site sélectionné a pour module d'analytics un module tiers qui
+  // déclare un `displayKey` (ex. Google Analytics → react_display_key), on rend SON affichage
+  // (iframe react-tool-page site-level) au lieu de la table native. Le module affecté au site vient
+  // de /settings (analyticsKey). « Tous les sites » (site=0) ou module natif → table native agrégée.
+  const [moduleDisplayKey, setModuleDisplayKey] = useState<string | null>(null)
+  useEffect(() => {
+    if (!site) { setModuleDisplayKey(null); return }
+    let alive = true
+    fetchAnalyticsSettings(site)
+      .then((s) => { if (alive) setModuleDisplayKey(s.modules.find((m) => m.key === s.analyticsKey)?.displayKey ?? null) })
+      .catch(() => { if (alive) setModuleDisplayKey(null) })
+    return () => { alive = false }
+  }, [site])
+  const moduleMode = !!moduleDisplayKey
+
   // A Hidden column disappears entirely on both desktop and mobile — same rule everywhere, no "+"
   // peek at Hidden ones. Desktop shows every Visible column inline. Mobile can't fit many columns,
   // so only the FIRST Visible column (by the user's dragged order in ColManager) anchors inline;
@@ -181,13 +196,16 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 16 : 20, padding: narrow ? 16 : 24, boxSizing: 'border-box' }}>
-      {/* KPI — 2 par ligne sur viewport étroit (cf. flag `narrow` du composant Kpi) */}
+      {/* KPI — 2 par ligne sur viewport étroit (cf. flag `narrow` du composant Kpi). Cachés en
+          affichage modulaire (le module tiers rend ses propres indicateurs). */}
+      {!moduleMode && (
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <Kpi label={t('kpi_hits')} value={stats?.hits ?? null} narrow={narrow} icon={<IconEye />} tint="#2563eb" />
         <Kpi label={t('kpi_pages')} value={stats?.pages ?? null} narrow={narrow} icon={<IconFileText />} tint="var(--color-primary)" />
         <Kpi label={t('kpi_sites')} value={stats?.sites ?? null} narrow={narrow} icon={<IconGlobe />} tint="#7c3aed" />
         <Kpi label={t('kpi_last')} value={stats ? fmtDate(stats.lastVisit, lang) : null} narrow={narrow} icon={<IconClock />} tint="#d97706" />
       </div>
+      )}
 
       {/* Barre d'outils : site + recherche + colonnes + export + refresh.
           Étroit : sélecteur et recherche pleine largeur, puis les 3 boutons sur une ligne
@@ -197,6 +215,9 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
           <option value={0}>{t('site_all')}</option>
           {sites.map((s) => <option key={s.id} value={s.id}>{s.name} (#{s.id})</option>)}
         </select>
+        {/* Recherche + colonnes + export + refresh : propres à la table native → cachés en mode module. */}
+        {!moduleMode && (
+        <>
         <input style={{ ...inputCss, height: 36, ...(narrow ? { width: '100%' } : { flex: 1, minWidth: 200 }) }} value={search}
           onChange={(e) => setSearch(e.target.value)} placeholder={t('search')} />
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', ...(narrow ? { width: '100%' } : {}) }}>
@@ -207,9 +228,22 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
           <button style={{ ...btnGhost, height: 36, ...(narrow ? { flex: '1 1 0', minWidth: 0, justifyContent: 'center' } : {}) }} onClick={() => setShowExport(true)}><DownloadIcon />{t('export')}</button>
           <button style={{ ...btnGhost, height: 36, flexShrink: 0 }} onClick={() => setTick((x) => x + 1)} title={t('refresh')}>↻</button>
         </div>
+        </>
+        )}
       </div>
 
-      {/* Table */}
+      {/* Affichage du module tiers (ex. Google Analytics) affecté au site : son display site-level
+          rendu en iframe (react-tool-page → tool-display-iframe?siteId=X). Modulaire : la clé vient
+          de la config du module (react_display_key), zéro hardcode ici. */}
+      {moduleMode && moduleDisplayKey && (
+        <div style={{ ...card, overflow: 'hidden', minHeight: 560, display: 'flex' }}>
+          <iframe src={`/melis/react-tool-page?key=${encodeURIComponent(moduleDisplayKey)}&siteId=${site}`}
+            style={{ width: '100%', height: '100%', minHeight: 560, border: 0, display: 'block' }} title={t('title')} />
+        </div>
+      )}
+
+      {/* Table native (module d'analytics par défaut / aucun module) */}
+      {!moduleMode && (
       <div style={{ ...card, overflow: 'hidden' }}>
         {/* Étroit : on retire le minWidth, sinon le repli des colonnes ne sert à rien (scroll H). */}
         <table style={{ width: '100%', borderCollapse: 'collapse', ...(narrow ? {} : { minWidth: 560 }) }}>
@@ -265,6 +299,7 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
           {loading ? t('loading') : (!hasMore && items.length > 0 ? t('count', { n: total }) : '')}
         </div>
       </div>
+      )}
 
       {showExport && (
         <ExportModal<AnalyticsRow>

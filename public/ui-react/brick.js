@@ -1731,10 +1731,6 @@
 			fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null);
 		}, []);
 		const load = (siteId, key) => {
-			if (!siteId) {
-				setState(null);
-				return;
-			}
 			fetchAnalyticsSettings(siteId, key).then((s) => {
 				setState(s);
 				setModuleKey(s.selectedKey);
@@ -1808,7 +1804,7 @@
 				gap: 20,
 				padding: narrow ? 16 : 24,
 				boxSizing: "border-box",
-				maxWidth: 760
+				width: "100%"
 			},
 			children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				style: {
@@ -1844,11 +1840,7 @@
 							children: s.name
 						}, s.id))]
 					})] }),
-					!site && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-						style: help,
-						children: t("set_pick_site")
-					}),
-					site > 0 && state && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					state && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
 								style: label,
@@ -1877,134 +1869,140 @@
 								children: errors.pad_analytics_key
 							})
 						] }),
-						fields.map((f) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
-								style: label,
-								htmlFor: `mcpa-${f.name}`,
-								children: [f.label, f.required ? " *" : ""]
-							}),
-							f.type === "textarea" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-								id: `mcpa-${f.name}`,
-								style: {
-									...inputCss,
-									height: 100,
-									padding: 10,
-									fontFamily: "inherit"
-								},
-								value: values[f.name] ?? "",
-								onChange: (e) => setValues((v) => ({
-									...v,
-									[f.name]: e.target.value
-								}))
-							}) : f.type === "select" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-								id: `mcpa-${f.name}`,
-								style: inputCss,
-								value: values[f.name] ?? "",
-								onChange: (e) => setValues((v) => ({
-									...v,
-									[f.name]: e.target.value
-								})),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", { value: "" }), f.options.map((o) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-									value: o.value,
-									children: o.label
-								}, o.value))]
-							}) : f.type === "file" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-								id: `mcpa-${f.name}`,
-								type: "file",
-								style: {
-									...inputCss,
-									height: "auto",
-									padding: 8
-								},
-								onChange: (e) => {
-									const file = e.target.files?.[0];
-									setFiles((prev) => {
-										const next = { ...prev };
-										if (file) next[f.name] = file;
-										else delete next[f.name];
-										return next;
-									});
-								}
-							}), values[f.name] && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-								style: help,
-								children: t("set_current_file", { n: values[f.name] })
-							})] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-								id: `mcpa-${f.name}`,
-								type: f.type === "password" ? "password" : "text",
-								style: inputCss,
-								value: values[f.name] ?? "",
-								onChange: (e) => setValues((v) => ({
-									...v,
-									[f.name]: e.target.value
-								}))
-							}),
-							f.tooltip && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-								style: help,
-								children: f.tooltip
-							}),
-							errors[f.name] && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-								style: errCss,
-								children: errors[f.name]
-							})
-						] }, f.name)),
-						moduleKey && moduleKey !== "melis_cms_no_analytics" && fields.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						!site && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 							style: help,
-							children: t("set_no_settings")
+							children: t("set_pick_site")
 						}),
-						showJs && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
-								style: label,
-								htmlFor: "mcpa-js",
-								children: t("set_js")
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
-								id: "mcpa-js",
-								style: {
-									...inputCss,
-									height: 160,
-									padding: 10,
-									fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace",
-									fontSize: 13,
-									lineHeight: 1.5
-								},
-								spellCheck: false,
-								value: js,
-								disabled: !state.jsEditable,
-								onChange: (e) => setJs(e.target.value)
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						site > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+							fields.map((f) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+									style: label,
+									htmlFor: `mcpa-${f.name}`,
+									children: [f.label, f.required ? " *" : ""]
+								}),
+								f.type === "textarea" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									id: `mcpa-${f.name}`,
+									style: {
+										...inputCss,
+										height: 100,
+										padding: 10,
+										fontFamily: "inherit"
+									},
+									value: values[f.name] ?? "",
+									onChange: (e) => setValues((v) => ({
+										...v,
+										[f.name]: e.target.value
+									}))
+								}) : f.type === "select" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+									id: `mcpa-${f.name}`,
+									style: inputCss,
+									value: values[f.name] ?? "",
+									onChange: (e) => setValues((v) => ({
+										...v,
+										[f.name]: e.target.value
+									})),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", { value: "" }), f.options.map((o) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+										value: o.value,
+										children: o.label
+									}, o.value))]
+								}) : f.type === "file" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									id: `mcpa-${f.name}`,
+									type: "file",
+									style: {
+										...inputCss,
+										height: "auto",
+										padding: 8
+									},
+									onChange: (e) => {
+										const file = e.target.files?.[0];
+										setFiles((prev) => {
+											const next = { ...prev };
+											if (file) next[f.name] = file;
+											else delete next[f.name];
+											return next;
+										});
+									}
+								}), values[f.name] && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									style: help,
+									children: t("set_current_file", { n: values[f.name] })
+								})] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									id: `mcpa-${f.name}`,
+									type: f.type === "password" ? "password" : "text",
+									style: inputCss,
+									value: values[f.name] ?? "",
+									onChange: (e) => setValues((v) => ({
+										...v,
+										[f.name]: e.target.value
+									}))
+								}),
+								f.tooltip && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									style: help,
+									children: f.tooltip
+								}),
+								errors[f.name] && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									style: errCss,
+									children: errors[f.name]
+								})
+							] }, f.name)),
+							moduleKey && moduleKey !== "melis_cms_no_analytics" && fields.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 								style: help,
-								children: state.jsEditable ? t("set_js_help") : t("set_js_admin")
+								children: t("set_no_settings")
 							}),
-							errors.pads_js_analytics && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-								style: errCss,
-								children: errors.pads_js_analytics
+							showJs && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+									style: label,
+									htmlFor: "mcpa-js",
+									children: t("set_js")
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									id: "mcpa-js",
+									style: {
+										...inputCss,
+										height: 160,
+										padding: 10,
+										fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace",
+										fontSize: 13,
+										lineHeight: 1.5
+									},
+									spellCheck: false,
+									value: js,
+									disabled: !state.jsEditable,
+									onChange: (e) => setJs(e.target.value)
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									style: help,
+									children: state.jsEditable ? t("set_js_help") : t("set_js_admin")
+								}),
+								errors.pads_js_analytics && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									style: errCss,
+									children: errors.pads_js_analytics
+								})
+							] }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								style: {
+									display: "flex",
+									alignItems: narrow ? "stretch" : "center",
+									flexDirection: narrow ? "column" : "row",
+									gap: 12
+								},
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "submit",
+									style: {
+										...btnPrimary$1,
+										...narrow ? { justifyContent: "center" } : {},
+										opacity: saving || !moduleKey ? .6 : 1
+									},
+									disabled: saving || !moduleKey,
+									children: saving ? t("set_saving") : t("set_save")
+								}), flash && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									style: {
+										fontSize: 13,
+										color: flash.ok ? "var(--color-success,#16a34a)" : "var(--color-destructive,#dc2626)"
+									},
+									children: flash.msg
+								})]
 							})
-						] }),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							style: {
-								display: "flex",
-								alignItems: narrow ? "stretch" : "center",
-								flexDirection: narrow ? "column" : "row",
-								gap: 12
-							},
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								type: "submit",
-								style: {
-									...btnPrimary$1,
-									...narrow ? { justifyContent: "center" } : {},
-									opacity: saving || !moduleKey ? .6 : 1
-								},
-								disabled: saving || !moduleKey,
-								children: saving ? t("set_saving") : t("set_save")
-							}), flash && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								style: {
-									fontSize: 13,
-									color: flash.ok ? "var(--color-success,#16a34a)" : "var(--color-destructive,#dc2626)"
-								},
-								children: flash.msg
-							})]
-						})
+						] })
 					] })
 				]
 			})
@@ -2346,6 +2344,23 @@
 		const [tick, setTick] = (0, react.useState)(0);
 		const [expanded, setExpanded] = (0, react.useState)(() => /* @__PURE__ */ new Set());
 		const colsAnchorRef = (0, react.useRef)(null);
+		const [moduleDisplayKey, setModuleDisplayKey] = (0, react.useState)(null);
+		(0, react.useEffect)(() => {
+			if (!site) {
+				setModuleDisplayKey(null);
+				return;
+			}
+			let alive = true;
+			fetchAnalyticsSettings(site).then((s) => {
+				if (alive) setModuleDisplayKey(s.modules.find((m) => m.key === s.analyticsKey)?.displayKey ?? null);
+			}).catch(() => {
+				if (alive) setModuleDisplayKey(null);
+			});
+			return () => {
+				alive = false;
+			};
+		}, [site]);
+		const moduleMode = !!moduleDisplayKey;
 		const shownColsList = cols.filter((c) => c.visible);
 		const displayCols = narrow ? shownColsList.map((c, i) => ({
 			...c,
@@ -2423,7 +2438,7 @@
 				boxSizing: "border-box"
 			},
 			children: [
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				!moduleMode && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
 						display: "flex",
 						gap: 12,
@@ -2467,110 +2482,125 @@
 						flexWrap: "wrap",
 						alignItems: "center"
 					},
-					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-							style: {
-								...inputCss,
-								height: 36,
-								...narrow ? { width: "100%" } : {
-									width: "auto",
-									minWidth: 180
-								}
-							},
-							value: site,
-							onChange: (e) => onSite(Number(e.target.value)),
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-								value: 0,
-								children: t("site_all")
-							}), sites.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
-								value: s.id,
-								children: [
-									s.name,
-									" (#",
-									s.id,
-									")"
-								]
-							}, s.id))]
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-							style: {
-								...inputCss,
-								height: 36,
-								...narrow ? { width: "100%" } : {
-									flex: 1,
-									minWidth: 200
-								}
-							},
-							value: search,
-							onChange: (e) => setSearch(e.target.value),
-							placeholder: t("search")
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							style: {
-								display: "flex",
-								gap: 8,
-								alignItems: "center",
-								...narrow ? { width: "100%" } : {}
-							},
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+						style: {
+							...inputCss,
+							height: 36,
+							...narrow ? { width: "100%" } : {
+								width: "auto",
+								minWidth: 180
+							}
+						},
+						value: site,
+						onChange: (e) => onSite(Number(e.target.value)),
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+							value: 0,
+							children: t("site_all")
+						}), sites.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
+							value: s.id,
 							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									ref: colsAnchorRef,
-									style: {
-										position: "relative",
-										...narrow ? {
-											flex: "1 1 0",
-											minWidth: 0
-										} : {}
-									},
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-										style: {
-											...btnGhost$1,
-											height: 36,
-											...narrow ? {
-												width: "100%",
-												justifyContent: "center"
-											} : {}
-										},
-										onClick: () => setShowCols((v) => !v),
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
-									}), showCols && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColManager, {
-										anchorRef: colsAnchorRef,
-										cols,
-										labelFor: (id) => t(COL_LABEL[id]),
-										onChange: setCols,
-										onSave: colStore.save,
-										defaults: colStore.defaults,
-										onClose: () => setShowCols(false)
-									})]
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								s.name,
+								" (#",
+								s.id,
+								")"
+							]
+						}, s.id))]
+					}), !moduleMode && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+						style: {
+							...inputCss,
+							height: 36,
+							...narrow ? { width: "100%" } : {
+								flex: 1,
+								minWidth: 200
+							}
+						},
+						value: search,
+						onChange: (e) => setSearch(e.target.value),
+						placeholder: t("search")
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						style: {
+							display: "flex",
+							gap: 8,
+							alignItems: "center",
+							...narrow ? { width: "100%" } : {}
+						},
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								ref: colsAnchorRef,
+								style: {
+									position: "relative",
+									...narrow ? {
+										flex: "1 1 0",
+										minWidth: 0
+									} : {}
+								},
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									style: {
 										...btnGhost$1,
 										height: 36,
 										...narrow ? {
-											flex: "1 1 0",
-											minWidth: 0,
+											width: "100%",
 											justifyContent: "center"
 										} : {}
 									},
-									onClick: () => setShowExport(true),
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(DownloadIcon, {}), t("export")]
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									style: {
-										...btnGhost$1,
-										height: 36,
-										flexShrink: 0
-									},
-									onClick: () => setTick((x) => x + 1),
-									title: t("refresh"),
-									children: "↻"
-								})
-							]
-						})
-					]
+									onClick: () => setShowCols((v) => !v),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
+								}), showCols && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColManager, {
+									anchorRef: colsAnchorRef,
+									cols,
+									labelFor: (id) => t(COL_LABEL[id]),
+									onChange: setCols,
+									onSave: colStore.save,
+									defaults: colStore.defaults,
+									onClose: () => setShowCols(false)
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								style: {
+									...btnGhost$1,
+									height: 36,
+									...narrow ? {
+										flex: "1 1 0",
+										minWidth: 0,
+										justifyContent: "center"
+									} : {}
+								},
+								onClick: () => setShowExport(true),
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(DownloadIcon, {}), t("export")]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								style: {
+									...btnGhost$1,
+									height: 36,
+									flexShrink: 0
+								},
+								onClick: () => setTick((x) => x + 1),
+								title: t("refresh"),
+								children: "↻"
+							})
+						]
+					})] })]
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				moduleMode && moduleDisplayKey && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						...card$1,
+						overflow: "hidden",
+						minHeight: 560,
+						display: "flex"
+					},
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("iframe", {
+						src: `/melis/react-tool-page?key=${encodeURIComponent(moduleDisplayKey)}&siteId=${site}`,
+						style: {
+							width: "100%",
+							height: "100%",
+							minHeight: 560,
+							border: 0,
+							display: "block"
+						},
+						title: t("title")
+					})
+				}),
+				!moduleMode && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
 						...card$1,
 						overflow: "hidden"

@@ -250,6 +250,11 @@ class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
                     // Un module n'a des réglages propres que si son formulaire déclare des champs
                     // AUTRES que les deux sélecteurs de l'outil (cf. settingsFieldSpec).
                     'settings' => $this->settingsFieldSpec($config, (string) $key) !== [],
+                    // Affichage React MODULAIRE de l'onglet « Analytics » : un module tiers déclare
+                    // `react_display_key` (un melisKey résoluble par react-tool-page) pour son display
+                    // site-level. Absent (ex. module natif melis_cms_page_analytics) → l'outil rend sa
+                    // table native. 100% data-driven : aucun module codé en dur ici.
+                    'displayKey' => isset($cfg['react_display_key']) ? (string) $cfg['react_display_key'] : null,
                 ];
             }
 
