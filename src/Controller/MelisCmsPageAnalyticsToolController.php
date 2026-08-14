@@ -110,6 +110,12 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
      * Checks wether the user has access to this tools or not
      * @return boolean
      */
+    /** @INFO: Tool access check (CWE-862). */
+    private function hasToolAccess($key)
+    {
+        return $this->getServiceManager()->get('MelisCoreRights')->canAccess($key);
+    }
+
     private function hasAccess($key)
     {
         $key = trim($key);
@@ -186,6 +192,10 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
     public function getMelisCmsPageAnalyticsDataAction()
     {
+        if (! $this->hasToolAccess('meliscms_page_analytics_tools_section')) {
+            return new JsonModel(['draw' => (int) $this->getRequest()->getPost('draw', 0), 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
+        }
+
         $request = $this->getRequest();
 
         $dataCount = 0;
@@ -240,6 +250,11 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
     public function saveAction()
     {
+        /** @INFO: Access check (tool right) — CWE-862 */
+        if (! $this->hasToolAccess('meliscms_page_analytics_tools_section')) {
+            return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
+
         $success = 0;
         $title = 'tr_meliscms_page_analytics_title';
         $message = 'tr_meliscms_page_analytics_settings_select_save_ko';
@@ -592,6 +607,11 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
     public function getSiteAnalyticsAction()
     {
+        /** @INFO: Access check (tool right) — CWE-862 */
+        if (! $this->hasToolAccess('meliscms_page_analytics_tools_section')) {
+            return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
+
         $success = false;
         $errors = array();
         $data = array();
@@ -636,6 +656,11 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
     public function getAnalyticsScriptAction()
     {
+        /** @INFO: Access check (tool right) — CWE-862 */
+        if (! $this->hasToolAccess('meliscms_page_analytics_tools_section')) {
+            return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
+
         $success = 0;
         $data = array();
         $request = $this->getRequest();

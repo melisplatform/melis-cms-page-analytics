@@ -14,6 +14,12 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends MelisAbstractAction
 {
     private $pageId = null;
 
+    /** @INFO: Tool access check (CWE-862). */
+    private function hasAccess($key)
+    {
+        return $this->getServiceManager()->get('MelisCoreRights')->canAccess($key);
+    }
+
     public function toolContainerAction()
     {
         $melisKey = $this->getMelisKey();
@@ -176,6 +182,10 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends MelisAbstractAction
     }
     public function getMelisCmsPageAnalyticsPageDetailsDataAction()
     {
+        if (! $this->hasAccess('meliscms_page')) {
+            return new JsonModel(['draw' => (int) $this->getRequest()->getPost('draw', 0), 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
+        }
+
         $request = $this->getRequest();
 
         $dataCount = 0;
