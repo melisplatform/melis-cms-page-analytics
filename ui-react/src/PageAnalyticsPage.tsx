@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   fetchAnalytics, fetchAnalyticsStats, fetchAnalyticsSites, fetchAnalyticsSettings,
   type AnalyticsRow, type AnalyticsStats, type SiteOption,
@@ -30,6 +30,46 @@ import { ExpandToggle, HiddenColsRow } from './shared/ExpandableRow'
 type Tab = 'analytics' | 'settings'
 
 const MELIS_KEY = 'meliscms_page_analytics_display' // zone legacy rendable (vue « Old »)
+
+// ── Affichage SITE-LEVEL modulaire (React natif fourni par la brique du module analytics) ──────
+// La brique d'un module (ex. MelisCmsGoogleAnalytics) enregistre son affichage site-level React sur
+// un registre GLOBAL (window.__melisAnalyticsSiteDisplays[<analyticsKey>]), pour qu'on le monte SANS
+// l'importer (bundle séparé chargé au runtime). Si aucun composant n'est enregistré → fallback iframe.
+type SiteDisplayComp = (p: { siteId: number }) => ReactNode
+declare global {
+  interface Window { __melisAnalyticsSiteDisplays?: Record<string, SiteDisplayComp> }
+}
+/**
+ * Renvoie le composant d'affichage site-level enregistré pour `key`, avec re-check :
+ *   • au montage,
+ *   • à l'événement 'melis:analytics-site-display-registered' (la brique peut se charger APRÈS
+ *     que cet hôte a rendu — les bundles sont chargés de façon asynchrone),
+ *   • et via un court timer (garde-fou) tant que rien n'est trouvé.
+ * `settled` passe à true dès qu'on a trouvé un composant OU après le délai de garde (→ fallback iframe).
+ */
+function useSiteDisplayComp(key: string | null): { Comp: SiteDisplayComp | null; settled: boolean } {
+  const [Comp, setComp] = useState<SiteDisplayComp | null>(null)
+  const [settled, setSettled] = useState(false)
+  useEffect(() => {
+    setComp(null); setSettled(false)
+    if (!key) { setSettled(true); return }
+    let alive = true
+    const lookup = () => (window.__melisAnalyticsSiteDisplays || {})[key] || null
+    const check = () => {
+      const c = lookup()
+      if (c && alive) { setComp(() => c); setSettled(true); return true }
+      return false
+    }
+    if (check()) return
+    const onReg = () => { check() }
+    window.addEventListener('melis:analytics-site-display-registered', onReg)
+    // Garde-fou : si rien n'est enregistré après un court délai, on « settle » → l'appelant peut
+    // retomber sur l'iframe. On continue d'écouter l'événement au cas où le bundle arrive plus tard.
+    const timer = window.setTimeout(() => { if (alive && !lookup()) setSettled(true) }, 1500)
+    return () => { alive = false; window.removeEventListener('melis:analytics-site-display-registered', onReg); window.clearTimeout(timer) }
+  }, [key])
+  return { Comp, settled }
+}
 
 /** Icône de tri unifiée — mêmes tracés que les icônes lucide ArrowUpDown/ArrowUp/ArrowDown du core. */
 function SortIcon({ dir }: { dir: 'asc' | 'desc' | null }) {
@@ -137,15 +177,25 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
   // (iframe react-tool-page site-level) au lieu de la table native. Le module affecté au site vient
   // de /settings (analyticsKey). « Tous les sites » (site=0) ou module natif → table native agrégée.
   const [moduleDisplayKey, setModuleDisplayKey] = useState<string | null>(null)
+  // Clé du MODULE analytics affecté au site (pad_analytics_key, ex. 'melis_cms_google_analytics').
+  // Sert à retrouver l'affichage React natif enregistré par la brique du module (registre global),
+  // pour le monter à la place de l'iframe (voir plus bas).
+  const [moduleAnalyticsKey, setModuleAnalyticsKey] = useState<string | null>(null)
   useEffect(() => {
-    if (!site) { setModuleDisplayKey(null); return }
+    if (!site) { setModuleDisplayKey(null); setModuleAnalyticsKey(null); return }
     let alive = true
     fetchAnalyticsSettings(site)
-      .then((s) => { if (alive) setModuleDisplayKey(s.modules.find((m) => m.key === s.analyticsKey)?.displayKey ?? null) })
-      .catch(() => { if (alive) setModuleDisplayKey(null) })
+      .then((s) => {
+        if (!alive) return
+        setModuleDisplayKey(s.modules.find((m) => m.key === s.analyticsKey)?.displayKey ?? null)
+        setModuleAnalyticsKey(s.analyticsKey || null)
+      })
+      .catch(() => { if (alive) { setModuleDisplayKey(null); setModuleAnalyticsKey(null) } })
     return () => { alive = false }
   }, [site])
   const moduleMode = !!moduleDisplayKey
+  // Affichage React natif du module (enregistré par sa brique) — sinon fallback iframe (settled).
+  const { Comp: SiteDisplay, settled: displaySettled } = useSiteDisplayComp(moduleMode ? moduleAnalyticsKey : null)
 
   // A Hidden column disappears entirely on both desktop and mobile — same rule everywhere, no "+"
   // peek at Hidden ones. Desktop shows every Visible column inline. Mobile can't fit many columns,
@@ -232,14 +282,27 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
         )}
       </div>
 
-      {/* Affichage du module tiers (ex. Google Analytics) affecté au site : son display site-level
-          rendu en iframe (react-tool-page → tool-display-iframe?siteId=X). Modulaire : la clé vient
-          de la config du module (react_display_key), zéro hardcode ici. */}
+      {/* Affichage du module tiers (ex. Google Analytics) affecté au site.
+          PRIORITÉ au rendu React NATIF fourni par la brique du module (registre global), monté ici
+          sans l'importer. Tant que la brique n'a pas (encore) enregistré son composant, on affiche un
+          loader (pas l'iframe, pour éviter un flash) ; passé un court délai (displaySettled) sans
+          composant, on retombe sur l'affichage legacy en iframe (comportement inchangé pour les
+          autres modules). */}
       {moduleMode && moduleDisplayKey && (
-        <div style={{ ...card, overflow: 'hidden', minHeight: 560, display: 'flex' }}>
-          <iframe src={`/melis/react-tool-page?key=${encodeURIComponent(moduleDisplayKey)}&siteId=${site}`}
-            style={{ width: '100%', height: '100%', minHeight: 560, border: 0, display: 'block' }} title={t('title')} />
-        </div>
+        SiteDisplay ? (
+          <div style={{ ...card, overflow: 'hidden', padding: 16 }}>
+            <SiteDisplay siteId={site} />
+          </div>
+        ) : !displaySettled ? (
+          <div style={{ ...card, minHeight: 200, display: 'grid', placeItems: 'center', color: 'var(--color-muted-foreground)', fontSize: 14 }}>
+            {t('loading')}
+          </div>
+        ) : (
+          <div style={{ ...card, overflow: 'hidden', minHeight: 560, display: 'flex' }}>
+            <iframe src={`/melis/react-tool-page?key=${encodeURIComponent(moduleDisplayKey)}&siteId=${site}`}
+              style={{ width: '100%', height: '100%', minHeight: 560, border: 0, display: 'block' }} title={t('title')} />
+          </div>
+        )
       )}
 
       {/* Table native (module d'analytics par défaut / aucun module) */}

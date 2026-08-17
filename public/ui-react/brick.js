@@ -2121,6 +2121,54 @@
 	//#endregion
 	//#region src/PageAnalyticsPage.tsx
 	var MELIS_KEY = "meliscms_page_analytics_display";
+	/**
+	* Renvoie le composant d'affichage site-level enregistré pour `key`, avec re-check :
+	*   • au montage,
+	*   • à l'événement 'melis:analytics-site-display-registered' (la brique peut se charger APRÈS
+	*     que cet hôte a rendu — les bundles sont chargés de façon asynchrone),
+	*   • et via un court timer (garde-fou) tant que rien n'est trouvé.
+	* `settled` passe à true dès qu'on a trouvé un composant OU après le délai de garde (→ fallback iframe).
+	*/
+	function useSiteDisplayComp(key) {
+		const [Comp, setComp] = (0, react.useState)(null);
+		const [settled, setSettled] = (0, react.useState)(false);
+		(0, react.useEffect)(() => {
+			setComp(null);
+			setSettled(false);
+			if (!key) {
+				setSettled(true);
+				return;
+			}
+			let alive = true;
+			const lookup = () => (window.__melisAnalyticsSiteDisplays || {})[key] || null;
+			const check = () => {
+				const c = lookup();
+				if (c && alive) {
+					setComp(() => c);
+					setSettled(true);
+					return true;
+				}
+				return false;
+			};
+			if (check()) return;
+			const onReg = () => {
+				check();
+			};
+			window.addEventListener("melis:analytics-site-display-registered", onReg);
+			const timer = window.setTimeout(() => {
+				if (alive && !lookup()) setSettled(true);
+			}, 1500);
+			return () => {
+				alive = false;
+				window.removeEventListener("melis:analytics-site-display-registered", onReg);
+				window.clearTimeout(timer);
+			};
+		}, [key]);
+		return {
+			Comp,
+			settled
+		};
+	}
 	/** Icône de tri unifiée — mêmes tracés que les icônes lucide ArrowUpDown/ArrowUp/ArrowDown du core. */
 	function SortIcon({ dir }) {
 		const p = {
@@ -2345,22 +2393,30 @@
 		const [expanded, setExpanded] = (0, react.useState)(() => /* @__PURE__ */ new Set());
 		const colsAnchorRef = (0, react.useRef)(null);
 		const [moduleDisplayKey, setModuleDisplayKey] = (0, react.useState)(null);
+		const [moduleAnalyticsKey, setModuleAnalyticsKey] = (0, react.useState)(null);
 		(0, react.useEffect)(() => {
 			if (!site) {
 				setModuleDisplayKey(null);
+				setModuleAnalyticsKey(null);
 				return;
 			}
 			let alive = true;
 			fetchAnalyticsSettings(site).then((s) => {
-				if (alive) setModuleDisplayKey(s.modules.find((m) => m.key === s.analyticsKey)?.displayKey ?? null);
+				if (!alive) return;
+				setModuleDisplayKey(s.modules.find((m) => m.key === s.analyticsKey)?.displayKey ?? null);
+				setModuleAnalyticsKey(s.analyticsKey || null);
 			}).catch(() => {
-				if (alive) setModuleDisplayKey(null);
+				if (alive) {
+					setModuleDisplayKey(null);
+					setModuleAnalyticsKey(null);
+				}
 			});
 			return () => {
 				alive = false;
 			};
 		}, [site]);
 		const moduleMode = !!moduleDisplayKey;
+		const { Comp: SiteDisplay, settled: displaySettled } = useSiteDisplayComp(moduleMode ? moduleAnalyticsKey : null);
 		const shownColsList = cols.filter((c) => c.visible);
 		const displayCols = narrow ? shownColsList.map((c, i) => ({
 			...c,
@@ -2581,7 +2637,24 @@
 						]
 					})] })]
 				}),
-				moduleMode && moduleDisplayKey && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				moduleMode && moduleDisplayKey && (SiteDisplay ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						...card$1,
+						overflow: "hidden",
+						padding: 16
+					},
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SiteDisplay, { siteId: site })
+				}) : !displaySettled ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						...card$1,
+						minHeight: 200,
+						display: "grid",
+						placeItems: "center",
+						color: "var(--color-muted-foreground)",
+						fontSize: 14
+					},
+					children: t("loading")
+				}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					style: {
 						...card$1,
 						overflow: "hidden",
@@ -2599,7 +2672,7 @@
 						},
 						title: t("title")
 					})
-				}),
+				})),
 				!moduleMode && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
 						...card$1,
