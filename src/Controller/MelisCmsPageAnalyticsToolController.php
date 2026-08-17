@@ -343,11 +343,17 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
                 $fileChanged = empty($post['fileChanged']) ? false : ($post['fileChanged'] === "false" ? false : true);
                 $analyticsSettings = [];
                 $analyticsSettingsData = $analayticsTable->getAnalytics($siteId, $analyticsKey)->current();
-                $privateKeyFileDir = '';
+
+                // Service-account key CONTENT to persist into the dedicated column
+                // `pads_ga_private_key`. null = "leave the existing column value untouched"
+                // (retain / non-GA cases must NOT wipe a stored key).
+                $gaPrivateKeyContent = null;
 
                 if ($analyticsKey == 'melis_cms_google_analytics') {
                     /**
-                     * Storing the private key file to the private key file directory.
+                     * Storing the private key JSON CONTENT into the `pads_ga_private_key` column
+                     * (no longer a file under the vendor tree — that's wiped on deploy and not shared
+                     * across pods).
                      * > User changed the Private Key file
                      * > Uploaded private key is NOT empty
                      * > Uploaded private key is JSON
@@ -360,40 +366,20 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
                         $post['google_analytics_private_key']['type'] === "application/json"
                     ) {
                         $privateKey = $post['google_analytics_private_key'];
-                        $conf = $this->getServiceManager()->get('MelisCoreConfig')->getItem('meliscms');
-                        if (!empty($conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'])) {
-                            $privateKeyFileDir = $conf['datas']['page_analytics']['melis_cms_google_analytics']['datas']['private_key_file_directory'];
-                            $privateKeyFileDir = str_replace(["\\", "/"], self::DS, $privateKeyFileDir);
-                        }
-                        $src = $privateKey['tmp_name'];
-                        $dst = __DIR__ . self::DS . '..' . self::DS . '..' . self::DS . '..' . $privateKeyFileDir;
-                        /**
-                         * Check the directory & throw error if directory does not exist.
-                         */
-                        if (is_writable($dst)) {
-                            if (file_exists($dst) && is_dir($dst)) {
-                                $dst .= self::DS . $privateKey['name'];
-                                copy($src, $dst);
-                            } else {
-                                $errors['no_perms'] = 'Private key file directory does not exist.';
-                            }
+                        $raw = @file_get_contents($privateKey['tmp_name']);
+                        $decoded = ($raw === false || $raw === '') ? null : json_decode($raw, true);
+                        if (!is_array($decoded) || empty($decoded)) {
+                            $errors['no_perms'] = 'The uploaded private key is empty or not valid JSON.';
                         } else {
-                            $errors['no_perms'] = 'Contact administrator to set proper permissions to the directory.';
+                            // Keep the raw JSON content — persisted into the new column below.
+                            $gaPrivateKeyContent = $raw;
                         }
-                        /**
-                         *  Prepare settings to be serialized
-                         */
-                        $analyticsSettings['google_analytics_private_key'] = realpath($dst);
                     } else {
-                        /** retain the current private key file */
-                        $privateKey = '';
-                        if (!empty($analyticsSettingsData)) {
-                            $currentSetting = unserialize($analyticsSettingsData->pads_settings);
-                            $privateKey = $currentSetting['google_analytics_private_key'];
-                        }
-
-                        $analyticsSettings['google_analytics_private_key'] = $privateKey;
+                        /** retain the current private key (leave the column untouched) */
+                        $gaPrivateKeyContent = null;
                     }
+                    // The key no longer lives in the serialized blob (it moved to its own column).
+                    $analyticsSettings['google_analytics_private_key'] = '';
                     $analyticsSettings['google_analytics_view_id'] = $post['google_analytics_view_id'] ?? null;
                     $analyticsSettings['google_analytics_property_id'] = $post['google_analytics_property_id'];
                 }
@@ -423,18 +409,28 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
                     }
 
                     // update the analytics settings data
-                    $analayticsSettingsTable->save(array(
+                    $saveData = array(
                         'pads_settings' => $analyticsSettings,
                         'pads_js_analytics' => $post['pads_js_analytics']
-                    ), $analyticsSettingsData->pads_id);
+                    );
+                    // Only persist the key column when a new key was uploaded — a null value means
+                    // "retain the existing one" (don't wipe it on a retain / non-GA save).
+                    if ($gaPrivateKeyContent !== null) {
+                        $saveData['pads_ga_private_key'] = $gaPrivateKeyContent;
+                    }
+                    $analayticsSettingsTable->save($saveData, $analyticsSettingsData->pads_id);
                 } else {
                     // New table entry
-                    $analayticsSettingsTable->save(array(
+                    $saveData = array(
                         'pads_site_id' => $siteId,
                         'pads_analytics_key' => $analyticsKey,
                         'pads_settings' => $analyticsSettings,
                         'pads_js_analytics' => $post['pads_js_analytics']
-                    ));
+                    );
+                    if ($gaPrivateKeyContent !== null) {
+                        $saveData['pads_ga_private_key'] = $gaPrivateKeyContent;
+                    }
+                    $analayticsSettingsTable->save($saveData);
                 }
 
                 if ($analyticsId) {
@@ -575,21 +571,23 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
                     }
 
                     /**
-                     * Get the file name to act as a placeholder for the browse button
+                     * Placeholder for the browse button: the key is now stored as JSON CONTENT in the
+                     * `pads_ga_private_key` column (no filename anymore). We only need to tell the UI
+                     * whether a key is already present — a generic non-empty marker does that. Backward
+                     * compat: a legacy path still in pads_settings also counts as "configured".
                      */
-                    if (!empty($data['google_analytics_private_key'])) {
-                        $privateKeyFileName = explode(self::DS, $data['google_analytics_private_key']);
-                        $data['google_analytics_private_key_val'] = $privateKeyFileName[count($privateKeyFileName) - 1];
+                    if (!empty($settingsData->pads_ga_private_key) || !empty($data['google_analytics_private_key'])) {
+                        $data['google_analytics_private_key_val'] = 'configured';
 
                         /**
-                         * Creating the element that will hold the private key filename value
+                         * Creating the element that will hold the private key presence marker
                          */
                         $form->add([
                             'type' => 'Laminas\\Form\\Element\\Hidden',
                             'name' => 'google_analytics_private_key_val',
                             'attributes' => [
                                 'id' => 'id_google_analytics_private_key_val',
-                                'value' => $privateKeyFileName
+                                'value' => 'configured'
                             ]
                         ]);
                     }

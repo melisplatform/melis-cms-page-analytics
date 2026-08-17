@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `melis_cms_page_analytics_data_settings` (
   `pads_site_id` INT NOT NULL,
   `pads_analytics_key` VARCHAR(100) NOT NULL,
   `pads_settings` LONGTEXT NULL,
+  `pads_ga_private_key` LONGTEXT NULL,
   `pads_js_analytics` LONGTEXT NULL,
   PRIMARY KEY (`pads_id`))
 ENGINE = InnoDB;

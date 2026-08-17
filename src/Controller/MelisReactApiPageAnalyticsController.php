@@ -279,14 +279,23 @@ class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
 
                 $row = $dataTable->getAnalytics($siteId, $selectedKey)->current();
                 if (!empty($row)) {
+                    // La clé de service GA est désormais stockée comme CONTENU JSON dans sa propre
+                    // colonne `pads_ga_private_key` (plus un fichier sous vendor, effacé au déploiement).
+                    $hasGaKey = !empty($row->pads_ga_private_key);
                     $stored = @unserialize((string) $row->pads_settings);
                     if (is_array($stored)) {
                         foreach ($stored as $name => $value) {
-                            // Une clé privée est un CHEMIN serveur : on n'expose que le nom de fichier.
-                            $values[$name] = is_string($value) && $this->looksLikePath($name)
-                                ? basename($value)
-                                : $value;
+                            if ($this->looksLikePath($name)) {
+                                // On n'expose JAMAIS le contenu de la clé : juste un marqueur de présence.
+                                // Compat : un ancien chemin encore dans pads_settings compte aussi comme « configuré ».
+                                $hasGaKey = $hasGaKey || (is_string($value) && $value !== '');
+                                continue;
+                            }
+                            $values[$name] = $value;
                         }
+                    }
+                    if ($hasGaKey) {
+                        $values['google_analytics_private_key'] = 'configured';
                     }
                     $jsAnalytics = (string) ($row->pads_js_analytics ?? '');
                 }
