@@ -1462,19 +1462,19 @@
 		height: 15,
 		flexShrink: 0
 	};
-	var MelisM = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+	var CodeIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 		style: sIcon$1,
-		viewBox: "0 0 70 70",
-		fill: "currentColor",
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
 		"aria-hidden": "true",
 		children: [
-			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M57.4,0c-4.8,0-8.6,3.9-8.6,8.6v49.2c0,4.8,3.9,8.6,8.6,8.6s8.6-3.9,8.6-8.6V8.7C66,3.9,62.2,0,57.4,0Z" }),
-			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M16.3,4.6C14,.4,8.8-1.2,4.6,1,.4,3.2-1.2,8.5,1,12.7l26.1,49.3c2.2,4.2,7.4,5.8,11.7,3.6,4.2-2.2,5.8-7.4,3.6-11.7L16.3,4.6Z" }),
-			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
-				cx: "8.8",
-				cy: "57.7",
-				r: "8.8"
-			})
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m18 16 4-4-4-4" }),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m6 8-4 4 4 4" }),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m14.5 4-5 16" })
 		]
 	});
 	var LayoutIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
@@ -1527,7 +1527,7 @@
 				style: tab(mode === "react"),
 				onClick: () => onChange("react"),
 				title: compact ? labels.react : void 0,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(MelisM, {}), !compact && labels.react]
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(CodeIcon, {}), !compact && labels.react]
 			}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				style: tab(mode === "iframe"),
 				onClick: () => onChange("iframe"),
