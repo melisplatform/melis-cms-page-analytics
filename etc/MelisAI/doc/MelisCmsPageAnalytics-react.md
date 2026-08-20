@@ -5,7 +5,7 @@ doc_type: module-documentation-react
 audience: [users, developers, ai]
 language: en
 module_version: unversioned
-last_reviewed: 2026-08-19
+last_reviewed: 2026-08-20
 maintainer: Melis Technology
 keywords: [page-analytics, visits, page-hits, google-analytics, react, brick, back-office, react-api, capabilities, melis, cms, new-old-toggle, site-level-display]
 screenshots_dir: ./images/react
@@ -23,9 +23,8 @@ related_docs: [./MelisCmsPageAnalytics.md]
 > the legacy tool in an iframe. For the underlying data model, listeners, providers and services
 > see the [legacy tool doc](./MelisCmsPageAnalytics.md); this doc does not repeat them.
 >
-> **⚠ React screenshots are not available yet.** The `etc/MelisAI/doc/images/react/` folder is
-> empty, so this document ships **without inline images and without a Screenshot index**. When the
-> React screens are captured, save them under `./images/react/` and add the index back.
+> **Screenshots.** The React screens are bundled under `./images/react/` and referenced inline
+> below; see the [Screenshot index](#screenshot-index) for a filename → content lookup.
 >
 > **How this document is organised — two clearly separated parts:**
 > - **[Part A — Functional Guide](#part-a--functional-guide)** — for everyday users (and the
@@ -33,7 +32,7 @@ related_docs: [./MelisCmsPageAnalytics.md]
 > - **[Part B — Technical Reference](#part-b--technical-reference)** — for developers and AI
 >   building inside the React UI, with code (brick manifest, endpoints, capabilities).
 >
-> **Audience**: consumed by the **MelisAI** MCP. **Status**: reviewed 2026-08-19.
+> **Audience**: consumed by the **MelisAI** MCP. **Status**: reviewed 2026-08-20.
 
 ---
 
@@ -89,7 +88,8 @@ related_docs: [./MelisCmsPageAnalytics.md]
 named **Page Analytics**, with a persistent header (title + **New / Old** toggle) and two native
 tabs underneath: **Analytics** and **Settings**.
 
-*(React screenshots are not available yet — see the intro note.)*
+![Site analytics — Analytics tab in the React back-office](./images/react/meliscmspageanalytics-tool-tab-analytics.png)
+*The React Page Analytics tool, **Analytics** tab: KPI cards (Visits / Tracked pages / Sites / Last visit), the site selector ("All sites"), a search box, the Columns manager, Export, the refresh button, and the visits table (Page id, Page, Visits, Last visit). Top-right: the New / Old toggle.*
 
 ## A3. Key words explained
 
@@ -115,6 +115,7 @@ refreshes. The list uses infinite scroll and server-side sort (click a column he
 Deleted pages show an italic *"(deleted)"* label in place of the missing name.
 
 > **Read-only:** this tab never changes data — it only reads recorded hits.
+> (Screenshot: see [§A2](#a2-finding-it-in-melis-react).)
 
 If the selected site is assigned a **third-party analytics module** that provides its own display
 (e.g. Google Analytics), the tab instead shows **that module's dashboard** for the site (KPIs,
@@ -130,6 +131,12 @@ edit a **custom JS snippet** injected into every front page's `<head>`.
 **Save** persists the choice + settings. The two selectors (Site + Module) are always visible;
 the module's own settings and the Save button only appear once a site is chosen.
 
+![Site analytics — Settings tab in the React back-office](./images/react/meliscmspageanalytics-tool-tab-settings.png)
+*The **Settings** tab with a site chosen: the **Site** selector, the **Analytics module** selector
+(here Google Analytics), the module's own fields (Property ID, Private key file upload) and the
+admin-only **Custom analytics script** injected into every front page's `<head>`, then **Save**.
+The script and Property ID shown are placeholders.*
+
 > **Tip:** the custom JS field is **admin-only** — non-admins see it read-only. Saving posts to the
 > same legacy action the classic tool uses, so New and Old stay strictly equivalent.
 
@@ -137,6 +144,11 @@ the module's own settings and the Save button only appear once a site is chosen.
 
 Open a page in the CMS editor: a **Page Analytics** tab summarises the visits recorded **for that
 page** (total visits, distinct sessions, last visit, and a paginated list of recent visit dates).
+
+![Page Analytics tab in the React CMS page editor](./images/react/meliscmspageanalytics-pageedition-tab-pageanalytics.png)
+*The **Page Analytics** tab of the React CMS page editor, next to Edition / Properties / SEO /
+Languages: three cards (Visits, Sessions, Last visit) and the **Recent visits** list for this page
+only.*
 
 ## A7. Common tasks — "How do I…?"
 
@@ -335,15 +347,24 @@ melis-cms-page-analytics/
 │            · shared/{useIsNarrow,ExpandableRow,melis-form-errors,use-drag-reorder}
 ├── public/ui-react/             brick.js (built) + brick.manifest.json (id/route/label/forwardKey/melisKey)
 └── etc/MelisAI/doc/             MelisCmsPageAnalytics.md (legacy) · MelisCmsPageAnalytics-react.md (this)
-                                 · images/react/ (empty — no React screenshots yet)
+                                 · images/react/ (3 React screenshots, see the Screenshot index)
 ```
 
 > Business logic stays server-side (the built-in counter + provider contract + settings save):
 > [MelisCmsPageAnalytics.md](./MelisCmsPageAnalytics.md). React = presentation + API calls.
 
+## Screenshot index
+
+Filename → content lookup for the MelisAI MCP. All under `./images/react/`.
+
+| Image file | Content |
+|---|---|
+| `meliscmspageanalytics-tool-tab-analytics.png` | React Page Analytics tool — **Analytics** tab: KPI cards (Visits / Tracked pages / Sites / Last visit), site selector, search, Columns, Export, refresh, visits table (Page id / Page / Visits / Last visit), New/Old toggle |
+| `meliscmspageanalytics-tool-tab-settings.png` | React Page Analytics tool — **Settings** tab: Site selector, Analytics module selector, the module's own fields (Property ID, Private key upload), admin-only custom `<head>` script, Save |
+| `meliscmspageanalytics-pageedition-tab-pageanalytics.png` | React CMS page editor — **Page Analytics** tab: Visits / Sessions / Last visit cards and the Recent visits list for that page |
+
 ---
 
 *Document for AI consumption (MelisAI MCP) — React back-office of `melisplatform/melis-cms-page-analytics`.
 Part A = functional guide for users; Part B = technical reference with examples for developers/AI.
-Legacy tool doc: [./MelisCmsPageAnalytics.md](./MelisCmsPageAnalytics.md). React screenshots not
-available yet (no Screenshot index). Last reviewed 2026-08-19.*
+Legacy tool doc: [./MelisCmsPageAnalytics.md](./MelisCmsPageAnalytics.md). Last reviewed 2026-08-20.*
