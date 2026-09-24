@@ -28,6 +28,16 @@ class MelisCmsDefaultPageAnalyticsService extends MelisEngineGeneralService
             return null;
         
         $siteId = (int)$siteData->site_id;
+
+        // Visits are only counted when an analytics module is selected for the site (0011054):
+        // no module selected yet, or « No analytics module », means nothing is recorded.
+        // Read the raw key: MelisCmsPageAnalyticsService::getAnalytics() returns nothing for the
+        // « none » pseudo-module (it has no settings row), so it cannot tell the cases apart.
+        $siteAnalytics = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataTable')->getAnalytics($siteId)->current();
+        $analyticsKey = $siteAnalytics ? (string) $siteAnalytics->pad_analytics_key : '';
+        if ($analyticsKey === '' || $analyticsKey === 'melis_cms_no_analytics')
+            return null;
+
         $table = $this->getServiceManager()->get('MelisCmsPageAnalyticsService');
         $data = $table->getAnalytics($siteId);
 
