@@ -31,6 +31,16 @@ use MelisCore\Controller\MelisAbstractActionController;
  */
 class MelisReactApiPageAnalyticsTabController extends MelisAbstractActionController
 {
+    /**
+     * Outil auquel ce contrôleur appartient (audit DEKRA 7.0).
+     *
+     * Lu par MelisCoreAuthorizationListener : le garde-fou global résout la route jusqu'à
+     * cette classe et vérifie `canAccess()` sur cette clé AVANT le dispatch. Sans elle, le
+     * contrôleur restait joignable par tout compte connecté (route seulement authentifiée).
+     * Clé accordable par l'arbre des droits — Page Analytics.
+     */
+    const MELIS_KEY = 'meliscms_page_analytics_tools_section';
+
     public function getAction(): HttpResponse
     {
         if (!$this->getServiceManager()->get('MelisCoreAuth')->hasIdentity()) {

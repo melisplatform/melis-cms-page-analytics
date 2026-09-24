@@ -64,7 +64,7 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
         }
 
         if (!empty($orderBy)) {
-            $select->order($orderBy . ' ' . $orderDirection);
+            \MelisCore\Model\Tables\MelisGenericTable::addSafeOrder($select, $orderBy, $orderDirection);
         }
 
         $resultSet = $this->getTableGateway()->selectWith($select);
@@ -103,7 +103,7 @@ class MelisCmsPageAnalyticsTable extends MelisGenericTable
         }
 
         if (!empty($orderBy)) {
-            $select->order($orderBy . ' ' . $orderDirection);
+            \MelisCore\Model\Tables\MelisGenericTable::addSafeOrder($select, $orderBy, $orderDirection);
         }
 
         $resultSet = $this->getTableGateway()->selectWith($select);
