@@ -33,8 +33,26 @@ class MelisReactApiPageAnalyticsTabController extends MelisAbstractActionControl
         if (!$this->getServiceManager()->get('MelisCoreAuth')->hasIdentity()) {
             return $this->json(['success' => false, 'error' => 'Unauthenticated'], 401);
         }
+        /**
+         * SECURITY (audit PA-M1) : le canAccess n'était porté QUE par le listener global
+         * (résolution de MELIS_KEY par réflexion) — garde implicite. Défense en profondeur :
+         * vérification explicite ici, comme les autres contrôleurs du module.
+         */
+        try {
+            if (!$this->getServiceManager()->get('MelisCoreRights')->canAccess(self::MELIS_KEY)) {
+                return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
+            }
+        } catch (\Throwable) {}
         try {
             $idPage  = (int) $this->params()->fromQuery('idPage', 0);
+            /**
+             * SECURITY (audit PA-M1) : contrôle de PÉRIMÈTRE par page (ACL d'arbre, fail-closed,
+             * bypass admin) — sans lui, tout détenteur du droit lisait la timeline de visites de
+             * n'importe quelle page (idPage libre). Même règle que l'éditeur de page CMS.
+             */
+            if ($idPage > 0 && !$this->getServiceManager()->get('MelisCmsRights')->canAccessPage($idPage)) {
+                return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
+            }
             $perPage = (int) $this->params()->fromQuery('perPage', 100);
             $perPage = max(1, min(500, $perPage)); // borne dure : jamais de fetch illimité
             $page    = max(1, (int) $this->params()->fromQuery('page', 1));
@@ -62,7 +80,9 @@ class MelisReactApiPageAnalyticsTabController extends MelisAbstractActionControl
                 'recentTotal' => $total, // 1 ligne = 1 visite → total des visites = total paginable
             ]]);
         } catch (\Throwable $e) {
-            return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+            // SECURITY (audit PA-M3) : détail au log serveur, message générique au client.
+            error_log('MelisReactApiPageAnalyticsTab: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+            return $this->json(['success' => false, 'error' => 'Internal error'], 500);
         }
     }
 
