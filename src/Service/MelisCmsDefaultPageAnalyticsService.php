@@ -8,9 +8,7 @@ use MelisEngine\Service\MelisEngineGeneralService;
 class MelisCmsDefaultPageAnalyticsService extends MelisEngineGeneralService
 {
     /**
-     * SECURITY (audit PA-H1) : plafond dur d'insertions par page et par jour. La clé visiteur
-     * contient de la donnée client (UA) ; sans plafond, la faire tourner permettrait encore une
-     * ligne par requête. Avec lui, la croissance de la table est bornée quoi qu'envoie le client.
+     * Plafond d'insertions par page et par jour : la croissance de la table est bornée.
      */
     const DAILY_INSERT_CAP_PER_PAGE = 2000;
 
@@ -76,15 +74,9 @@ class MelisCmsDefaultPageAnalyticsService extends MelisEngineGeneralService
                 if (!empty($pagePublished['page_status'])) {
                     /** Page is active */
                     /**
-                     * SECURITY (audit PA-H1/PA-M2) : la clé de déduplication était le cookie
-                     * PHPSESSID FOURNI PAR LE CLIENT — le faire tourner donnait une insertion
-                     * par requête anonyme (DoS de stockage), et l'identifiant de session brut
-                     * des visiteurs était stocké puis affiché en BO. La clé est désormais
-                     * dérivée CÔTÉ SERVEUR et hachée (aucune session serveur n'est démarrée,
-                     * aucune donnée brute stockée) : REMOTE_ADDR (volontairement pas
-                     * X-Forwarded-For, falsifiable) + User-Agent + jour. L'UA restant de la
-                     * donnée client, un plafond dur par page et par jour borne la table quoi
-                     * qu'il arrive (cf. isDailyCapReached).
+                     * Clé de déduplication dérivée côté serveur et hachée (aucune session
+                     * serveur n'est démarrée) : REMOTE_ADDR + User-Agent + jour. Un plafond
+                     * par page et par jour borne la table (cf. isDailyCapReached).
                      */
                     $visitorKey = $this->makeVisitorKey();
                     $currentDateTime = date("Y-m-d H:i:s");
@@ -127,8 +119,8 @@ class MelisCmsDefaultPageAnalyticsService extends MelisEngineGeneralService
     }
 
     /**
-     * SECURITY (audit PA-H1) : clé visiteur dérivée côté serveur, hachée (sha256 hex, 64 car.
-     * dans un VARCHAR(100)), jamais issue d'un cookie. Le jour fait partie de la clé, la
+     * Clé visiteur dérivée côté serveur, hachée (sha256 hex, 64 car. dans un VARCHAR(100)).
+     * Le jour fait partie de la clé, la
      * déduplication « une visite par jour » est donc intrinsèque.
      *
      * @return string
@@ -142,9 +134,8 @@ class MelisCmsDefaultPageAnalyticsService extends MelisEngineGeneralService
     }
 
     /**
-     * SECURITY (audit PA-H1) : borne dure de croissance — au-delà de
-     * DAILY_INSERT_CAP_PER_PAGE lignes pour (page, jour), on cesse d'enregistrer.
-     * Fail-closed : au moindre doute (erreur SQL), on n'écrit pas.
+     * Au-delà de DAILY_INSERT_CAP_PER_PAGE lignes pour (page, jour), on cesse d'enregistrer ;
+     * en cas d'erreur SQL, on n'écrit pas.
      *
      * @param int $pageId
      * @return bool

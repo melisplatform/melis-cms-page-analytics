@@ -458,8 +458,7 @@ class MelisReactApiPageAnalyticsController extends MelisAbstractActionController
 
     private function errorResponse(\Throwable $e, int $status = 500): HttpResponse
     {
-        // SECURITY (audit PA-M3) : ne jamais renvoyer le message/fichier/ligne de l'exception
-        // (chemins, SQL, structure) au client — détail au log serveur, message générique.
+        // Détail de l'exception au log serveur, message générique au client.
         error_log('MelisReactApiPageAnalytics: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
 
         return $this->jsonResponse([

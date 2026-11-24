@@ -212,9 +212,8 @@ class MelisCmsPageAnalyticsPageDetailsToolController extends MelisAbstractAction
             $dataFilteredCount = $this->melisCmsPageAnalytcisTable()->getTotalFiltered();
             $tableData = $data;
             for($ctr = 0; $ctr < count($tableData); $ctr++) {
-                // SECURITY (audit PA-M2) : la colonne n'est pas affichée mais partait dans le
-                // JSON — ne jamais renvoyer l'identifiant visiteur (historiquement le PHPSESSID
-                // BRUT des visiteurs) au navigateur BO.
+                // La colonne n'est pas affichée : l'identifiant visiteur n'est pas renvoyé
+                // au navigateur BO.
                 unset($tableData[$ctr]['ph_session_id']);
 
                 // apply text limits
