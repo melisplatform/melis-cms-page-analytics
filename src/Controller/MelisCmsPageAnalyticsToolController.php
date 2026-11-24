@@ -17,7 +17,7 @@ use Laminas\View\Model\ViewModel;
 class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 {
     /**
-     * Outil auquel ce contrôleur appartient (audit DEKRA 7.0) : MelisCoreAuthorizationListener
+     * Outil auquel ce contrôleur appartient : MelisCoreAuthorizationListener
      * vérifie canAccess() sur cette clé AVANT le dispatch.
      */
     const MELIS_KEY = 'meliscms_page_analytics_tools_section';
@@ -116,7 +116,7 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
      * Checks wether the user has access to this tools or not
      * @return boolean
      */
-    /** @INFO: Tool access check (CWE-862). */
+    /** @INFO: Tool access check. */
     private function hasToolAccess($key)
     {
         return $this->getServiceManager()->get('MelisCoreRights')->canAccess($key);
@@ -148,8 +148,6 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
         // has a non-empty usr_rights XML (which every converted install now has), this returned
         // false even for a platform admin, and tool-default-page-analytics-table.phtml rendered
         // an EMPTY container: the Analytics tab showed the site selector and nothing under it.
-        // The gate was cosmetic anyway — getMelisCmsPageAnalyticsDataAction(), which serves the
-        // actual rows to the DataTable, performs no rights check.
         $hasAccess = true;
         $columns = $this->getTool()->getColumns();
         // Setting first column's (ID) default Order to descending
@@ -256,7 +254,7 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
     public function saveAction()
     {
-        /** @INFO: Access check (tool right) — CWE-862 */
+        /** @INFO: Access check (tool right) */
         if (! $this->hasToolAccess('meliscms_page_analytics_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
         }
@@ -282,11 +280,10 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
             $analayticsSettingsTable = $this->getServiceManager()->get('MelisCmsPageAnalyticsDataSettingsTable');
 
             /**
-             * Security: the "pads_js_analytics" field holds raw, unsanitized JavaScript that is
-             * injected site-wide into every front page <head> by MelisCmsPageAnalyticsListener.
-             * Only a platform admin (usr_admin) is allowed to set or change this field.
-             * Non-admins can still save the other analytics settings, but any attempt to set/change
-             * the raw JS is rejected (and the JS field is dropped so it is never persisted).
+             * The "pads_js_analytics" field holds JavaScript added to every front page <head>
+             * by MelisCmsPageAnalyticsListener: only a platform admin (usr_admin) may set or
+             * change it. Non-admins can still save the other analytics settings; a change of the
+             * JS field is rejected and the field is not persisted.
              */
             $isPlatformAdmin = false;
             $melisCoreAuth = $this->getServiceManager()->get('MelisCoreAuth');
@@ -611,7 +608,7 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
     public function getSiteAnalyticsAction()
     {
-        /** @INFO: Access check (tool right) — CWE-862 */
+        /** @INFO: Access check (tool right) */
         if (! $this->hasToolAccess('meliscms_page_analytics_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
         }
@@ -660,7 +657,7 @@ class MelisCmsPageAnalyticsToolController extends MelisAbstractActionController
 
     public function getAnalyticsScriptAction()
     {
-        /** @INFO: Access check (tool right) — CWE-862 */
+        /** @INFO: Access check (tool right) */
         if (! $this->hasToolAccess('meliscms_page_analytics_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
         }
