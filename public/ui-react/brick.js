@@ -1713,7 +1713,8 @@
 		color: "var(--color-destructive,#dc2626)",
 		margin: "6px 0 0"
 	};
-	function SettingsPanel() {
+	/** `onSaved` : prévient la page qu'un site a changé de module (l'onglet Analytics relit ses paramètres). */
+	function SettingsPanel({ onSaved } = {}) {
 		const t = useT();
 		const narrow = useIsNarrow();
 		const [sites, setSites] = (0, react.useState)([]);
@@ -1779,6 +1780,7 @@
 					});
 					okNotify(t("set_save"), r.textMessage);
 					load(site, moduleKey);
+					onSaved?.();
 				} else {
 					const flat = {};
 					for (const [name, msgs] of Object.entries(r.errors ?? {})) {
@@ -2241,6 +2243,7 @@
 		const [tab, setTab] = (0, react.useState)("analytics");
 		const [frameLoaded, setFrameLoaded] = (0, react.useState)(false);
 		const [site, setSite] = (0, react.useState)(0);
+		const [settingsVersion, setSettingsVersion] = (0, react.useState)(0);
 		const subtitle = mode === "iframe" ? t("old_hint") : tab === "settings" ? t("set_subtitle") : t("subtitle");
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
@@ -2340,7 +2343,8 @@
 							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AnalyticsList, {
 								site,
 								onSite: setSite,
-								narrow
+								narrow,
+								settingsVersion
 							})
 						}),
 						mode === "react" && tab === "settings" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -2349,7 +2353,7 @@
 								inset: 0,
 								overflow: "auto"
 							},
-							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SettingsPanel, {})
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SettingsPanel, { onSaved: () => setSettingsVersion((v) => v + 1) })
 						})
 					]
 				})
@@ -2380,7 +2384,7 @@
 			visible: true
 		}
 	]);
-	function AnalyticsList({ site, onSite, narrow }) {
+	function AnalyticsList({ site, onSite, narrow, settingsVersion }) {
 		const t = useT();
 		const lang = currentLang$1();
 		const [stats, setStats] = (0, react.useState)(null);
@@ -2414,7 +2418,7 @@
 			return () => {
 				alive = false;
 			};
-		}, [site]);
+		}, [site, settingsVersion]);
 		const moduleMode = !!moduleDisplayKey;
 		const { Comp: SiteDisplay, settled: displaySettled } = useSiteDisplayComp(moduleMode ? moduleAnalyticsKey : null);
 		const shownColsList = cols.filter((c) => c.visible);
@@ -2449,10 +2453,16 @@
 			fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null);
 		}, []);
 		(0, react.useEffect)(() => {
+			let alive = true;
 			fetchAnalyticsStats({
 				search,
 				site
-			}).then(setStats).catch(() => null);
+			}).then((s) => {
+				if (alive) setStats(s);
+			}).catch(() => null);
+			return () => {
+				alive = false;
+			};
 		}, [
 			search,
 			site,

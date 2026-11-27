@@ -26,7 +26,8 @@ const label: CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, 
 const help: CSSProperties = { fontSize: 12, color: 'var(--color-muted-foreground)', margin: '6px 0 0' }
 const errCss: CSSProperties = { fontSize: 12, color: 'var(--color-destructive,#dc2626)', margin: '6px 0 0' }
 
-export default function SettingsPanel() {
+/** `onSaved` : prévient la page qu'un site a changé de module (l'onglet Analytics relit ses paramètres). */
+export default function SettingsPanel({ onSaved }: { onSaved?: () => void } = {}) {
   const t = useT()
   const narrow = useIsNarrow()
   const [sites, setSites] = useState<SiteOption[]>([])
@@ -109,6 +110,7 @@ export default function SettingsPanel() {
         setFlash({ ok: true, msg: r.textMessage })
         okNotify(t('set_save'), r.textMessage)
         load(site, moduleKey)
+        onSaved?.()
       } else {
         // `errors` legacy : { champ: { validateur: message, label?: … } } → 1 message par champ.
         const flat: Record<string, string> = {}
