@@ -106,6 +106,9 @@ export default function PageAnalyticsPage() {
   const [tab, setTab] = useState<Tab>('analytics')
   const [frameLoaded, setFrameLoaded] = useState(false)
   const [site, setSite] = useState(0) // 0 = tous les sites
+  // Incrémenté à chaque enregistrement des paramètres : l'onglet Analytics relit alors le module
+  // affecté au site, sans attendre un changement de site (Mantis #0011513).
+  const [settingsVersion, setSettingsVersion] = useState(0)
 
   const subtitle = mode === 'iframe' ? t('old_hint') : (tab === 'settings' ? t('set_subtitle') : t('subtitle'))
 
@@ -137,11 +140,11 @@ export default function PageAnalyticsPage() {
         )}
         {/* La liste reste MONTÉE quand on passe aux paramètres (scroll infini + colonnes préservés). */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'auto', display: mode === 'react' && tab === 'analytics' ? 'block' : 'none' }}>
-          <AnalyticsList site={site} onSite={setSite} narrow={narrow} />
+          <AnalyticsList site={site} onSite={setSite} narrow={narrow} settingsVersion={settingsVersion} />
         </div>
         {mode === 'react' && tab === 'settings' && (
           <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
-            <SettingsPanel />
+            <SettingsPanel onSaved={() => setSettingsVersion((v) => v + 1)} />
           </div>
         )}
       </div>
@@ -159,7 +162,7 @@ const DEFAULT_COLS: ColDef[] = [
 ]
 const colStore = makeColStore('melis-page-analytics-cols-v1', DEFAULT_COLS)
 
-function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: number) => void; narrow: boolean }) {
+function AnalyticsList({ site, onSite, narrow, settingsVersion }: { site: number; onSite: (id: number) => void; narrow: boolean; settingsVersion: number }) {
   const t = useT()
   const lang = currentLang()
   const [stats, setStats] = useState<AnalyticsStats | null>(null)
@@ -192,7 +195,7 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
       })
       .catch(() => { if (alive) { setModuleDisplayKey(null); setModuleAnalyticsKey(null) } })
     return () => { alive = false }
-  }, [site])
+  }, [site, settingsVersion])
   const moduleMode = !!moduleDisplayKey
   // Affichage React natif du module (enregistré par sa brique) — sinon fallback iframe (settled).
   const { Comp: SiteDisplay, settled: displaySettled } = useSiteDisplayComp(moduleMode ? moduleAnalyticsKey : null)
@@ -219,7 +222,13 @@ function AnalyticsList({ site, onSite, narrow }: { site: number; onSite: (id: nu
     })
 
   useEffect(() => { fetchAnalyticsSites().then((r) => setSites(r.sites)).catch(() => null) }, [])
-  useEffect(() => { fetchAnalyticsStats({ search, site }).then(setStats).catch(() => null) }, [search, site, tick])
+  // Only the latest request may update the cards: typing quickly sends one request per keystroke,
+  // and an earlier, slower answer must not overwrite the current search's totals (Mantis #0011511).
+  useEffect(() => {
+    let alive = true
+    fetchAnalyticsStats({ search, site }).then((s) => { if (alive) setStats(s) }).catch(() => null)
+    return () => { alive = false }
+  }, [search, site, tick])
 
   const cell = (r: AnalyticsRow, id: string): string => {
     switch (id) {
